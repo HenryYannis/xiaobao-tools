@@ -162,6 +162,19 @@ def 删除桌面指定文件():
         pass
 
 
+def 清空回收站():
+    """
+    通过 Windows API 静默清空系统回收站（无提示音、无确认框、无进度条）
+    """
+    if sys.platform == 'win32':
+        try:
+            # Flags: SHERB_NOCONFIRMATION (0x00000001) | SHERB_NOPROGRESSUI (0x00000002) | SHERB_NOSOUND (0x00000004)
+            flags = 0x00000001 | 0x00000002 | 0x00000004
+            ctypes.windll.shell32.SHEmptyRecycleBinW(None, None, flags)
+        except Exception:
+            pass
+
+
 def 禁止_edge_上网():
     """强制结束 Edge 浏览器进程"""
     执行隐藏命令('taskkill /f /im msedge.exe')
@@ -371,6 +384,8 @@ def 主入口():
     执行隐藏命令("shutdown -s -t 43200")
     # 删除桌面上的 .sb3 和 .ev3 文件
     删除桌面指定文件()
+    # 清空系统回收站
+    清空回收站()
 
     try:
         阻断逻辑()
