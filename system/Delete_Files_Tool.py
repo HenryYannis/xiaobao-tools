@@ -2,14 +2,14 @@ import os
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-
-FOLDER_PATH = r'C:\Users\A3\Desktop\贝乐学员共享文件(勿删)'
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+FOLDER_PATH = os.path.dirname(SCRIPT_DIR)
 EXCLUDED_FOLDERS = [
-    r'C:\Users\A3\Desktop\贝乐学员共享文件(勿删)\.verysync',
-    r'C:\Users\A3\Desktop\贝乐学员共享文件(勿删)\Scratch 初始程序',
-    r'C:\Users\A3\Desktop\贝乐学员共享文件(勿删)\Scratch 素材',
-    r'C:\Users\A3\Desktop\贝乐学员共享文件(勿删)\安装包',
-    r'C:\Users\A3\Desktop\贝乐学员共享文件(勿删)\比赛',
+    os.path.join(FOLDER_PATH, '.verysync'),
+    os.path.join(FOLDER_PATH, 'Scratch 初始程序'),
+    os.path.join(FOLDER_PATH, 'Scratch 素材'),
+    os.path.join(FOLDER_PATH, '安装包'),
+    os.path.join(FOLDER_PATH, '比赛'),
 ]
 
 
