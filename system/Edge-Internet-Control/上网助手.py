@@ -52,8 +52,8 @@ else:
 断网时长_分钟 = 45
 联网时长_分钟 = 15
 
-MUTEX_NAME = "Global\\MyApp_msedge_helper_Mutex"
-SHARED_MEM_NAME = "Global\\MyApp_msedge_helper_Time_Share"
+MUTEX_NAME = "Local\\MyApp_msedge_helper_Mutex"
+SHARED_MEM_NAME = "Local\\MyApp_msedge_helper_Time_Share"
 global_mmap_file = None
 # ===============================================
 
@@ -312,6 +312,7 @@ def 阻断逻辑():
                 预计恢复时间 = datetime.now() + timedelta(minutes=断网时长_分钟)
                 时间文本 = 预计恢复时间.strftime("%H:%M")
                 写共享内存(f"STATUS:BLOCK_UNTIL_{时间文本}")
+                continue
 
             # 2. 正常限制逻辑
             if time.monotonic() < 专注截止单调:
