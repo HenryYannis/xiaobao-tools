@@ -287,62 +287,90 @@ def 显示解锁窗口():
 
 def 阻断逻辑():
     try:
-        # 使用时间单调时钟 time.monotonic() 计时，防范修改时钟作弊
-        当前单调时间 = time.monotonic()
-        专注截止单调 = 当前单调时间 + 实际_专注秒数
+        # 声明 GetTickCount64 返回值类型为 64 位无符号整数
+        if sys.platform == 'win32' and hasattr(ctypes, 'windll'):
+            try:
+                ctypes.windll.kernel32.GetTickCount64.restype = ctypes.c_uint64
+            except Exception:
+                pass
 
-        预计恢复时间 = datetime.now() + timedelta(minutes=断网时长_分钟)
-        时间文本 = 预计恢复时间.strftime("%H:%M")
-        写共享内存(f"STATUS:BLOCK_UNTIL_{时间文本}")
+        # 初始化基准时间
+        def 获取当前Tick():
+            if sys.platform == 'win32' and hasattr(ctypes, 'windll'):
+                return ctypes.windll.kernel32.GetTickCount64()
+            return int(time.time() * 1000)
+
+        基准时间 = datetime.now()
+        基准Tick = 获取当前Tick()
+        解锁截止单调 = 0.0
 
         while True:
             # 1. 检查共享内存指令
             cmd = 读共享内存()
             if cmd == "CMD:UNLOCK_90":
                 写共享内存("STATUS:UNLOCKED")
-                
                 # 90分钟免限制上网
                 解锁截止单调 = time.monotonic() + 90 * 60
-                while time.monotonic() < 解锁截止单调:
-                    # 解锁期间不做任何 taskkill，且每 3 秒检查一次命令
-                    time.sleep(3)
-                
-                # 重新开始 45 分钟专注
-                专注截止单调 = time.monotonic() + 实际_专注秒数
-                预计恢复时间 = datetime.now() + timedelta(minutes=断网时长_分钟)
-                时间文本 = 预计恢复时间.strftime("%H:%M")
-                写共享内存(f"STATUS:BLOCK_UNTIL_{时间文本}")
                 continue
 
-            # 2. 正常限制逻辑
-            if time.monotonic() < 专注截止单调:
+            # 2. 防作弊检测
+            now_time = datetime.now()
+            now_tick = 获取当前Tick()
+
+            # 计算流逝时间
+            流逝时间_秒 = (now_time - 基准时间).total_seconds()
+            流逝Tick_秒 = (now_tick - 基准Tick) / 1000.0
+
+            # 检查是否有时间跳变（差值大于 15 秒判定为作弊）
+            if abs(流逝时间_秒 - 流逝Tick_秒) > 15:
+                写共享内存("STATUS:CHEAT_DETECTED")
+                # 发生作弊，进入永久阻断模式
+                while True:
+                    禁止_edge_上网()
+                    time.sleep(3)
+
+            # 3. 检查是否在 90 分钟解锁期内
+            if time.monotonic() < 解锁截止单调:
+                # 处于解锁期，不执行拦截。更新状态为解锁至何时
+                剩余秒数 = 解锁截止单调 - time.monotonic()
+                预计恢复时间 = datetime.now() + timedelta(seconds=剩余秒数)
+                写共享内存(f"STATUS:UNLOCKED_UNTIL_{预计恢复时间.strftime('%H:%M')}")
+                
+                # 每次重新进入正常循环时，需要重置防作弊基准，以防止解锁期结束后的时钟漂移
+                基准时间 = datetime.now()
+                基准Tick = 获取当前Tick()
+                
+                time.sleep(3)
+                continue
+
+            # 4. 正常限制逻辑：对齐整点
+            现在 = datetime.now()
+            当前分钟 = 现在.minute
+
+            if 当前分钟 < 45:
+                # 00 - 44 分钟：断网区间
                 禁止_edge_上网()
                 
-                剩余秒数 = 专注截止单调 - time.monotonic()
-                # 每 3 秒执行一次关闭操作
-                等待时长 = min(3.0, max(0.1, 剩余秒数))
-                time.sleep(等待时长)
+                # 计算距离 45 分钟还有多少秒
+                剩余秒数 = (45 - 当前分钟) * 60 - 现在.second
+                # 显示预计恢复时间：当前小时的 45 分
+                恢复时间 = 现在.replace(minute=45, second=0, microsecond=0)
+                写共享内存(f"STATUS:BLOCK_UNTIL_{恢复时间.strftime('%H:%M')}")
+                
+                # 等待下一次检测，最长 3 秒
+                time.sleep(min(3.0, max(0.1, 剩余秒数)))
             else:
-                break
-
-        # --- 2. 休息阶段 ---
-        # 此时不再执行 taskkill，恢复网络
-        弹窗提示_非阻塞("提示", f"网络已恢复{显示_休息文本}分钟")
-        
-        预计再次禁止时间 = datetime.now() + timedelta(minutes=联网时长_分钟)
-        再次禁止文本 = 预计再次禁止时间.strftime("%H:%M")
-        写共享内存(f"STATUS:REST_UNTIL_{再次禁止文本}")
-
-        # 使用绝对时间，防范专注期电脑休眠醒来直接玩 15 分钟
-        休息截止时间_绝对 = datetime.now() + timedelta(minutes=联网时长_分钟)
-        while datetime.now() < 休息截止时间_绝对:
-            time.sleep(1)
-
-        # --- 3. 再次禁止 ---
-        禁止_edge_上网()
-        弹窗_3秒自动关闭("提示", f"{显示_休息文本}分钟到，网络已禁止")
-
-    except Exception as e:
+                # 45 - 59 分钟：允许上网（恢复区间）
+                # 计算距离下一个整点还有多少秒
+                剩余秒数 = (60 - 当前分钟) * 60 - 现在.second
+                # 显示预计断网时间：下一个整点 (当前小时 + 1 的 00 分)
+                下个整点 = 现在 + timedelta(hours=1)
+                下个整点 = 下个整点.replace(minute=0, second=0, microsecond=0)
+                写共享内存(f"STATUS:REST_UNTIL_{下个整点.strftime('%H:%M')}")
+                
+                # 等待下一次检测，最长 3 秒
+                time.sleep(min(3.0, max(0.1, 剩余秒数)))
+    except Exception:
         pass
 
 
