@@ -26,7 +26,7 @@ This project is not only dedicated to software developers but is highly focused 
 
 | 🎯 Target User Cohort | 💡 Core Problems Resolved (Pain Points) | 🛠️ Recommended Tools |
 | :--- | :--- | :--- |
-| 🧑‍🏫 **Educators & Lab Administrators** | Restricting download actions, locking desktop wallpapers, removing Windows lock screen ads; quick cross-device file sharing. | [Edge-Disable-Downloads](./system/Edge-Disable-Downloads), [Disable-Wallpaper-Change](./system/Disable-Wallpaper-Change), [Remove-Spotlight-Info](./system/Remove-Spotlight-Info), [LAN-File-Share](./network/lan_file_share.py) |
+| 🧑‍🏫 **Educators & Lab Administrators** | Restricting download actions, locking desktop wallpapers, removing Windows lock screen ads, disabling browser offline games; quick cross-device file sharing. | [System-Restrictions-Tool](./system/System-Restrictions-Tool), [Edge-Disable-Downloads](./system/Edge-Disable-Downloads), [Disable-Wallpaper-Change](./system/Disable-Wallpaper-Change), [Remove-Spotlight-Info](./system/Remove-Spotlight-Info), [LAN-File-Share](./network/lan_file_share.py) |
 | 🎬 **Content Creators & UI Designers** | Merging audio clips locally, converting image formats to ICO; bulk extracting video frames at configurable time steps or manually. | [Image-to-ICO](./productivity/Image-to-ICO), [Audio-Merger](./productivity/Audio-Merger), [Video-Frame-Extractor](./vision/video_frame_extractor.py) |
 | 🧑‍🎓 **Language Learners & Students** | Joining interactive local network multiplayer word matching games to memory English vocabulary effortlessly while having fun. | [LAN-Word-Battle](./network/LAN-Word-Battle) |
 | 🧑‍💻 **Developers & AI Enthusiasts** | Accessing shared AI chat nodes over local network seamlessly; scanning files via AST to build code outlines for precise LLM Code Reviews. | [LAN-AI-Chat](./network/LAN-AI-Chat), [Code-Structure-Outline-Generator](./productivity/code_outline_generator.py) |
@@ -51,6 +51,7 @@ To help you quickly locate what you need, our tools are structured into five maj
 ### 2. 💻 System & Browser Optimization
 | Tool Name / Folder | English Tag | Description |
 | :--- | :--- | :--- |
+| [System Restrictions Center](./system/System-Restrictions-Tool) | `System-Restrictions-Tool` | Unified system policy restrictions manager combining wallpaper lock, desktop Spotlight info removal, and Chrome/Edge offline games disable tools. |
 | [Edge-禁止下载](./system/Edge-Disable-Downloads) | `Edge-Disable-Downloads` | Securely disables the download capability of Microsoft Edge via Registry and Group Policy edits. |
 | [Edge-联网控制](./system/Edge-Internet-Control) | `Edge-Internet-Control` | A powerful lower-level script to block or permit MS Edge internet permissions dynamically. |
 | [禁止-修改壁纸](./system/Disable-Wallpaper-Change) | `Disable-Wallpaper-Change` | Restricts wallpaper modifications to lock desktop wallpaper, ideal for kiosks or public displays. |

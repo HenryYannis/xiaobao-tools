@@ -26,7 +26,7 @@
 
 | 🎯 目标用户群体 | 💡 核心解决需求 (痛点) | 🛠️ 推荐小工具 |
 | :--- | :--- | :--- |
-| 🧑‍🏫 **教育工作者与机房管理员** | 想要在少儿编程课或公共机房中，限制用户随意下载、乱改壁纸，或移除 Windows 锁屏悬浮小广告；跨端极速分发课件。 | [Edge-禁止下载](./system/Edge-Disable-Downloads), [禁止-修改壁纸](./system/Disable-Wallpaper-Change), [移除-了解此图片](./system/Remove-Spotlight-Info), [工具-局域网极速文件共享器](./network/lan_file_share.py) |
+| 🧑‍🏫 **教育工作者与机房管理员** | 想要在少儿编程课或公共机房中，限制用户随意下载、乱改壁纸，或移除 Windows 锁屏悬浮小广告；禁用浏览器离线游戏；跨端极速分发课件。 | [系统限制控制中心](./system/System-Restrictions-Tool), [Edge-禁止下载](./system/Edge-Disable-Downloads), [禁止-修改壁纸](./system/Disable-Wallpaper-Change), [移除-了解此图片](./system/Remove-Spotlight-Info), [工具-局域网极速文件共享器](./network/lan_file_share.py) |
 | 🎬 **新媒体创作者与设计师** | 在本地快速进行多段语音拼接录音，或将图片转为高保真 ICO 图标；等时间步长批量无损截取视频画面帧。 | [工具-图片转图标](./productivity/Image-to-ICO), [工具-音频合并](./productivity/Audio-Merger), [工具-批量视频截图提取器](./vision/video_frame_extractor.py) |
 | 🧑‍🎓 **外语学习者与青少年** | 希望和身边的同学在局域网内，通过趣味单词联机对战，在互动娱乐中加深英语单词记忆。 | [局域网-单词对战](./network/LAN-Word-Battle) |
 | 🧑‍💻 **独立开发者与 AI 狂热者** | 想要在本地免代理搭建局域网 AI 共享网关；或者一键提取项目所有脚本大纲，供大模型精准进行 Code Review。 | [局域网-Ai对话](./network/LAN-AI-Chat), [工具-代码结构大纲生成器.py](./productivity/code_outline_generator.py) |
@@ -51,6 +51,7 @@
 ### 2. 💻 系统管理与浏览器控制 (System & Browser Optimization)
 | 工具名称/文件夹 | 英文标识 | 核心功能简介 |
 | :--- | :--- | :--- |
+| [系统限制控制中心](./system/System-Restrictions-Tool) | `System-Restrictions-Tool` | 一体化系统策略控制工具，集合禁止修改壁纸、移除桌面“了解此图片”、禁止 Chrome 和 Edge 离线小游戏功能。 |
 | [Edge-禁止下载](./system/Edge-Disable-Downloads) | `Edge-Disable-Downloads` | 通过注册表与组策略，安全快捷地禁用 Edge 浏览器下载功能，适合公共机器、机房或少儿教学环境。 |
 | [Edge-联网控制](./system/Edge-Internet-Control) | `Edge-Internet-Control` | 限制或解除 Edge 浏览器联网权限的实用底层脚本。 |
 | [禁止-修改壁纸](./system/Disable-Wallpaper-Change) | `Disable-Wallpaper-Change` | 限制用户修改 Windows 桌面壁纸，防误触/统一企业展示或展台的桌面配置工具。 |
