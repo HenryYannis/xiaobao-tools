@@ -283,6 +283,129 @@ def 显示解锁窗口():
     窗口.mainloop()
 
 
+# ================= 【WiFi 连接状态检测】 =================
+
+wifi_warning_window = None
+
+def 检查WiFi是否已连接():
+    """
+    检查 WiFi 接口的连接状态。
+    返回: True (WiFi 已连接，或系统无 WiFi 接口无需报错)，False (有 WiFi 接口但处于断开状态)
+    """
+    if sys.platform != 'win32':
+        return True
+    try:
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        res = subprocess.run(
+            'netsh wlan show interfaces',
+            startupinfo=startupinfo,
+            shell=True,
+            capture_output=True,
+            text=True,
+            encoding='gbk'
+        )
+        output = res.stdout
+        
+        # 如果系统里没有无线网卡，不判定为断开
+        if "没有无线接口" in output or "no wireless interface" in output or "There is no wireless interface" in output:
+            return True
+            
+        # 如果有无线网卡，检查其状态
+        for line in output.splitlines():
+            line_lower = line.lower()
+            if "state" in line_lower or "状态" in line_lower:
+                if "connected" in line_lower or "已连接" in line_lower:
+                    return True
+                if "disconnected" in line_lower or "已断开" in line_lower:
+                    return False
+        
+        # 默认返回 True 避免误报
+        return True
+    except Exception:
+        return True
+
+
+def 显示WiFi断开警告():
+    global wifi_warning_window
+    if wifi_warning_window and wifi_warning_window.winfo_exists():
+        try:
+            wifi_warning_window.attributes('-topmost', True)
+            wifi_warning_window.focus_force()
+        except Exception:
+            pass
+        return
+        
+    def 创建窗口():
+        global wifi_warning_window
+        try:
+            wifi_warning_window = tk.Tk()
+            wifi_warning_window.title("网络连接警告")
+            wifi_warning_window.configure(bg='#1e1e1e')  # 暗黑背景
+            
+            # 最大化（保留任务栏）与置顶
+            wifi_warning_window.state('zoomed')
+            wifi_warning_window.attributes('-topmost', True)
+            
+            # 禁用关闭按钮 (X)
+            def on_closing():
+                pass
+            wifi_warning_window.protocol("WM_DELETE_WINDOW", on_closing)
+            
+            # 防止最小化：如果窗口被最小化 (iconic) 或隐藏，立即恢复最大化
+            def restore_window(event=None):
+                try:
+                    if wifi_warning_window.state() == 'iconic':
+                        wifi_warning_window.state('zoomed')
+                        wifi_warning_window.attributes('-topmost', True)
+                except Exception:
+                    pass
+            wifi_warning_window.bind("<Unmap>", lambda e: wifi_warning_window.after(10, restore_window))
+            wifi_warning_window.bind("<Map>", restore_window)
+            
+            # 居中警告信息面板
+            main_frame = tk.Frame(wifi_warning_window, bg='#1e1e1e')
+            main_frame.place(relx=0.5, rely=0.5, anchor='center')
+            
+            label_title = tk.Label(
+                main_frame, 
+                text="⚠️ 网络连接已被中断", 
+                font=("微软雅黑", 28, "bold"), 
+                fg="#ff4d4f",
+                bg='#1e1e1e',
+                pady=10
+            )
+            label_title.pack()
+            
+            label_desc = tk.Label(
+                main_frame, 
+                text="检测到您的 WiFi 已断开，请立刻重新连接！\n\n温馨提示：即使处于断网状态，也无法打开浏览器或游玩离线小游戏。", 
+                font=("微软雅黑", 18), 
+                fg="#ffffff",
+                bg='#1e1e1e',
+                pady=20,
+                wraplength=800,  # 限制文本最大换行宽度
+                justify='center'
+            )
+            label_desc.pack()
+            
+            wifi_warning_window.mainloop()
+        except Exception:
+            pass
+
+    threading.Thread(target=创建窗口, daemon=True).start()
+
+
+def 关闭WiFi断开警告():
+    global wifi_warning_window
+    if wifi_warning_window and wifi_warning_window.winfo_exists():
+        try:
+            wifi_warning_window.destroy()
+        except Exception:
+            pass
+        wifi_warning_window = None
+
+
 # ================= 【主阻断逻辑】 =================
 
 def 阻断逻辑():
@@ -305,6 +428,12 @@ def 阻断逻辑():
         解锁截止单调 = 0.0
 
         while True:
+            # 0. WiFi 状态检测
+            if not 检查WiFi是否已连接():
+                显示WiFi断开警告()
+            else:
+                关闭WiFi断开警告()
+
             # 1. 检查共享内存指令
             cmd = 读共享内存()
             if cmd == "CMD:UNLOCK_90":
