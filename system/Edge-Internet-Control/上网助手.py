@@ -406,6 +406,141 @@ def 关闭WiFi断开警告():
         wifi_warning_window = None
 
 
+# ================= 【U 盘连接状态检测】 =================
+
+usb_warning_window = None
+usb_unlocked = False
+
+def 获取当前插入的U盘():
+    """
+    扫描 C-Z 盘符，找出当前插入的且类型为可移动磁盘 (DRIVE_REMOVABLE = 2) 且有实际介质可读的盘符列表。
+    """
+    u盘列表 = []
+    if sys.platform != 'win32':
+        return u盘列表
+    for letter in "CDEFGHIJKLMNOPQRSTUVWXYZ":
+        drive = f"{letter}:\\"
+        try:
+            dtype = ctypes.windll.kernel32.GetDriveTypeW(drive)
+            if dtype == 2:  # DRIVE_REMOVABLE = 2
+                # 检查该盘符是否真的有介质且可读，排除空读卡器和未插入介质的情况
+                free_bytes = ctypes.c_uint64()
+                total_bytes = ctypes.c_uint64()
+                total_free = ctypes.c_uint64()
+                res = ctypes.windll.kernel32.GetDiskFreeSpaceExW(
+                    drive,
+                    ctypes.byref(free_bytes),
+                    ctypes.byref(total_bytes),
+                    ctypes.byref(total_free)
+                )
+                if res != 0:
+                    u盘列表.append(drive)
+        except Exception:
+            pass
+    return u盘列表
+
+
+def 显示U盘锁定警告():
+    global usb_warning_window, usb_unlocked
+    if usb_warning_window and usb_warning_window.winfo_exists():
+        try:
+            usb_warning_window.attributes('-topmost', True)
+            usb_warning_window.focus_force()
+        except Exception:
+            pass
+        return
+        
+    def 创建窗口():
+        global usb_warning_window, usb_unlocked
+        try:
+            usb_warning_window = tk.Tk()
+            usb_warning_window.title("安全警告")
+            usb_warning_window.configure(bg='#1e1e1e')  # 暗黑背景
+            
+            # 最大化且置顶
+            usb_warning_window.state('zoomed')
+            usb_warning_window.attributes('-topmost', True)
+            
+            # 禁用关闭按钮
+            def on_closing():
+                pass
+            usb_warning_window.protocol("WM_DELETE_WINDOW", on_closing)
+            
+            # 防止最小化
+            def restore_window(event=None):
+                try:
+                    if usb_warning_window.state() == 'iconic':
+                        usb_warning_window.state('zoomed')
+                        usb_warning_window.attributes('-topmost', True)
+                except Exception:
+                    pass
+            usb_warning_window.bind("<Unmap>", lambda e: usb_warning_window.after(10, restore_window))
+            usb_warning_window.bind("<Map>", restore_window)
+            
+            # 居中面板
+            main_frame = tk.Frame(usb_warning_window, bg='#1e1e1e')
+            main_frame.place(relx=0.5, rely=0.5, anchor='center')
+            
+            label_title = tk.Label(
+                main_frame, 
+                text="⚠️ 检测到外部存储设备 (U 盘) 插入", 
+                font=("微软雅黑", 28, "bold"), 
+                fg="#ff4d4f",
+                bg='#1e1e1e',
+                pady=10
+            )
+            label_title.pack()
+            
+            label_desc = tk.Label(
+                main_frame, 
+                text="使用 U 盘需要输入解锁密码，或者请立即拔出 U 盘！", 
+                font=("微软雅黑", 18), 
+                fg="#ffffff",
+                bg='#1e1e1e',
+                pady=20,
+                wraplength=800,
+                justify='center'
+            )
+            label_desc.pack()
+            
+            # 密码输入框
+            密码框 = tk.Entry(main_frame, show="*", font=("微软雅黑", 14), width=25, justify='center')
+            密码框.pack(pady=10)
+            密码框.focus()
+            
+            def 校验密码(event=None):
+                global usb_unlocked
+                输入 = 密码框.get()
+                if 输入 == "BL233":
+                    usb_unlocked = True
+                    usb_warning_window.destroy()
+                    弹窗_3秒自动关闭("提示", "U盘已解锁使用")
+                else:
+                    弹窗提示_原生("密码错误", "密码错误！", 0x10)
+                    密码框.delete(0, tk.END)
+                    
+            密码框.bind("<Return>", 校验密码)
+            
+            按钮 = tk.Button(main_frame, text="确认解锁", font=("微软雅黑", 12), command=校验密码, width=12)
+            按钮.pack(pady=10)
+            
+            usb_warning_window.mainloop()
+        except Exception:
+            pass
+
+    threading.Thread(target=创建窗口, daemon=True).start()
+
+
+def 关闭U盘锁定警告():
+    global usb_warning_window
+    if usb_warning_window and usb_warning_window.winfo_exists():
+        try:
+            usb_warning_window.destroy()
+        except Exception:
+            pass
+        usb_warning_window = None
+
+
 # ================= 【主阻断逻辑】 =================
 
 def 阻断逻辑():
@@ -433,6 +568,15 @@ def 阻断逻辑():
                 显示WiFi断开警告()
             else:
                 关闭WiFi断开警告()
+
+            # 0.1 U 盘状态检测
+            u盘列表 = 获取当前插入的U盘()
+            if u盘列表:
+                if not usb_unlocked:
+                    显示U盘锁定警告()
+            else:
+                usb_unlocked = False
+                关闭U盘锁定警告()
 
             # 1. 检查共享内存指令
             cmd = 读共享内存()
