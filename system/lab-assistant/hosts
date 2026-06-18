@@ -1,0 +1,594 @@
+# Copyright (c) 1993-2009 Microsoft Corp.
+#
+# This is a sample HOSTS file used by Microsoft TCP/IP for Windows.
+#
+# This file contains the mappings of IP addresses to host names. Each
+# entry should be kept on an individual line. The IP address should
+# be placed in the first column followed by the corresponding host name.
+# The IP address and the host name should be separated by at least one
+# space.
+#
+# Additionally, comments (such as these) may be inserted on individual
+# lines or following the machine name denoted by a '#' symbol.
+#
+# For example:
+#
+#      102.54.94.97     rhino.acme.com          # source server
+#       38.25.63.10     x.acme.com              # x client host
+
+# localhost name resolution is handled within DNS itself.
+#	127.0.0.1       localhost
+#	::1             localhost
+
+# ==================================================================================
+# 课堂专注屏蔽列表 - 防止学生上课分心
+# 说明：使用 0.0.0.0 比 127.0.0.1 屏蔽更彻底，且不会产生连接延迟
+# 修改后请在管理员 CMD 运行: ipconfig /flushdns
+# 更新日期：2026-06-18
+# ==================================================================================
+
+
+# ==================================================================================
+# 【一】国内视频平台
+# ==================================================================================
+
+# --- Bilibili (哔哩哔哩) ---
+0.0.0.0  bilibili.com
+0.0.0.0  www.bilibili.com
+0.0.0.0  space.bilibili.com
+0.0.0.0  m.bilibili.com
+0.0.0.0  live.bilibili.com
+0.0.0.0  t.bilibili.com
+0.0.0.0  manga.bilibili.com
+0.0.0.0  search.bilibili.com
+0.0.0.0  api.bilibili.com
+0.0.0.0  passport.bilibili.com
+0.0.0.0  account.bilibili.com
+0.0.0.0  bangumi.bilibili.com
+0.0.0.0  game.bilibili.com
+0.0.0.0  biligame.com
+0.0.0.0  www.biligame.com
+
+# --- Tencent Video (腾讯视频) ---
+0.0.0.0  v.qq.com
+0.0.0.0  film.qq.com
+0.0.0.0  pvip.qq.com
+0.0.0.0  video.qq.com
+0.0.0.0  wetv.vip
+0.0.0.0  www.wetv.vip
+
+# --- iQIYI (爱奇艺) ---
+0.0.0.0  iqiyi.com
+0.0.0.0  www.iqiyi.com
+0.0.0.0  m.iqiyi.com
+0.0.0.0  live.iqiyi.com
+0.0.0.0  vip.iqiyi.com
+0.0.0.0  sports.iqiyi.com
+0.0.0.0  pps.tv
+0.0.0.0  www.pps.tv
+
+# --- Youku (优酷) ---
+0.0.0.0  youku.com
+0.0.0.0  www.youku.com
+0.0.0.0  m.youku.com
+0.0.0.0  live.youku.com
+0.0.0.0  v.youku.com
+
+# --- Mango TV (芒果TV) ---
+0.0.0.0  mgtv.com
+0.0.0.0  www.mgtv.com
+0.0.0.0  m.mgtv.com
+0.0.0.0  live.mgtv.com
+
+# --- Sohu Video (搜狐视频) ---
+0.0.0.0  tv.sohu.com
+0.0.0.0  my.tv.sohu.com
+0.0.0.0  film.sohu.com
+
+# --- LeTV (乐视视频) ---
+0.0.0.0  le.com
+0.0.0.0  www.le.com
+0.0.0.0  sports.le.com
+
+# --- Baidu Haokan (百度好看视频) ---
+0.0.0.0  haokan.baidu.com
+0.0.0.0  mbd.baidu.com
+
+# --- Xigua Video (西瓜视频) ---
+0.0.0.0  ixigua.com
+0.0.0.0  www.ixigua.com
+0.0.0.0  m.ixigua.com
+
+# --- Migu Video (咪咕视频) ---
+0.0.0.0  miguvideo.com
+0.0.0.0  www.miguvideo.com
+
+# --- CCTV / CNTV (央视网) ---
+0.0.0.0  cctv.com
+0.0.0.0  www.cctv.com
+0.0.0.0  tv.cctv.com
+0.0.0.0  m.cctv.com
+
+# --- PP Video (PP视频/PPTV) ---
+0.0.0.0  pptv.com
+0.0.0.0  www.pptv.com
+
+# --- Huya (虎牙直播) ---
+0.0.0.0  huya.com
+0.0.0.0  www.huya.com
+0.0.0.0  m.huya.com
+
+# --- Douyu (斗鱼直播) ---
+0.0.0.0  douyu.com
+0.0.0.0  www.douyu.com
+0.0.0.0  m.douyu.com
+
+# --- ACFUN ---
+0.0.0.0  acfun.cn
+0.0.0.0  www.acfun.cn
+0.0.0.0  m.acfun.cn
+0.0.0.0  live.acfun.cn
+
+
+# ==================================================================================
+# 【二】国外视频平台
+# ==================================================================================
+
+# --- YouTube ---
+0.0.0.0  youtube.com
+0.0.0.0  www.youtube.com
+0.0.0.0  m.youtube.com
+0.0.0.0  youtu.be
+0.0.0.0  music.youtube.com
+0.0.0.0  gaming.youtube.com
+0.0.0.0  studio.youtube.com
+0.0.0.0  youtubei.googleapis.com
+0.0.0.0  yt3.ggpht.com
+0.0.0.0  ytimg.com
+0.0.0.0  i.ytimg.com
+
+# --- Netflix ---
+0.0.0.0  netflix.com
+0.0.0.0  www.netflix.com
+0.0.0.0  m.netflix.com
+
+# --- Twitch ---
+0.0.0.0  twitch.tv
+0.0.0.0  www.twitch.tv
+0.0.0.0  m.twitch.tv
+0.0.0.0  player.twitch.tv
+0.0.0.0  clips.twitch.tv
+
+# --- Disney+ ---
+0.0.0.0  disneyplus.com
+0.0.0.0  www.disneyplus.com
+
+# --- Hulu ---
+0.0.0.0  hulu.com
+0.0.0.0  www.hulu.com
+
+# --- Amazon Prime Video ---
+0.0.0.0  primevideo.com
+0.0.0.0  www.primevideo.com
+
+# --- Vimeo ---
+0.0.0.0  vimeo.com
+0.0.0.0  www.vimeo.com
+0.0.0.0  player.vimeo.com
+
+# --- Dailymotion ---
+0.0.0.0  dailymotion.com
+0.0.0.0  www.dailymotion.com
+
+# --- Niconico (日本视频) ---
+0.0.0.0  nicovideo.jp
+0.0.0.0  www.nicovideo.jp
+0.0.0.0  nico.ms
+
+
+# ==================================================================================
+# 【三】国内短视频 & 社交媒体
+# ==================================================================================
+
+# --- Douyin (抖音) ---
+0.0.0.0  douyin.com
+0.0.0.0  www.douyin.com
+0.0.0.0  m.douyin.com
+0.0.0.0  live.douyin.com
+0.0.0.0  creator.douyin.com
+
+# --- Kuaishou (快手) ---
+0.0.0.0  kuaishou.com
+0.0.0.0  www.kuaishou.com
+0.0.0.0  m.kuaishou.com
+0.0.0.0  live.kuaishou.com
+0.0.0.0  gifshow.com
+
+# --- Weibo (微博) ---
+0.0.0.0  weibo.com
+0.0.0.0  www.weibo.com
+0.0.0.0  m.weibo.cn
+0.0.0.0  video.weibo.com
+0.0.0.0  photo.weibo.com
+0.0.0.0  s.weibo.com
+0.0.0.0  weibo.cn
+
+# --- WeChat (微信) ---
+0.0.0.0  weixin.qq.com
+0.0.0.0  channels.weixin.qq.com
+
+# --- Xiaohongshu (小红书) ---
+0.0.0.0  xiaohongshu.com
+0.0.0.0  www.xiaohongshu.com
+
+# --- Zhihu (知乎) ---
+0.0.0.0  zhihu.com
+0.0.0.0  www.zhihu.com
+0.0.0.0  m.zhihu.com
+0.0.0.0  zhuanlan.zhihu.com
+0.0.0.0  daily.zhihu.com
+
+# --- QQ Space (QQ空间) ---
+0.0.0.0  qzone.qq.com
+0.0.0.0  user.qzone.qq.com
+
+# --- Meituan (美团) ---
+0.0.0.0  meituan.com
+0.0.0.0  www.meituan.com
+
+# --- Pinduoduo (拼多多) ---
+0.0.0.0  pinduoduo.com
+0.0.0.0  www.pinduoduo.com
+0.0.0.0  mobile.yangkeduo.com
+
+# --- JD (京东) ---
+0.0.0.0  jd.com
+0.0.0.0  www.jd.com
+0.0.0.0  item.jd.com
+
+# --- Taobao / Tmall (淘宝/天猫) ---
+0.0.0.0  taobao.com
+0.0.0.0  www.taobao.com
+0.0.0.0  m.taobao.com
+0.0.0.0  tmall.com
+0.0.0.0  www.tmall.com
+
+
+# ==================================================================================
+# 【四】国外短视频 & 社交媒体
+# ==================================================================================
+
+# --- TikTok ---
+0.0.0.0  tiktok.com
+0.0.0.0  www.tiktok.com
+0.0.0.0  m.tiktok.com
+0.0.0.0  vm.tiktok.com
+0.0.0.0  live.tiktok.com
+
+# --- Instagram ---
+0.0.0.0  instagram.com
+0.0.0.0  www.instagram.com
+0.0.0.0  m.instagram.com
+
+# --- Twitter / X ---
+0.0.0.0  twitter.com
+0.0.0.0  www.twitter.com
+0.0.0.0  mobile.twitter.com
+0.0.0.0  x.com
+0.0.0.0  www.x.com
+
+# --- Facebook ---
+0.0.0.0  facebook.com
+0.0.0.0  www.facebook.com
+0.0.0.0  m.facebook.com
+0.0.0.0  web.facebook.com
+
+# --- Reddit ---
+0.0.0.0  reddit.com
+0.0.0.0  www.reddit.com
+0.0.0.0  old.reddit.com
+0.0.0.0  m.reddit.com
+
+# --- Snapchat ---
+0.0.0.0  snapchat.com
+0.0.0.0  www.snapchat.com
+
+# --- Pinterest ---
+0.0.0.0  pinterest.com
+0.0.0.0  www.pinterest.com
+0.0.0.0  pin.it
+
+
+# ==================================================================================
+# 【五】国内外新闻资讯（娱乐性/碎片化阅读）
+# ==================================================================================
+
+# --- Toutiao (今日头条) ---
+0.0.0.0  toutiao.com
+0.0.0.0  www.toutiao.com
+0.0.0.0  m.toutiao.com
+
+# --- Yidian Zixun (一点资讯) ---
+0.0.0.0  yidianzixun.com
+0.0.0.0  www.yidianzixun.com
+0.0.0.0  msn.yidianzixun.com
+
+# --- MSN (中文版) ---
+0.0.0.0  msn.cn
+0.0.0.0  www.msn.cn
+0.0.0.0  cn.msn.com
+
+# --- NetEase News (网易新闻) ---
+0.0.0.0  news.163.com
+0.0.0.0  ent.163.com
+0.0.0.0  sports.163.com
+0.0.0.0  money.163.com
+0.0.0.0  v.163.com
+
+# --- Sina News (新浪新闻) ---
+0.0.0.0  news.sina.com.cn
+0.0.0.0  ent.sina.com.cn
+0.0.0.0  sports.sina.com.cn
+0.0.0.0  finance.sina.com.cn
+
+# --- Sohu News (搜狐新闻) ---
+0.0.0.0  news.sohu.com
+0.0.0.0  ent.sohu.com
+0.0.0.0  sports.sohu.com
+
+# --- Ifeng (凤凰网) ---
+0.0.0.0  ifeng.com
+0.0.0.0  www.ifeng.com
+0.0.0.0  news.ifeng.com
+0.0.0.0  ent.ifeng.com
+
+# --- Huanqiu (环球网) ---
+0.0.0.0  huanqiu.com
+0.0.0.0  www.huanqiu.com
+
+# --- Guancha (观察者网) ---
+0.0.0.0  guancha.cn
+0.0.0.0  www.guancha.cn
+
+# --- Jiemian (界面新闻) ---
+0.0.0.0  jiemian.com
+0.0.0.0  www.jiemian.com
+
+# --- 36Kr ---
+0.0.0.0  36kr.com
+0.0.0.0  www.36kr.com
+
+# --- Buzzfeed ---
+0.0.0.0  buzzfeed.com
+0.0.0.0  www.buzzfeed.com
+
+# --- BuzzVideo ---
+0.0.0.0  buzzvideo.com
+0.0.0.0  www.buzzvideo.com
+
+
+# ==================================================================================
+# 【六】小游戏 & 在线游戏平台（国内）
+# ==================================================================================
+
+# --- 4399 小游戏 ---
+0.0.0.0  4399.com
+0.0.0.0  www.4399.com
+0.0.0.0  m.4399.com
+
+# --- 7k7k 小游戏 ---
+0.0.0.0  7k7k.com
+0.0.0.0  www.7k7k.com
+
+# --- 2345 小游戏 ---
+0.0.0.0  game.2345.com
+0.0.0.0  2345.com
+0.0.0.0  www.2345.com
+
+# --- 17173 游戏 ---
+0.0.0.0  17173.com
+0.0.0.0  www.17173.com
+
+# --- 3DM 游戏 ---
+0.0.0.0  3dmgame.com
+0.0.0.0  www.3dmgame.com
+
+# --- 360 游戏 ---
+0.0.0.0  360.cn
+0.0.0.0  www.360.cn
+0.0.0.0  game.360.cn
+0.0.0.0  wan.360.cn
+
+# --- Tencent Games (腾讯游戏) ---
+0.0.0.0  game.qq.com
+0.0.0.0  danji.qq.com
+0.0.0.0  ams.qq.com
+0.0.0.0  pvp.qq.com
+0.0.0.0  honor.qq.com
+
+# --- NetEase Games (网易游戏) ---
+0.0.0.0  game.163.com
+0.0.0.0  mc.163.com
+0.0.0.0  gameyw.163.com
+
+# --- Pigame ---
+0.0.0.0  pigame.cc
+0.0.0.0  cn.pigame.cc
+0.0.0.0  www.pigame.cc
+
+# --- 嗨皮游戏 ---
+0.0.0.0  hihihi.cn
+0.0.0.0  www.hihihi.cn
+
+
+# ==================================================================================
+# 【七】小游戏 & 在线游戏平台（国外）
+# ==================================================================================
+
+# --- Poki ---
+0.0.0.0  poki.com
+0.0.0.0  www.poki.com
+0.0.0.0  poki.cn
+0.0.0.0  poki.homes
+0.0.0.0  poki.us.com
+0.0.0.0  poki.co.com
+0.0.0.0  poki.us.org
+0.0.0.0  poki.ac
+0.0.0.0  about.poki.com
+
+# --- CrazyGames ---
+0.0.0.0  crazygames.com
+0.0.0.0  www.crazygames.com
+
+# --- Miniclip ---
+0.0.0.0  miniclip.com
+0.0.0.0  www.miniclip.com
+
+# --- Miniplay ---
+0.0.0.0  miniplay.com
+0.0.0.0  www.miniplay.com
+
+# --- SilverGames ---
+0.0.0.0  silvergames.com
+0.0.0.0  www.silvergames.com
+
+# --- GamesFreak ---
+0.0.0.0  gamesfreak.net
+0.0.0.0  www.gamesfreak.net
+
+# --- Kongregate ---
+0.0.0.0  kongregate.com
+0.0.0.0  www.kongregate.com
+
+# --- Armor Games ---
+0.0.0.0  armorgames.com
+0.0.0.0  www.armorgames.com
+
+# --- Newgrounds ---
+0.0.0.0  newgrounds.com
+0.0.0.0  www.newgrounds.com
+
+# --- Coolmath Games ---
+0.0.0.0  coolmathgames.com
+0.0.0.0  www.coolmathgames.com
+0.0.0.0  coolmath.com
+0.0.0.0  www.coolmath.com
+0.0.0.0  coolmath4kids.com
+
+# --- Addicting Games ---
+0.0.0.0  addictinggames.com
+0.0.0.0  www.addictinggames.com
+
+# --- GamePix ---
+0.0.0.0  gamepix.com
+0.0.0.0  www.gamepix.com
+
+# --- Y8 Games ---
+0.0.0.0  y8.com
+0.0.0.0  www.y8.com
+
+# --- Friv ---
+0.0.0.0  friv.com
+0.0.0.0  www.friv.com
+
+# --- HahaGames ---
+0.0.0.0  hahagames.com
+0.0.0.0  www.hahagames.com
+
+# --- Playhop ---
+0.0.0.0  playhop.com
+0.0.0.0  www.playhop.com
+
+# --- IOGame ---
+0.0.0.0  iogame.me
+0.0.0.0  www.iogame.me
+
+# --- DigDig.io ---
+0.0.0.0  digdig.io
+0.0.0.0  www.digdig.io
+0.0.0.0  digdig.net
+
+# --- Yikm (一刻游戏) ---
+0.0.0.0  yikm.net
+0.0.0.0  www.yikm.net
+
+# --- ZhanLian Games ---
+0.0.0.0  zhanlian.net
+0.0.0.0  www.zhanlian.net
+
+# --- GameFlare ---
+0.0.0.0  gameflare.com
+0.0.0.0  www.gameflare.com
+
+# --- Scratch (MIT 编程社区 - 可能分心) ---
+0.0.0.0  scratch.mit.edu
+
+
+# ==================================================================================
+# 【八】Minecraft / Eaglercraft 相关（课堂常见干扰）
+# ==================================================================================
+
+0.0.0.0  eaglercraft.com
+0.0.0.0  eaglercraft.ir
+0.0.0.0  eaglercraft.net
+0.0.0.0  eaglercraft.org
+0.0.0.0  eagler.cc
+0.0.0.0  play.mc.js.cool
+0.0.0.0  mc.js.cool
+0.0.0.0  js.cool
+0.0.0.0  play.mcjs.cc
+0.0.0.0  mcjs.cc
+0.0.0.0  mc.ax
+0.0.0.0  eagler.cc
+0.0.0.0  kone.pw
+0.0.0.0  eaglercraft.net.eu.org
+0.0.0.0  neocities.org
+0.0.0.0  takaiwebsite.neocities.org
+0.0.0.0  cloudflare.work
+0.0.0.0  pages.dev
+
+
+# ==================================================================================
+# 【九】其他常见干扰网站
+# ==================================================================================
+
+# --- Baidu Tieba (百度贴吧) ---
+0.0.0.0  tieba.baidu.com
+0.0.0.0  tb2.bdstatic.com
+
+# --- Hupu (虎扑社区) ---
+0.0.0.0  hupu.com
+0.0.0.0  www.hupu.com
+
+# --- NGA 论坛 ---
+0.0.0.0  nga.178.com
+0.0.0.0  bbs.nga.cn
+
+# --- Tucao (吐槽) / LOL Builder ---
+0.0.0.0  tucao.cc
+0.0.0.0  www.tucao.cc
+
+# --- Steam (游戏平台) ---
+0.0.0.0  store.steampowered.com
+0.0.0.0  steamcommunity.com
+0.0.0.0  steampowered.com
+
+# --- Epic Games ---
+0.0.0.0  epicgames.com
+0.0.0.0  www.epicgames.com
+0.0.0.0  store.epicgames.com
+
+# --- Roblox ---
+0.0.0.0  roblox.com
+0.0.0.0  www.roblox.com
+
+# --- Discord ---
+0.0.0.0  discord.com
+0.0.0.0  www.discord.com
+0.0.0.0  discordapp.com
+0.0.0.0  cdn.discordapp.com
+
+# --- Telegram ---
+0.0.0.0  telegram.org
+0.0.0.0  t.me
+0.0.0.0  web.telegram.org
