@@ -66,6 +66,19 @@ def get_wallpaper_source_path():
         base = _SCRIPT_DIR
     return os.path.join(base, WALLPAPER_FILENAME)
 
+if getattr(sys, 'frozen', False):
+    RESOURCE_DIR = sys._MEIPASS
+else:
+    RESOURCE_DIR = _SCRIPT_DIR
+
+def 设置窗口图标(window):
+    icon_path = os.path.join(RESOURCE_DIR, "system.ico")
+    if os.path.exists(icon_path):
+        try:
+            window.iconbitmap(icon_path)
+        except Exception:
+            pass
+
 
 def _deploy_wallpaper():
     """
@@ -508,6 +521,7 @@ def set_pip_mirror(use_mirror):
 class RestrictionsToolGUI:
     def __init__(self, root):
         self.root = root
+        设置窗口图标(self.root)
         self.root.title("系统权限控制中心")
         self.root.resizable(False, False)
 
@@ -889,6 +903,7 @@ class RestrictionsToolGUI:
 def main():
     if sys.platform != "win32":
         root = tk.Tk()
+        设置窗口图标(root)
         root.withdraw()
         messagebox.showerror("系统不支持", "本工具仅支持 Windows 操作系统。")
         sys.exit(1)
@@ -896,6 +911,7 @@ def main():
     if not is_admin():
         if "--elevated" in sys.argv:
             root = tk.Tk()
+            设置窗口图标(root)
             root.withdraw()
             messagebox.showerror("权限不足", "本工具需要管理员权限才能运行。\n请右键点击程序并选择“以管理员身份运行”。")
             sys.exit(1)
@@ -903,6 +919,7 @@ def main():
         return
 
     root = tk.Tk()
+    设置窗口图标(root)
     app = RestrictionsToolGUI(root)
     root.mainloop()
 
