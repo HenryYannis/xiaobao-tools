@@ -1,6 +1,8 @@
 import os
+import webbrowser
 import tkinter as tk
 from tkinter import ttk, messagebox
+
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 FOLDER_PATH = os.path.dirname(SCRIPT_DIR)
@@ -73,6 +75,36 @@ class FileCleanerApp:
         self._scan()
 
     def _build_ui(self):
+        # 作者信息 & 网站超链接
+        author_frame = tk.Frame(self.root)
+        author_frame.pack(fill=tk.X, padx=15, pady=(0, 4), side=tk.BOTTOM)
+
+        tk.Label(
+            author_frame,
+            text="作者：小宝科技站 (",
+            font=("微软雅黑", 8),
+            fg="gray"
+        ).pack(side=tk.LEFT)
+
+        link_lbl = tk.Label(
+            author_frame,
+            text="xbkjz.cn",
+            font=("微软雅黑", 8, "underline"),
+            fg="#0066CC",
+            cursor="hand2"
+        )
+        link_lbl.pack(side=tk.LEFT)
+        link_lbl.bind("<Button-1>", lambda e: webbrowser.open("https://xbkjz.cn"))
+        link_lbl.bind("<Enter>", lambda e: link_lbl.configure(fg="#0044AA"))
+        link_lbl.bind("<Leave>", lambda e: link_lbl.configure(fg="#0066CC"))
+
+        tk.Label(
+            author_frame,
+            text=")",
+            font=("微软雅黑", 8),
+            fg="gray"
+        ).pack(side=tk.LEFT)
+
         toolbar = ttk.Frame(self.root, padding=8)
         toolbar.pack(fill=tk.X)
 
