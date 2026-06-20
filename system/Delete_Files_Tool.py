@@ -19,12 +19,17 @@
 """
 
 import os
+import sys
 import webbrowser
 import tkinter as tk
 from tkinter import ttk, messagebox
 
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if getattr(sys, 'frozen', False):
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(sys.executable))
+else:
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 FOLDER_PATH = os.path.dirname(SCRIPT_DIR)
 EXCLUDED_FOLDERS = [
     os.path.join(FOLDER_PATH, '.verysync'),
