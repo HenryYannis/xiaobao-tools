@@ -66,6 +66,13 @@ class FileCleanerApp:
         self.root.geometry("850x600")
         self.root.minsize(700, 500)
 
+        # 优化全局 UI 样式与字体排版
+        self.style = ttk.Style()
+        self.style.configure(".", font=("微软雅黑", 9))
+        self.style.configure("Treeview", font=("微软雅黑", 9), rowheight=24)
+        self.style.configure("Treeview.Heading", font=("微软雅黑", 9, "bold"))
+        self.style.configure("TLabelframe.Label", font=("微软雅黑", 9, "bold"), foreground="#333333")
+
         self.current_files = []
         self.current_folders = []
         self.ext_map = {}
@@ -75,21 +82,29 @@ class FileCleanerApp:
         self._scan()
 
     def _build_ui(self):
-        # 作者信息 & 网站超链接
-        author_frame = tk.Frame(self.root)
-        author_frame.pack(fill=tk.X, padx=15, pady=(0, 4), side=tk.BOTTOM)
+        # 底部状态栏与作者信息栏（在最底端 pack 优先占位）
+        sep = ttk.Separator(self.root, orient=tk.HORIZONTAL)
+        sep.pack(side=tk.BOTTOM, fill=tk.X)
 
-        tk.Label(
+        footer = ttk.Frame(self.root, padding=(12, 4))
+        footer.pack(side=tk.BOTTOM, fill=tk.X)
+
+        self.status_label = ttk.Label(footer, text="就绪")
+        self.status_label.pack(side=tk.LEFT)
+
+        author_frame = ttk.Frame(footer)
+        author_frame.pack(side=tk.RIGHT)
+
+        ttk.Label(
             author_frame,
             text="作者：小宝科技站 (",
-            font=("微软雅黑", 8),
-            fg="gray"
+            foreground="gray"
         ).pack(side=tk.LEFT)
 
         link_lbl = tk.Label(
             author_frame,
             text="xbkjz.cn",
-            font=("微软雅黑", 8, "underline"),
+            font=("微软雅黑", 9, "underline"),
             fg="#0066CC",
             cursor="hand2"
         )
@@ -98,11 +113,10 @@ class FileCleanerApp:
         link_lbl.bind("<Enter>", lambda e: link_lbl.configure(fg="#0044AA"))
         link_lbl.bind("<Leave>", lambda e: link_lbl.configure(fg="#0066CC"))
 
-        tk.Label(
+        ttk.Label(
             author_frame,
             text=")",
-            font=("微软雅黑", 8),
-            fg="gray"
+            foreground="gray"
         ).pack(side=tk.LEFT)
 
         toolbar = ttk.Frame(self.root, padding=8)
@@ -115,13 +129,20 @@ class FileCleanerApp:
         ttk.Button(toolbar, text="全选", command=self._select_all).pack(side=tk.RIGHT, padx=4)
         ttk.Button(toolbar, text="反选", command=self._invert_selection).pack(side=tk.RIGHT, padx=4)
 
-        self.status_label = ttk.Label(toolbar, text="就绪")
-        self.status_label.pack(side=tk.RIGHT, padx=8)
-
         ext_frame = ttk.LabelFrame(self.root, text="文件类型", padding=6)
         ext_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(8, 0), pady=8)
 
-        self.ext_listbox = tk.Listbox(ext_frame, width=18, exportselection=False)
+        self.ext_listbox = tk.Listbox(
+            ext_frame, 
+            width=20, 
+            exportselection=False,
+            font=("微软雅黑", 9),
+            bd=1,
+            relief=tk.SOLID,
+            highlightthickness=0,
+            selectbackground="#0078D7",
+            selectforeground="white"
+        )
         self.ext_listbox.pack(fill=tk.Y, expand=True)
         self.ext_listbox.bind("<<ListboxSelect>>", self._on_ext_select)
 
