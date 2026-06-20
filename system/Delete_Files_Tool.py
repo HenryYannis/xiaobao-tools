@@ -1,3 +1,23 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+小宝工具箱 - 文件清理工具 (File Cleaner Tool)
+
+功能：
+- 扫描文件类型并进行分类统计
+- 扫描大文件（默认大于 2MB 的 .sb3 文件）
+- 扫描空文件夹
+- 支持全选、反选以及批量删除选中项目
+
+特点：
+- 界面直观：配备简洁易用的列表与分类面板，支持多选
+- 全局现代字体：全界面微软雅黑渲染，布局排版更加美观
+- 零依赖：仅使用 Python 标准库开发，开箱即用
+
+作者：小宝科技站 (xbkjz.cn)
+日期：2026
+"""
+
 import os
 import webbrowser
 import tkinter as tk

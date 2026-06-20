@@ -5,10 +5,14 @@
 功能：一键载入本地任意格式视频（MP4/MKV/AVI等），支持配置等时间步长（例如每 5 秒提取一张）全自动无损批量导出高清截图；
      同时提供预览滑块，支持手动单张截取精准画面帧。截图自动归档保存于专属目录下。
 受众：影视解说自媒体人、影视创作者、写电影剧透解析的内容博主、计算机视觉数据集采集人员。
+
+作者：小宝科技站 (xbkjz.cn)
+日期：2026
 """
 
 import os
 import threading
+import webbrowser
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
@@ -27,7 +31,7 @@ class VideoExtractorApp:
     def __init__(self, root):
         self.root = root
         self.root.title("批量视频截图提取器")
-        self.root.geometry("520x460")
+        self.root.geometry("520x495")
         self.root.resizable(False, False)
         
         self.video_path = ""
@@ -106,6 +110,39 @@ class VideoExtractorApp:
         self.single_grab_btn = tk.Button(btn_frame, text="📸 截取当前滑块帧", font=("Helvetica", 11, "bold"), bg="#2da44e", fg="white",
                                          relief="flat", activebackground="#2c974b", command=self.grab_single_frame)
         self.single_grab_btn.grid(row=0, column=1, padx=15, ipady=4, ipadx=10)
+
+        # 分割线与底栏
+        sep = ttk.Separator(self.root, orient=tk.HORIZONTAL)
+        sep.pack(side=tk.BOTTOM, fill=tk.X, pady=(5, 0))
+
+        author_frame = tk.Frame(self.root, pady=4)
+        author_frame.pack(side=tk.BOTTOM, fill=tk.X)
+
+        tk.Label(
+            author_frame,
+            text="作者：小宝科技站 (",
+            font=("微软雅黑", 8),
+            fg="gray"
+        ).pack(side=tk.LEFT, padx=(15, 0))
+
+        link_lbl = tk.Label(
+            author_frame,
+            text="xbkjz.cn",
+            font=("微软雅黑", 8, "underline"),
+            fg="#0066CC",
+            cursor="hand2"
+        )
+        link_lbl.pack(side=tk.LEFT)
+        link_lbl.bind("<Button-1>", lambda e: webbrowser.open("https://xbkjz.cn"))
+        link_lbl.bind("<Enter>", lambda e: link_lbl.configure(fg="#0044AA"))
+        link_lbl.bind("<Leave>", lambda e: link_lbl.configure(fg="#0066CC"))
+
+        tk.Label(
+            author_frame,
+            text=")",
+            font=("微软雅黑", 8),
+            fg="gray"
+        ).pack(side=tk.LEFT)
 
     def select_video(self):
         if self.is_processing:

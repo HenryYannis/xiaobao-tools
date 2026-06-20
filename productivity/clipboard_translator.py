@@ -4,12 +4,16 @@
 小宝工具箱 - 简易剪贴板历史翻译器 (Clipboard History & Quick Translator)
 功能：后台静默监听系统剪贴板，自动记录历史复制内容，提供一键翻译（中英互译，基于免 key 翻译 API）并一键写回剪贴板。
 受众：阅读外文文献的学生、处理跨国业务/英文报告的办公族、频繁复制粘贴的人员。
+
+作者：小宝科技站 (xbkjz.cn)
+日期：2026
 """
 
 import urllib.request
 import urllib.parse
 import json
 import threading
+import webbrowser
 import tkinter as tk
 from tkinter import messagebox
 import unicodedata
@@ -33,7 +37,7 @@ class ClipboardTranslatorApp:
 
         # 窗口居中
         self.root.update_idletasks()
-        w, h = 450, 450
+        w, h = 450, 480
         x = (root.winfo_screenwidth() - w) // 2
         y = (root.winfo_screenheight() - h) // 2
         root.geometry(f"{w}x{h}+{x}+{y}")
@@ -79,6 +83,39 @@ class ClipboardTranslatorApp:
         clear_btn = tk.Button(btn_frame, text="🗑 清空历史", font=("Helvetica", 10), bg="#f6f8fa", relief="groove",
                               command=self.clear_history)
         clear_btn.grid(row=0, column=2, padx=10, ipady=2, ipadx=5)
+
+        # 分割线与底栏
+        sep = ttk.Separator(self.root, orient=tk.HORIZONTAL)
+        sep.pack(side=tk.BOTTOM, fill=tk.X, pady=(5, 0))
+
+        author_frame = tk.Frame(self.root, pady=4)
+        author_frame.pack(side=tk.BOTTOM, fill=tk.X)
+
+        tk.Label(
+            author_frame,
+            text="作者：小宝科技站 (",
+            font=("微软雅黑", 8),
+            fg="gray"
+        ).pack(side=tk.LEFT, padx=(15, 0))
+
+        link_lbl = tk.Label(
+            author_frame,
+            text="xbkjz.cn",
+            font=("微软雅黑", 8, "underline"),
+            fg="#0066CC",
+            cursor="hand2"
+        )
+        link_lbl.pack(side=tk.LEFT)
+        link_lbl.bind("<Button-1>", lambda e: webbrowser.open("https://xbkjz.cn"))
+        link_lbl.bind("<Enter>", lambda e: link_lbl.configure(fg="#0044AA"))
+        link_lbl.bind("<Leave>", lambda e: link_lbl.configure(fg="#0066CC"))
+
+        tk.Label(
+            author_frame,
+            text=")",
+            font=("微软雅黑", 8),
+            fg="gray"
+        ).pack(side=tk.LEFT)
 
     def detect_language(self, text):
         """

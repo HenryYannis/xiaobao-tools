@@ -5,6 +5,9 @@
 功能：一键扫描指定目录下的所有 Python 脚本，使用 AST (抽象语法树) 提取其中的模块、类、函数的结构及对应的文档注释(Docstring)，
      并自动在本地生成一份精美的项目结构大纲 Markdown 文档。
 用途：方便开发者快速梳理项目，或将整洁的代码大纲提供给 AI (如 OpenAI Codex/ChatGPT) 进行高效的 Code Review 与测试用例设计。
+
+作者：小宝科技站 (xbkjz.cn)
+日期：2026
 """
 
 import os

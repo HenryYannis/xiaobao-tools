@@ -5,6 +5,9 @@
 功能：一键将电脑上的指定目录化身局域网文件共享中心，局域网内的任何手机、平板、电脑只需输入网页地址，
      即可免流量、极速下载电脑上的文件，甚至支持直接在手机浏览器中向电脑上传文件。
 受众：教育工作者、教师（一键分发课件）、日常跨平台（手机到电脑）临时传输大文件的办公人员。
+
+作者：小宝科技站 (xbkjz.cn)
+日期：2026
 """
 
 import os
@@ -12,6 +15,7 @@ import re
 import sys
 import socket
 import threading
+import webbrowser
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from http.server import SimpleHTTPRequestHandler
@@ -278,7 +282,7 @@ class LANShareApp:
 
         # 窗口居中
         self.root.update_idletasks()
-        w, h = 480, 500
+        w, h = 480, 535
         x = (root.winfo_screenwidth() - w) // 2
         y = (root.winfo_screenheight() - h) // 2
         root.geometry(f"{w}x{h}+{x}+{y}")
@@ -340,6 +344,40 @@ class LANShareApp:
         self.control_btn = tk.Button(self.root, text="启动共享服务", font=("Helvetica", 12, "bold"), bg="#2da44e", fg="white",
                                      relief="flat", activebackground="#2c974b", command=self.toggle_server)
         self.control_btn.pack(pady=15, ipadx=10, ipady=5)
+
+        # 分割线与底栏
+        from tkinter import ttk
+        sep = ttk.Separator(self.root, orient=tk.HORIZONTAL)
+        sep.pack(side=tk.BOTTOM, fill=tk.X, pady=(5, 0))
+
+        author_frame = tk.Frame(self.root, pady=4)
+        author_frame.pack(side=tk.BOTTOM, fill=tk.X)
+
+        tk.Label(
+            author_frame,
+            text="作者：小宝科技站 (",
+            font=("微软雅黑", 8),
+            fg="gray"
+        ).pack(side=tk.LEFT, padx=(15, 0))
+
+        link_lbl = tk.Label(
+            author_frame,
+            text="xbkjz.cn",
+            font=("微软雅黑", 8, "underline"),
+            fg="#0066CC",
+            cursor="hand2"
+        )
+        link_lbl.pack(side=tk.LEFT)
+        link_lbl.bind("<Button-1>", lambda e: webbrowser.open("https://xbkjz.cn"))
+        link_lbl.bind("<Enter>", lambda e: link_lbl.configure(fg="#0044AA"))
+        link_lbl.bind("<Leave>", lambda e: link_lbl.configure(fg="#0066CC"))
+
+        tk.Label(
+            author_frame,
+            text=")",
+            font=("微软雅黑", 8),
+            fg="gray"
+        ).pack(side=tk.LEFT)
 
     def select_directory(self):
         if self.is_running:
