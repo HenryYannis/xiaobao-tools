@@ -16,7 +16,7 @@
 - 需要安装 pygame 库：pip install pygame
 - 默认使用 SimHei 字体，如不存在会使用系统默认字体
 
-作者：小宝科技帝国
+作者：小宝科技站 (xbkjz.cn)
 日期：2024
 """
 

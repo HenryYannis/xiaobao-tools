@@ -17,7 +17,7 @@
 - 需要安装 mediapipe：pip install mediapipe
 - 需要摄像头设备
 
-作者：小宝科技帝国
+作者：小宝科技站 (xbkjz.cn)
 日期：2024
 """
 

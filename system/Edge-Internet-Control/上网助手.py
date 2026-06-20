@@ -10,7 +10,7 @@
 - 仅支持 Windows 系统（在 macOS 下运行优雅退出）
 - 启动即在代码最前端隐藏控制台黑窗口，不使用 pyinstaller --noconsole，避免杀软误报
 
-作者：小宝科技站(xbkjz.cn)
+作者：小宝科技站 (xbkjz.cn)
 日期：2024
 """
 

@@ -10,7 +10,7 @@ Excel批量处理工具 (Excel Batch Processor)
 - 数据筛选和过滤
 - 导出处理结果
 
-作者：小宝科技帝国
+作者：小宝科技站 (xbkjz.cn)
 日期：2024
 """
 

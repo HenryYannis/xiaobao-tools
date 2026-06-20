@@ -19,11 +19,11 @@ VSVersionInfo(
             [
             StringTable(
                 u'000004b0',
-                [StringStruct(u'CompanyName', u'小宝科技帝国'),
+                [StringStruct(u'CompanyName', u'小宝科技站 (xbkjz.cn)'),
                 StringStruct(u'FileDescription', u'单词对战'),
                 StringStruct(u'FileVersion', u'1.2.1.3'),
                 StringStruct(u'InternalName', u'NetCtrl'),
-                StringStruct(u'LegalCopyright', u'© 2025 小宝科技帝国'),
+                StringStruct(u'LegalCopyright', u'© 2025 小宝科技站 (xbkjz.cn)'),
                 StringStruct(u'OriginalFilename', u'贝乐Ai助手.exe'),
                 StringStruct(u'ProductName', u'贝乐Ai助手'),
                 StringStruct(u'ProductVersion', u'1.2.1.3')])

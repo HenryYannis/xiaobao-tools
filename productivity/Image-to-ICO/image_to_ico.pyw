@@ -17,7 +17,7 @@
 - 需要安装 Pillow：pip install Pillow
 - 输出为 .ico 格式文件
 
-作者：小宝科技帝国
+作者：小宝科技站 (xbkjz.cn)
 日期：2024
 """
 

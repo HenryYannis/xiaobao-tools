@@ -6,7 +6,7 @@ readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.8"
 authors = [
-    {name = "小宝科技帝国"}
+    {name = "小宝科技站 (xbkjz.cn)"}
 ]
 keywords = ["windows", "tools", "utility", "tkinter", "gui"]
 classifiers = [

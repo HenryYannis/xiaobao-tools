@@ -17,7 +17,7 @@
 - 实时同步：启动时自动读取注册表，真实反映系统当前状态
 - 智能交互：修改壁纸或图标后支持一键/自动重启资源管理器
 
-作者：程小宝
+作者：小宝科技站 (xbkjz.cn)
 日期：2026
 """
 
@@ -521,7 +521,7 @@ class RestrictionsToolGUI:
 
         tk.Label(
             author_frame,
-            text="作者：程小宝　",
+            text="作者：小宝科技站 (xbkjz.cn)　",
             font=("微软雅黑", 8),
             fg="gray"
         ).pack(side=tk.LEFT)

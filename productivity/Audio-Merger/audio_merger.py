@@ -17,7 +17,7 @@
 - 需要 ffmpeg 支持（可将 ffmpeg.exe 放在脚本同目录）
 - Windows 系统下会自动隐藏 subprocess 窗口
 
-作者：小宝科技帝国
+作者：小宝科技站 (xbkjz.cn)
 日期：2024
 """
 
