@@ -24,6 +24,7 @@
 import os
 import sys
 import ctypes
+import configparser
 import shutil
 import subprocess
 import webbrowser
@@ -38,9 +39,16 @@ from winreg import (
 # --- Paths ---
 # 系统 Hosts 文件路径
 SYSTEM_HOSTS_PATH = r"C:\Windows\System32\drivers\etc\hosts"
-# 本工具自带的 Hosts 屏蔽规则文件（与本脚本同目录）
+
+# 获取运行目录与资源目录（开发模式取脚本目录，PyInstaller 打包模式下资源从 _MEIPASS 提取）
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__))
-LOCAL_HOSTS_PATH = os.path.join(_SCRIPT_DIR, "hosts")
+if getattr(sys, 'frozen', False):
+    RESOURCE_DIR = sys._MEIPASS
+else:
+    RESOURCE_DIR = _SCRIPT_DIR
+
+# 本工具自带的 Hosts 屏蔽规则文件
+LOCAL_HOSTS_PATH = os.path.join(RESOURCE_DIR, "hosts")
 # Hosts 注入块标记
 _HOSTS_BLOCK_BEGIN = "# ===== XIAOBAO-TOOLS HOSTS BEGIN ====="
 _HOSTS_BLOCK_END   = "# ===== XIAOBAO-TOOLS HOSTS END ====="
@@ -60,16 +68,7 @@ _WALLPAPER_DEPLOY_PATH = os.path.join(_WALLPAPER_DEPLOY_DIR, WALLPAPER_FILENAME)
 # --- Wallpaper & Lock Screen Helper Functions ---
 def get_wallpaper_source_path():
     """获取壁纸源文件路径（开发模式取脚本目录，PyInstaller 取 _MEIPASS）"""
-    if getattr(sys, 'frozen', False):
-        base = sys._MEIPASS
-    else:
-        base = _SCRIPT_DIR
-    return os.path.join(base, WALLPAPER_FILENAME)
-
-if getattr(sys, 'frozen', False):
-    RESOURCE_DIR = sys._MEIPASS
-else:
-    RESOURCE_DIR = _SCRIPT_DIR
+    return os.path.join(RESOURCE_DIR, WALLPAPER_FILENAME)
 
 def 设置窗口图标(window):
     icon_path = os.path.join(RESOURCE_DIR, "system.ico")
@@ -471,50 +470,94 @@ def remove_hosts():
 
 
 # --- pip Mirror Functions ---
-def _run_pip_config(args):
-    """运行 pip config 命令，返回 (returncode, stdout, stderr)"""
-    try:
-        result = subprocess.run(
-            [sys.executable, "-m", "pip", "config"] + args,
-            capture_output=True,
-            text=True,
-            creationflags=subprocess.CREATE_NO_WINDOW
-        )
-        return result.returncode, result.stdout.strip(), result.stderr.strip()
-    except Exception as e:
-        return -1, "", str(e)
+def get_pip_config_file_path():
+    """获取用户级别的 pip.ini 配置文件路径"""
+    appdata = os.environ.get("APPDATA")
+    if not appdata:
+        userprofile = os.environ.get("USERPROFILE")
+        if userprofile:
+            appdata = os.path.join(userprofile, "AppData", "Roaming")
+        else:
+            return None
+    return os.path.join(appdata, "pip", "pip.ini")
 
 
 def get_pip_mirror_status():
     """
-    获取当前 pip 全局 index-url 配置。
+    通过解析本地配置文件获取当前 pip 全局 index-url 配置。
     返回 (is_mirror_set: bool, current_url: str)
     """
-    code, out, err = _run_pip_config(["get", "global.index-url"])
-    if code == 0 and out:
-        current = out.strip()
+    # 按照优先级由低到高排列，后者覆盖前者
+    paths = []
+    
+    # 1. 全局配置
+    program_data = os.environ.get("PROGRAMDATA")
+    if program_data:
+        paths.append(os.path.join(program_data, "pip", "pip.ini"))
+    
+    # 2. 用户遗留路径配置
+    user_profile = os.environ.get("USERPROFILE")
+    if user_profile:
+        paths.append(os.path.join(user_profile, "pip", "pip.ini"))
+        
+    # 3. 标准用户配置
+    app_data = os.environ.get("APPDATA")
+    if app_data:
+        paths.append(os.path.join(app_data, "pip", "pip.ini"))
+        
+    current_url = ""
+    for path in paths:
+        if os.path.exists(path):
+            try:
+                config = configparser.ConfigParser()
+                config.read(path, encoding="utf-8")
+                if "global" in config and "index-url" in config["global"]:
+                    current_url = config["global"]["index-url"]
+            except Exception as e:
+                print(f"[PipConfigReadError] 无法读取 {path}: {e}")
+                
+    if current_url:
+        current_url = current_url.strip()
         is_mirror = (
-            "tuna" in current or "aliyun" in current
-            or "douban" in current or "163" in current
-            or "tencent" in current or "huaweicloud" in current
+            "tuna" in current_url or "aliyun" in current_url
+            or "douban" in current_url or "163" in current_url
+            or "tencent" in current_url or "huaweicloud" in current_url
         )
-        return is_mirror, current
+        return is_mirror, current_url
     return False, ""
 
 
 def set_pip_mirror(use_mirror):
-    """设置或取消 pip 国内镜像，返回 (success, message)"""
-    if use_mirror:
-        code, out, err = _run_pip_config(["set", "global.index-url", PYPI_MIRROR_URL])
-        if code == 0:
-            return True, f"pip 镜像已设置为清华 TUNA 源：{PYPI_MIRROR_URL}"
-        return False, f"设置失败：{err or out}"
-    else:
-        code, out, err = _run_pip_config(["unset", "global.index-url"])
-        if code == 0:
-            return True, "pip 镜像已恢复为官方默认源。"
-        # pip config unset 对不存在的键也可能返回非0，统一视为成功
-        return True, "pip 镜像已恢复为官方默认源（原本未配置）。"
+    """通过直接读写 pip.ini 文件设置或取消 pip 国内镜像，返回 (success, message)"""
+    path = get_pip_config_file_path()
+    if not path:
+        return False, "未能定位 pip 配置文件路径（APPDATA 环境变量不存在）。"
+        
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        config = configparser.ConfigParser()
+        if os.path.exists(path):
+            config.read(path, encoding="utf-8")
+            
+        if "global" not in config:
+            config["global"] = {}
+            
+        if use_mirror:
+            config["global"]["index-url"] = PYPI_MIRROR_URL
+            msg = f"pip 镜像已设置为清华 TUNA 源：{PYPI_MIRROR_URL}"
+        else:
+            if "index-url" in config["global"]:
+                del config["global"]["index-url"]
+            # 如果 [global] 节点下没有其他配置，将其删除以保持文件整洁
+            if not config["global"]:
+                del config["global"]
+            msg = "pip 镜像已恢复为官方默认源。"
+            
+        with open(path, "w", encoding="utf-8") as f:
+            config.write(f)
+        return True, msg
+    except Exception as e:
+        return False, f"写入 pip 配置文件失败：{e}"
 
 
 # --- Classic GUI Implementation ---
