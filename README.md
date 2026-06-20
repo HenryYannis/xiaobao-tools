@@ -8,42 +8,40 @@
 [![Codex Enabled](https://img.shields.io/badge/OpenAI%20Codex-Enabled-green.svg)](https://openai.com/form/codex-for-oss/)
 [![Build Status](https://github.com/HenryYannis/xiaobao-tools/actions/workflows/lint.yml/badge.svg)](https://github.com/HenryYannis/xiaobao-tools/actions)
 
-**小宝工具箱 (xiaobao-tools)** 是一款面向独立开发者、系统管理员和日常办公人员的开源 Python 脚本与系统配置工具箱。项目旨在提供开箱即用、轻量化且高效率的自动化方案，包含系统环境优化、局域网交互游戏、手势识别、多媒体合并以及日常趣味工具等。
+**小宝工具箱 (xiaobao-tools)** 是一款面向独立开发者、系统管理员和日常办公人员的开源 Python 脚本与系统配置工具箱。项目旨在提供开箱即用、轻量化且高效率的自动化方案，包含系统环境优化、办公自动化、多媒体处理以及网络管理工具等。
 
 ---
 
 ## 🌟 项目特色
 
 1. **零门槛，开箱即用**：绝大多数工具为单一 `.py` 文件，无复杂配置，极速双击或命令行启动。
-2. **场景丰富，解决刚需**：涵盖日常办公、局域网娱乐联机、人机交互体验、多媒体处理、系统底层优化等多维应用场景。
+2. **场景丰富，解决刚需**：涵盖日常办公、网络管理、多媒体处理、系统底层优化等多维应用场景。
 3. **高规范与自动化**：集成了 GitHub Actions 自动化检查流，遵循 PEP 8 代码规范，并规划了完善的 **OpenAI Codex AI 辅助工作流**。
 
 ---
 
 ## 🎯 用户群体与核心解决需求对照 (Target Audiences & Scenarios Matrix)
 
-本项目不仅面向软件开发者，更致力于通过轻量级的自动化方案，服务于日常生活中各种不同背景、有不同特定需求的用户群体。以下是本项目核心工具所覆盖的六大典型用户与解决场景：
+本项目不仅面向软件开发者，更致力于通过轻量级的自动化方案，服务于日常生活中各种不同背景、有不同特定需求的用户群体。以下是本项目核心工具所覆盖的五大典型用户与解决场景：
 
 | 🎯 目标用户群体 | 💡 核心解决需求 (痛点) | 🛠️ 推荐小工具 |
 | :--- | :--- | :--- |
-| 🧑‍🏫 **教育工作者与机房管理员** | 想要在少儿编程课或公共机房中，限制用户随意下载、乱改壁纸，或移除 Windows 锁屏悬浮小广告；禁用浏览器离线游戏；跨端极速分发课件。 | [系统限制控制中心](./system/System-Restrictions-Tool), [Edge-禁止下载](./system/Edge-Disable-Downloads), [禁止-修改壁纸](./system/Disable-Wallpaper-Change), [移除-了解此图片](./system/Remove-Spotlight-Info), [工具-局域网极速文件共享器](./network/lan_file_share.py) |
-| 🎬 **新媒体创作者与设计师** | 在本地快速进行多段语音拼接录音，或将图片转为高保真 ICO 图标；等时间步长批量无损截取视频画面帧。 | [工具-图片转图标](./productivity/Image-to-ICO), [工具-音频合并](./productivity/Audio-Merger), [工具-批量视频截图提取器](./vision/video_frame_extractor.py) |
-| 🧑‍🎓 **外语学习者与青少年** | 希望和身边的同学在局域网内，通过趣味单词联机对战，在互动娱乐中加深英语单词记忆。 | [局域网-单词对战](./network/LAN-Word-Battle) |
+| 🧑‍🏫 **教育工作者与机房管理员** | 想要在公共机房中限制用户随意下载、乱改壁纸，或移除 Windows 锁屏悬浮小广告；禁用浏览器离线游戏；跨端极速分发课件。 | [系统限制控制中心](./system/System-Restrictions-Tool), [Edge-禁止下载](./system/Edge-Disable-Downloads), [禁止-修改壁纸](./system/Disable-Wallpaper-Change), [移除-了解此图片](./system/Remove-Spotlight-Info), [工具-局域网极速文件共享器](./network/lan_file_share.py) |
+| 🎬 **新媒体创作者与设计师** | 在本地快速进行多段语音拼接录音，或将图片转为高保真 ICO 图标；等时间步长批量无损截取视频画面帧、屏幕截图与图片压缩。 | [工具-图片转图标](./productivity/Image-to-ICO), [工具-音频合并](./productivity/Audio-Merger), [工具-批量视频截图提取器](./productivity/video_frame_extractor.py), [图片批量压缩](./productivity/image_compressor.py), [屏幕截图](./productivity/screen_capture.py) |
+| 🧑‍🎓 **外语学习者与青少年** | 希望在局域网内与同学联机记忆英语单词并进行自我检测，同步提高词汇量。 | [工具-局域网单词联机学习器](./productivity/LAN-Word-Learner) |
 | 🧑‍💻 **独立开发者与 AI 狂热者** | 想要在本地免代理搭建局域网 AI 共享网关；或者一键提取项目所有脚本大纲，供大模型精准进行 Code Review。 | [局域网-Ai对话](./network/LAN-AI-Chat), [工具-代码结构大纲生成器.py](./productivity/code_outline_generator.py) |
-| 💼 **普通办公族与效率达人** | 频繁需要随机生成高强度账户临时密码，或者是桌面挂置多功能时钟、精确倒计时；自动记录并一键极速翻译剪贴板文本。 | [临时密码.py](./productivity/temp_password.py), [全时钟.py](./games_and_fun/dashboard_clock.py), [数字倒计时.py](./productivity/countdown.py), [工具-简易剪贴板历史翻译器](./productivity/clipboard_translator.py) |
-| 🤖 **极客爱好者与算法探索者** | 想要探秘人手 21 个骨骼点识别底座，或者体验酷炫的绿雨代码雨屏保、纯画笔绘制 3D 玫瑰艺术动画。 | [手势识别.py](./vision/gesture_recognizer.py), [手部跟踪.py](./vision/hand_tracking.py), [黑客特效.py](./games_and_fun/hacker_matrix.py) |
+| 💼 **普通办公族与效率达人** | 频繁需要随机生成高强度账户临时密码，或者是精确倒计时；自动记录并一键极速翻译剪贴板文本。 | [临时密码.py](./productivity/temp_password.py), [数字倒计时.py](./productivity/countdown.py), [工具-简易剪贴板历史翻译器](./productivity/clipboard_translator.py) |
 
 ---
 
 ## 📂 工具矩阵目录
 
-为了让你方便地检索，我们将所有工具划分为五大核心方向：
+为了让你方便地检索，我们将所有工具划分为三大核心方向：
 
 ### 1. 🛜 局域网与网络联机 (Network & LAN Utilities)
 | 工具名称/文件夹 | 英文标识 | 核心功能简介 |
 | :--- | :--- | :--- |
 | [局域网-Ai对话](./network/LAN-AI-Chat) | `LAN-AI-Chat` | 本地局域网内提供多端 AI 对话的前后端交互工具，实现局域网设备免梯免配置共享 AI 能力。 |
-| [局域网-单词对战](./network/LAN-Word-Battle) | `LAN-Word-Battle` | 局域网内与好友进行英语单词记忆和对战的多人联机小游戏，兼顾趣味与学习。 |
 | [工具-局域网极速文件共享器](./network/lan_file_share.py) | `lan_file_share` | 本地目录一键变身局域网文件共享中心与免流量极速跨端上传分发服务。 |
 | [端口扫描工具.py](./network/port_scanner.py) | `port_scanner` | 扫描指定IP地址的开放端口，支持多线程扫描和常见服务识别。 |
 | [网速测试工具.py](./network/speed_test.py) | `speed_test` | 测试网络下载/上传速度、延迟和丢包率的网速测试工具。 |
@@ -71,25 +69,10 @@
 | [进度条.py](./productivity/progress_bar.py) | `progress_bar.py` | 提供给终端和命令行开发者使用的优雅、动感命令行进度条输出模块。 |
 | [批量文件重命名工具.py](./productivity/batch_file_renamer.py) | `batch_file_renamer` | 支持多种重命名模式（前缀/后缀、替换、序号、日期、正则）的批量文件重命名工具。 |
 | [Excel批量处理工具.py](./productivity/excel_batch_processor.py) | `excel_batch_processor` | 批量读取、合并、筛选、统计多个Excel文件的办公效率工具。 |
-
-### 4. 👁 人机交互与视觉算法 (Interaction & Vision Algorithms)
-| 工具名称/脚本 | 英文标识 | 核心功能简介 |
-| :--- | :--- | :--- |
-| [手势识别.py](./vision/gesture_recognizer.py) | `gesture_recognizer.py` | 基于 OpenCV 和 MediaPipe 框架，识别复杂手势并触发特定 Windows 系统快捷操作的演示程序。 |
-| [手部跟踪.py](./vision/hand_tracking.py) | `hand_tracking.py` | 快速在摄像头视频流中定位手部 21 个核心关键点，并实时输出三维坐标的基础框架。 |
-| [工具-批量视频截图提取器.py](./vision/video_frame_extractor.py) | `video_frame_extractor` | 提供视频载入、滑块精准选帧截图，或配置时间步长全自动无损批量截图导出。 |
-| [图片批量压缩工具.py](./vision/image_compressor.py) | `image_compressor` | 批量压缩图片，支持自定义压缩质量、调整尺寸和多种输出格式。 |
-| [屏幕截图工具.py](./vision/screen_capture.py) | `screen_capture` | 支持全屏、区域、窗口、延时截图的屏幕截图工具。 |
-
-### 5. 🎮 趣味娱乐与科普教育 (Games & Interactive Edutainment)
-| 工具名称/脚本 | 英文标识 | 核心功能简介 |
-| :--- | :--- | :--- |
-| [井字棋.py](./games_and_fun/tic_tac_toe.py) | `tic_tac_toe.py` | 支持双人对战的经典 GUI（基于 Tkinter）井字棋交互游戏。 |
-| [时钟.py](./games_and_fun/clock.py) | `clock.py` | 界面极简精致的桌面数字电子时钟，便于工作区挂置。 |
-| [全时钟.py](./games_and_fun/dashboard_clock.py) | `dashboard_clock.py` | 交互功能丰富的仪表盘式全时钟，提供多时区、倒计时、闹钟与状态记录看板。 |
-| [黑客特效.py](./games_and_fun/hacker_matrix.py) | `hacker_matrix.py` | 基于 Pygame 的经典《黑客帝国》数字雨特效壁纸与屏幕保护运行脚本。 |
-| [玫瑰花程序.py](./games_and_fun/turtle_rose.py) | `turtle_rose.py` | 使用 Python Turtle 画笔绘制的三维立体玫瑰花动画程序，具有极高的几何拟真度。 |
-| [破译程序.py](./games_and_fun/cipher_decrypter.py) | `cipher_decrypter.py` | 演示字符置换加密与暴力破解过程的密码学教育科普工具，带你初识密码破译。 |
+| [工具-局域网单词联机学习器](./productivity/LAN-Word-Learner) | `LAN-Word-Learner` | 局域网内与同学进行英语单词联机测试与同步记忆的实用学习工具，支持多端数据交互。 |
+| [工具-批量视频截图提取器.py](./productivity/video_frame_extractor.py) | `video_frame_extractor` | 提供视频载入、滑块精准选帧截图，或配置时间步长全自动无损批量截图导出。 |
+| [图片批量压缩工具.py](./productivity/image_compressor.py) | `image_compressor` | 批量压缩图片，支持自定义压缩质量、调整尺寸和多种输出格式。 |
+| [屏幕截图工具.py](./productivity/screen_capture.py) | `screen_capture` | 支持全屏、区域、窗口、延时截图的屏幕截图工具。 |
 
 ---
 
@@ -118,7 +101,7 @@ cd xiaobao-tools
 ```
 
 ### 2. 安装依赖
-大部分独立小脚本无外部依赖。如果运行涉及到视觉算法或游戏特效（如 `gesture_recognizer.py`、`hacker_matrix.py` 等），请一键安装相关依赖：
+大部分独立小脚本无外部依赖。如果运行涉及到多媒体或系统管理工具，请一键安装相关依赖：
 ```bash
 pip install -r requirements.txt
 ```
@@ -127,14 +110,14 @@ pip install -r requirements.txt
 ### 3. 运行示例
 直接在终端或双击运行你感兴趣的工具：
 ```bash
-python temp_password.py
+python productivity/temp_password.py
 ```
 
 ---
 
 ## 🤝 参与贡献
 
-如果你想分享你日常编写的趣味 Python 小工具，非常欢迎提交 Pull Request！
+如果你想分享你日常编写的实用 Python 小工具，非常欢迎提交 Pull Request！
 具体步骤和代码格式要求请参考 [贡献指南 (CONTRIBUTING.md)](./CONTRIBUTING.md)。
 
 ---

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-小宝工具箱 - 局域网单词对战 (LAN Word Battle)
+小宝工具箱 - 局域网单词联机学习器 (LAN Word Learner)
 
 功能：
-- 局域网内多人英语单词对战游戏
+- 局域网内多人英语单词联机学习与测试工具
 - 支持服务端和客户端模式
-- 趣味学习英语单词
+- 趣味测试与记忆英语单词
 
 使用方法：
 - 服务端：直接运行，自动获取本机IP
@@ -68,7 +68,7 @@ WORDS = load_words()
 class QuizGameApp:
     def __init__(self, master):
         self.master = master
-        master.title("单词对战")
+        master.title("局域网单词联机学习器")
 
         # Game State Variables
         self.role = None
@@ -93,11 +93,11 @@ class QuizGameApp:
         self.role_frame = tk.Frame(master, padx=20, pady=20)
         self.role_frame.pack()
 
-        tk.Label(self.role_frame, text="欢迎来到单词对战！", font=('Arial', 16, 'bold')).pack(pady=10)
-        tk.Label(self.role_frame, text="请选择游戏角色：", font=('Arial', 14)).pack(pady=10)
+        tk.Label(self.role_frame, text="欢迎使用局域网单词学习器！", font=('Arial', 16, 'bold')).pack(pady=10)
+        tk.Label(self.role_frame, text="请选择角色模式：", font=('Arial', 14)).pack(pady=10)
         
-        tk.Button(self.role_frame, text="我是房主", command=self.setup_host, width=20, height=2).pack(pady=8)
-        tk.Button(self.role_frame, text="加入房间", command=self.show_join_dialog, width=20, height=2).pack(pady=8)
+        tk.Button(self.role_frame, text="我是服务端 (出题/计时)", command=self.setup_host, width=25, height=2).pack(pady=8)
+        tk.Button(self.role_frame, text="我是客户端 (连接参与)", command=self.show_join_dialog, width=25, height=2).pack(pady=8)
         
         # 初始化时居中
         self.center_window(self.master)
@@ -112,7 +112,7 @@ class QuizGameApp:
         win.geometry(f'+{x}+{y}')
 
     def update_scoreboard(self):
-        score_text = f"我的得分: {self.local_score} | 对手得分: {self.opponent_score}"
+        score_text = f"我的得分: {self.local_score} | 对方得分: {self.opponent_score}"
         self.score_label.config(text=score_text)
         
     def log(self, sender, message):
@@ -132,22 +132,22 @@ class QuizGameApp:
             self.setup_game_gui() # 内部已含 center_window
             
             self.start_host_thread()
-            self.status_label.config(text=f"房主启动。IP: {socket.gethostbyname(socket.gethostname())}\n等待对手...")
+            self.status_label.config(text=f"服务端已启动。IP: {socket.gethostbyname(socket.gethostname())}\n等待另一端连接...")
         except Exception as e:
-            messagebox.showerror("错误", f"房主启动失败: {e}")
+            messagebox.showerror("错误", f"服务端启动失败: {e}")
 
     def show_join_dialog(self):
         self.join_dialog = tk.Toplevel(self.master)
-        self.join_dialog.title("加入游戏")
+        self.join_dialog.title("连接服务端")
         self.center_window(self.join_dialog)
         self.join_dialog.transient(self.master)
         self.join_dialog.grab_set()
 
-        tk.Label(self.join_dialog, text="请输入对方电脑名或IP地址：").pack(padx=20, pady=10)
+        tk.Label(self.join_dialog, text="请输入服务端电脑名或IP地址：").pack(padx=20, pady=10)
         self.host_entry = tk.Entry(self.join_dialog, width=30)
         self.host_entry.insert(0, HOST_IP)
         self.host_entry.pack(padx=20, pady=5)
-        tk.Button(self.join_dialog, text="加入", command=self.setup_guest).pack(pady=10)
+        tk.Button(self.join_dialog, text="连接", command=self.setup_guest).pack(pady=10)
 
     def setup_guest(self):
         host_name = self.host_entry.get().strip()
@@ -167,20 +167,20 @@ class QuizGameApp:
         self.setup_game_gui()
         
         self.start_guest_thread()
-        self.status_label.config(text=f"尝试连接 {host_name}...")
+        self.status_label.config(text=f"正在连接服务端 {host_name}...")
         self.socket.sendto(b'PING', self.opponent_addr)
 
     def setup_game_gui(self):
         self.game_frame = tk.Frame(self.master, padx=20, pady=20)
         self.game_frame.pack(expand=True, anchor='center') 
         
-        self.timer_label = tk.Label(self.game_frame, text=f"等待对手加入...", font=('Arial', 14), fg='red')
+        self.timer_label = tk.Label(self.game_frame, text=f"等待另一端连接...", font=('Arial', 14), fg='red')
         self.timer_label.pack(fill='x', pady=5)
         
-        self.status_label = tk.Label(self.game_frame, text="游戏准备中...", fg='gray')
+        self.status_label = tk.Label(self.game_frame, text="测试准备中...", fg='gray')
         self.status_label.pack(fill='x', pady=5)
 
-        self.score_label = tk.Label(self.game_frame, text="我的分数: 0 | 对手分数: 0", font=('Arial', 16, 'bold'))
+        self.score_label = tk.Label(self.game_frame, text="我的得分: 0 | 对方得分: 0", font=('Arial', 16, 'bold'))
         self.score_label.pack(pady=10)
         
         self.type_label = tk.Label(self.game_frame, text="等待题目...", font=('Arial', 12), fg='darkgreen')
@@ -199,10 +199,10 @@ class QuizGameApp:
         self.submit_button = tk.Button(self.game_frame, text="提交答案", command=self.submit_answer, state=tk.DISABLED, bg='lightblue')
         self.submit_button.pack(pady=10)
         
-        self.restart_button = tk.Button(self.game_frame, text="请求再来一局", command=self.request_restart, state=tk.DISABLED, bg='lightgreen')
+        self.restart_button = tk.Button(self.game_frame, text="请求重新开始", command=self.request_restart, state=tk.DISABLED, bg='lightgreen')
         self.restart_button.pack(pady=10)
         
-        tk.Label(self.game_frame, text="--- 游戏记录 ---").pack()
+        tk.Label(self.game_frame, text="--- 测试记录 ---").pack()
         self.log_text = tk.Text(self.game_frame, height=5, width=50, state=tk.DISABLED)
         self.log_text.pack(pady=10)
         
@@ -217,9 +217,9 @@ class QuizGameApp:
         self.opponent_ready_to_restart = False
         self.is_game_active = False 
         self.update_scoreboard()
-        self.question_text.set("新游戏即将开始...")
-        self.timer_label.config(fg='red', text="等待对手确认...")
-        self.restart_button.config(state=tk.DISABLED, text="请求再来一局") 
+        self.question_text.set("新测试即将开始...")
+        self.timer_label.config(fg='red', text="等待对方确认...")
+        self.restart_button.config(state=tk.DISABLED, text="请求重新开始") 
         self.submit_button.config(state=tk.DISABLED)
 
     def start_local_game(self): 
@@ -234,7 +234,7 @@ class QuizGameApp:
         if not self.opponent_addr: return
         if self.local_ready_to_restart: return
         self.local_ready_to_restart = True
-        self.restart_button.config(state=tk.DISABLED, text="等待对手确认...")
+        self.restart_button.config(state=tk.DISABLED, text="等待对方确认...")
         self.socket.sendto(b'RESTART_READY', self.opponent_addr)
         self.check_all_ready_for_restart()
 
@@ -260,7 +260,7 @@ class QuizGameApp:
         if not self.is_game_active: return
         self.is_game_active = False
         self.submit_button.config(state=tk.DISABLED)
-        self.question_text.set("游戏结束，等待结果...")
+        self.question_text.set("测试结束，等待结果...")
         self.socket.sendto(f'FINAL_SCORE:{self.local_score}'.encode('utf8'), self.opponent_addr)
         my_role_key = 'host' if self.role == 'host' else 'guest'
         self.final_scores[my_role_key] = self.local_score
@@ -278,14 +278,14 @@ class QuizGameApp:
         opp_score = guest_score if self.role == 'host' else host_score
         
         if my_score > opp_score:
-            msg, title = f"你胜利了！\n我得 {my_score} 分 | 对手得 {opp_score} 分", "恭喜！"
+            msg, title = f"测试完成！\n我的得分: {my_score} 分 | 对方得分: {opp_score} 分\n您的正确率更高！", "测试结果"
         elif opp_score > my_score:
-            msg, title = f"你失败了。\n我得 {my_score} 分 | 对手得 {opp_score} 分", "遗憾。"
+            msg, title = f"测试完成。\n我的得分: {my_score} 分 | 对方得分: {opp_score} 分\n对方的正确率更高。", "测试结果"
         else:
-            msg, title = f"平局！\n分数为: {my_score}", "平局"
+            msg, title = f"测试完成！\n双方得分相同，均为: {my_score}", "测试结果"
         
         messagebox.showinfo(title, msg)
-        self.restart_button.config(state=tk.NORMAL, text="请求再来一局")
+        self.restart_button.config(state=tk.NORMAL, text="请求重新开始")
 
     def next_question(self):
         if not self.is_game_active: return
@@ -342,7 +342,7 @@ class QuizGameApp:
                 if msg == 'PING':
                     self.opponent_addr = addr
                     self.socket.sendto(b'WELCOME', addr)
-                    self.master.after(0, lambda: self.status_label.config(text=f"已连接对手"))
+                    self.master.after(0, lambda: self.status_label.config(text=f"已连接客户端"))
                     self.socket.sendto(b'START_GAME', self.opponent_addr)
                     self.master.after(100, self.start_local_game) 
                 elif msg.startswith('SCORE_UPDATE:'): # 实时同步
@@ -365,7 +365,7 @@ class QuizGameApp:
                 msg = data.decode('utf8')
                 if msg == 'WELCOME':
                     self.opponent_addr = addr # 绑定地址
-                    self.master.after(0, lambda: self.status_label.config(text="成功加入，等待开始..."))
+                    self.master.after(0, lambda: self.status_label.config(text="成功连接服务端，等待开始..."))
                 elif msg == 'START_GAME':
                     self.master.after(0, self.reset_game_state) 
                     self.master.after(100, self.start_local_game) 

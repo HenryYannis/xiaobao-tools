@@ -6,233 +6,6 @@
 
 ---
 
-## 📄 脚本: [games_and_fun\cipher_decrypter.py](./games_and_fun/cipher_decrypter.py)
-
-**📖 模块简介**: 小宝工具箱 - 密码破译模拟器 (Cipher Decrypter)
-
-功能：
-- 模拟密码破译的视觉效果
-- 显示随机数字雨
-- 演示加密和解密过程
-
-使用方法：
-- 直接运行即可观看破译动画
-- 等待动画结束后显示隐藏信息
-
-注意事项：
-- 这是一个娱乐性质的模拟程序
-- 仅用于教育和娱乐目的
-
-作者：小宝科技站 (xbkjz.cn)
-日期：2024
-
-
-| 节点类型 | 名称 | 所在行数 | 核心功能简介 |
-| :--- | :--- | :--- | :--- |
-| ⚙️ **函数 (Func)** | `simulate_decryption` | L27 | 模拟密码破译过程 |
-
----
-
-## 📄 脚本: [games_and_fun\clock.py](./games_and_fun/clock.py)
-
-**📖 模块简介**: 小宝工具箱 - 海龟时钟 (Turtle Clock)
-
-功能：
-- 使用 Python Turtle 绘制的模拟时钟
-- 实时显示当前时间
-- 精美的表盘设计
-
-使用方法：
-- 直接运行即可看到时钟
-- 关闭窗口退出
-
-注意事项：
-- 需要 turtle 库（Python 自带）
-- 需要图形界面支持
-
-作者：小宝科技站 (xbkjz.cn)
-日期：2024
-
-
-| 节点类型 | 名称 | 所在行数 | 核心功能简介 |
-| :--- | :--- | :--- | :--- |
-| ⚙️ **函数 (Func)** | `update_time` | L55 | 无函数说明文档 |
-| ⚙️ **函数 (Func)** | `update_clock_hands` | L64 | 无函数说明文档 |
-
----
-
-## 📄 脚本: [games_and_fun\dashboard_clock.py](./games_and_fun/dashboard_clock.py)
-
-**📖 模块简介**: 小宝工具箱 - 全屏仪表盘时钟 (Dashboard Clock)
-
-功能：
-- 全屏显示的数字时钟
-- 支持多时区显示
-- 支持倒计时和闹钟功能
-- 支持状态记录看板
-
-使用方法：
-- 直接运行即可启动全屏时钟
-- 按 Escape 键退出全屏
-
-注意事项：
-- 需要 tkinter 库（Python 自带）
-- 默认使用 ds-digital 字体，如不存在会使用系统默认字体
-
-作者：小宝科技站 (xbkjz.cn)
-日期：2024
-
-
-| 节点类型 | 名称 | 所在行数 | 核心功能简介 |
-| :--- | :--- | :--- | :--- |
-| 🏫 **类 (Class)** | `FullscreenClock` | L28 | 无类说明文档 |
-| 🔹 *方法 (Method)* | `FullscreenClock.__init__` | L29 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `FullscreenClock._font_available` | L67 | 检查字体是否可用 |
-| 🔹 *方法 (Method)* | `FullscreenClock.update_time` | L76 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `FullscreenClock.safe_exit` | L98 | 无函数说明文档 |
-
----
-
-## 📄 脚本: [games_and_fun\hacker_matrix.py](./games_and_fun/hacker_matrix.py)
-
-**📖 模块简介**: 小宝工具箱 - 黑客帝国数字雨特效 (Hacker Matrix Digital Rain)
-
-功能：
-- 经典《黑客帝国》绿色数字雨特效
-- 自动适配屏幕分辨率
-- 可作为屏幕保护程序使用
-
-使用方法：
-- 直接运行即可启动特效
-- 按 Escape 键或空格键退出
-
-注意事项：
-- 需要安装 pygame 库：pip install pygame
-- 默认使用 SimHei 字体，如不存在会使用系统默认字体
-
-作者：小宝科技站 (xbkjz.cn)
-日期：2024
-
-
-> ⚠️ *该脚本中未检测到显式的类或函数定义，可能为纯顺序流脚本。*
-
----
-
-## 📄 脚本: [games_and_fun\tic_tac_toe.py](./games_and_fun/tic_tac_toe.py)
-
-**📖 模块简介**: 小宝工具箱 - 井字棋游戏 (Tic Tac Toe)
-
-功能：
-- 经典的井字棋游戏
-- 支持双人对战和人机对战
-- 基于 tkinter 的图形界面
-
-使用方法：
-- 直接运行即可开始游戏
-- 点击格子下棋
-- 可切换双人对战/人机对战模式
-
-注意事项：
-- 需要 tkinter 库（Python 自带）
-
-作者：小宝科技站 (xbkjz.cn)
-日期：2024
-
-
-| 节点类型 | 名称 | 所在行数 | 核心功能简介 |
-| :--- | :--- | :--- | :--- |
-| 🏫 **类 (Class)** | `TicTacToe` | L28 | 无类说明文档 |
-| 🔹 *方法 (Method)* | `TicTacToe.__init__` | L29 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `TicTacToe.create_widgets` | L51 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `TicTacToe.switch_mode` | L100 | 切换对战模式 |
-| 🔹 *方法 (Method)* | `TicTacToe.on_click` | L105 | 处理玩家点击 |
-| 🔹 *方法 (Method)* | `TicTacToe.make_move` | L121 | 在指定位置下棋 |
-| 🔹 *方法 (Method)* | `TicTacToe.computer_move` | L146 | 电脑AI移动 |
-| 🔹 *方法 (Method)* | `TicTacToe.check_winner` | L190 | 检查是否有玩家获胜 |
-| 🔹 *方法 (Method)* | `TicTacToe.disable_all_buttons` | L205 | 禁用所有按钮 |
-| 🔹 *方法 (Method)* | `TicTacToe.reset_game` | L210 | 重置游戏 |
-
----
-
-## 📄 脚本: [games_and_fun\turtle_rose.py](./games_and_fun/turtle_rose.py)
-
-**📖 模块简介**: 小宝工具箱 - 海龟玫瑰花 (Turtle Rose)
-
-功能：
-- 使用 Python Turtle 绘制精美的玫瑰花
-- 三维立体效果
-- 动画绘制过程
-
-使用方法：
-- 直接运行即可观看绘制过程
-- 关闭窗口退出
-
-注意事项：
-- 需要 turtle 库（Python 自带）
-- 需要图形界面支持
-- 代码来源于网络，仅供学习交流
-
-作者：小宝科技站 (xbkjz.cn)
-日期：2024
-
-
-> ⚠️ *该脚本中未检测到显式的类或函数定义，可能为纯顺序流脚本。*
-
----
-
-## 📄 脚本: [network\LAN-Word-Battle\word_battle.py](./network/LAN-Word-Battle/word_battle.py)
-
-**📖 模块简介**: 小宝工具箱 - 局域网单词对战 (LAN Word Battle)
-
-功能：
-- 局域网内多人英语单词对战游戏
-- 支持服务端和客户端模式
-- 趣味学习英语单词
-
-使用方法：
-- 服务端：直接运行，自动获取本机IP
-- 客户端：运行后输入服务端IP地址连接
-
-注意事项：
-- 需要 tkinter 库（Python 自带）
-- 需要 words.txt 单词文件（已内置默认单词）
-- 服务端和客户端需要在同一局域网内
-
-作者：小宝科技站 (xbkjz.cn)
-日期：2024
-
-
-| 节点类型 | 名称 | 所在行数 | 核心功能简介 |
-| :--- | :--- | :--- | :--- |
-| ⚙️ **函数 (Func)** | `resource_path` | L39 | 无函数说明文档 |
-| ⚙️ **函数 (Func)** | `load_words` | L48 | 无函数说明文档 |
-| 🏫 **类 (Class)** | `QuizGameApp` | L68 | 无类说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.__init__` | L69 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.center_window` | L105 | 完全保留您的居中逻辑 |
-| 🔹 *方法 (Method)* | `QuizGameApp.update_scoreboard` | L114 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.log` | L118 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.setup_host` | L124 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.show_join_dialog` | L139 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.setup_guest` | L152 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.setup_game_gui` | L173 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.reset_game_state` | L212 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.start_local_game` | L225 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.request_restart` | L233 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.check_all_ready_for_restart` | L241 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.update_timer` | L250 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.end_game_and_show_result` | L259 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.check_final_result` | L270 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.display_final_result` | L276 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.next_question` | L290 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.submit_answer` | L307 | 【修复】提交时实时同步分数 |
-| 🔹 *方法 (Method)* | `QuizGameApp.start_host_thread` | L329 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.start_guest_thread` | L333 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.host_recv_loop` | L337 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.guest_recv_loop` | L361 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `QuizGameApp.on_closing` | L387 | 无函数说明文档 |
-
----
-
 ## 📄 脚本: [network\lan_file_share.py](./network/lan_file_share.py)
 
 **📖 模块简介**: 小宝工具箱 - 局域网极速文件共享器 (LAN File Share Server)
@@ -240,24 +13,27 @@
      即可免流量、极速下载电脑上的文件，甚至支持直接在手机浏览器中向电脑上传文件。
 受众：教育工作者、教师（一键分发课件）、日常跨平台（手机到电脑）临时传输大文件的办公人员。
 
+作者：小宝科技站 (xbkjz.cn)
+日期：2026
+
 
 | 节点类型 | 名称 | 所在行数 | 核心功能简介 |
 | :--- | :--- | :--- | :--- |
-| 🏫 **类 (Class)** | `CustomHTTPRequestHandler` | L31 | 自定义 HTTP 请求处理器，在标准 SimpleHTTPRequestHandler 上提供文件上传能力 |
-| 🔹 *方法 (Method)* | `CustomHTTPRequestHandler.do_POST` | L37 | 处理局域网内其他设备上传文件的 POST 请求 |
-| 🔹 *方法 (Method)* | `CustomHTTPRequestHandler.list_directory` | L150 | 重写目录列表生成方法，在页面顶部注入一个精致的文件上传 HTML 表单 |
-| 🔹 *方法 (Method)* | `CustomHTTPRequestHandler._verify_token` | L247 | 验证请求中的访问令牌 |
-| 🏫 **类 (Class)** | `LANShareApp` | L264 | 无类说明文档 |
-| 🔹 *方法 (Method)* | `LANShareApp.__init__` | L265 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `LANShareApp.get_local_ip` | L286 | 自动提取电脑所在的局域网真实 IP 地址 |
-| 🔹 *方法 (Method)* | `LANShareApp.setup_ui` | L298 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `LANShareApp.select_directory` | L344 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `LANShareApp.start_http_server` | L353 | 开启 HTTP 共享服务的线程核心逻辑 |
-| 🏫 **类 (Class)** | `CustomHTTPHandler` | L358 | 无类说明文档 |
-| 🔹 *方法 (Method)* | `CustomHTTPHandler.__init__` | L359 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `LANShareApp.toggle_server` | L375 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `LANShareApp.reset_ui_to_stopped` | L417 | 无函数说明文档 |
-| ⚙️ **函数 (Func)** | `on_app_closing` | L432 | 无函数说明文档 |
+| 🏫 **类 (Class)** | `CustomHTTPRequestHandler` | L35 | 自定义 HTTP 请求处理器，在标准 SimpleHTTPRequestHandler 上提供文件上传能力 |
+| 🔹 *方法 (Method)* | `CustomHTTPRequestHandler.do_POST` | L41 | 处理局域网内其他设备上传文件的 POST 请求 |
+| 🔹 *方法 (Method)* | `CustomHTTPRequestHandler.list_directory` | L154 | 重写目录列表生成方法，在页面顶部注入一个精致的文件上传 HTML 表单 |
+| 🔹 *方法 (Method)* | `CustomHTTPRequestHandler._verify_token` | L251 | 验证请求中的访问令牌 |
+| 🏫 **类 (Class)** | `LANShareApp` | L268 | 无类说明文档 |
+| 🔹 *方法 (Method)* | `LANShareApp.__init__` | L269 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `LANShareApp.get_local_ip` | L290 | 自动提取电脑所在的局域网真实 IP 地址 |
+| 🔹 *方法 (Method)* | `LANShareApp.setup_ui` | L302 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `LANShareApp.select_directory` | L382 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `LANShareApp.start_http_server` | L391 | 开启 HTTP 共享服务的线程核心逻辑 |
+| 🏫 **类 (Class)** | `CustomHTTPHandler` | L396 | 无类说明文档 |
+| 🔹 *方法 (Method)* | `CustomHTTPHandler.__init__` | L397 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `LANShareApp.toggle_server` | L413 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `LANShareApp.reset_ui_to_stopped` | L455 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `on_app_closing` | L470 | 无函数说明文档 |
 
 ---
 
@@ -402,21 +178,24 @@
 功能：后台静默监听系统剪贴板，自动记录历史复制内容，提供一键翻译（中英互译，基于免 key 翻译 API）并一键写回剪贴板。
 受众：阅读外文文献的学生、处理跨国业务/英文报告的办公族、频繁复制粘贴的人员。
 
+作者：小宝科技站 (xbkjz.cn)
+日期：2026
+
 
 | 节点类型 | 名称 | 所在行数 | 核心功能简介 |
 | :--- | :--- | :--- | :--- |
-| 🏫 **类 (Class)** | `ClipboardTranslatorApp` | L21 | 无类说明文档 |
-| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.__init__` | L22 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.setup_ui` | L41 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.detect_language` | L83 | 改进的语言检测：统计 CJK 字符占比来判断语言方向。 |
-| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.monitor_clipboard` | L117 | 主循环：每隔 500 毫秒轮询系统剪贴板，检测文本变更 |
-| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.update_listbox` | L140 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.copy_selected_to_clipboard` | L148 | 双击条目，重新将其完整复制回系统剪贴板 |
-| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.copy_translation` | L160 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.clear_history` | L170 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.translate_selected` | L176 | 多线程调用免费 MyMemory API 进行翻译，防 GUI 卡顿 |
-| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.run_translation` | L191 | 调用免费 MyMemory API 进行翻译，使用改进的语言检测 |
-| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.show_translation_result` | L218 | 无函数说明文档 |
+| 🏫 **类 (Class)** | `ClipboardTranslatorApp` | L25 | 无类说明文档 |
+| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.__init__` | L26 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.setup_ui` | L45 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.detect_language` | L120 | 改进的语言检测：统计 CJK 字符占比来判断语言方向。 |
+| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.monitor_clipboard` | L154 | 主循环：每隔 500 毫秒轮询系统剪贴板，检测文本变更 |
+| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.update_listbox` | L177 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.copy_selected_to_clipboard` | L185 | 双击条目，重新将其完整复制回系统剪贴板 |
+| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.copy_translation` | L197 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.clear_history` | L207 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.translate_selected` | L213 | 多线程调用免费 MyMemory API 进行翻译，防 GUI 卡顿 |
+| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.run_translation` | L228 | 调用免费 MyMemory API 进行翻译，使用改进的语言检测 |
+| 🔹 *方法 (Method)* | `ClipboardTranslatorApp.show_translation_result` | L255 | 无函数说明文档 |
 
 ---
 
@@ -492,6 +271,96 @@
 
 ---
 
+## 📄 脚本: [productivity\image_compressor.py](./productivity/image_compressor.py)
+
+**📖 模块简介**: 图片批量压缩工具 (Image Batch Compressor)
+
+功能：
+- 批量压缩图片
+- 支持多种图片格式
+- 自定义压缩质量
+- 保持原始尺寸或调整尺寸
+- 预览压缩效果
+
+作者：小宝科技站 (xbkjz.cn)
+日期：2024
+
+
+| 节点类型 | 名称 | 所在行数 | 核心功能简介 |
+| :--- | :--- | :--- | :--- |
+| 🏫 **类 (Class)** | `ImageCompressor` | L29 | 图片批量压缩器 |
+| 🔹 *方法 (Method)* | `ImageCompressor.__init__` | L32 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `ImageCompressor.create_widgets` | L44 | 创建界面组件 |
+| 🔹 *方法 (Method)* | `ImageCompressor.update_quality_label` | L162 | 更新质量标签 |
+| 🔹 *方法 (Method)* | `ImageCompressor.toggle_resize` | L166 | 切换调整尺寸选项 |
+| 🔹 *方法 (Method)* | `ImageCompressor.add_files` | L175 | 添加文件 |
+| 🔹 *方法 (Method)* | `ImageCompressor.add_directory` | L198 | 添加目录 |
+| 🔹 *方法 (Method)* | `ImageCompressor.clear_files` | L221 | 清空文件列表 |
+| 🔹 *方法 (Method)* | `ImageCompressor.browse_output` | L228 | 浏览输出目录 |
+| 🔹 *方法 (Method)* | `ImageCompressor.format_size` | L234 | 格式化文件大小 |
+| 🔹 *方法 (Method)* | `ImageCompressor.preview_compression` | L242 | 预览压缩效果 |
+| 🔹 *方法 (Method)* | `ImageCompressor.start_compression` | L296 | 开始压缩 |
+| 🔹 *方法 (Method)* | `ImageCompressor.compress_worker` | L315 | 压缩工作线程 |
+| 🔹 *方法 (Method)* | `ImageCompressor.update_status` | L380 | 更新状态 |
+| 🔹 *方法 (Method)* | `ImageCompressor.update_file_status` | L384 | 更新文件状态 |
+| 🔹 *方法 (Method)* | `ImageCompressor.open_output_dir` | L398 | 打开输出目录 |
+| ⚙️ **函数 (Func)** | `main` | L413 | 主函数 |
+
+---
+
+## 📄 脚本: [productivity\LAN-Word-Learner\word_learner.py](./productivity/LAN-Word-Learner/word_learner.py)
+
+**📖 模块简介**: 小宝工具箱 - 局域网单词联机学习器 (LAN Word Learner)
+
+功能：
+- 局域网内多人英语单词联机学习与测试工具
+- 支持服务端和客户端模式
+- 趣味测试与记忆英语单词
+
+使用方法：
+- 服务端：直接运行，自动获取本机IP
+- 客户端：运行后输入服务端IP地址连接
+
+注意事项：
+- 需要 tkinter 库（Python 自带）
+- 需要 words.txt 单词文件（已内置默认单词）
+- 服务端和客户端需要在同一局域网内
+
+作者：小宝科技站 (xbkjz.cn)
+日期：2024
+
+
+| 节点类型 | 名称 | 所在行数 | 核心功能简介 |
+| :--- | :--- | :--- | :--- |
+| ⚙️ **函数 (Func)** | `resource_path` | L39 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `load_words` | L48 | 无函数说明文档 |
+| 🏫 **类 (Class)** | `QuizGameApp` | L68 | 无类说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.__init__` | L69 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.center_window` | L105 | 完全保留您的居中逻辑 |
+| 🔹 *方法 (Method)* | `QuizGameApp.update_scoreboard` | L114 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.log` | L118 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.setup_host` | L124 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.show_join_dialog` | L139 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.setup_guest` | L152 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.setup_game_gui` | L173 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.reset_game_state` | L212 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.start_local_game` | L225 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.request_restart` | L233 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.check_all_ready_for_restart` | L241 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.update_timer` | L250 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.end_game_and_show_result` | L259 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.check_final_result` | L270 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.display_final_result` | L276 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.next_question` | L290 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.submit_answer` | L307 | 【修复】提交时实时同步分数 |
+| 🔹 *方法 (Method)* | `QuizGameApp.start_host_thread` | L329 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.start_guest_thread` | L333 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.host_recv_loop` | L337 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.guest_recv_loop` | L361 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `QuizGameApp.on_closing` | L387 | 无函数说明文档 |
+
+---
+
 ## 📄 脚本: [productivity\progress_bar.py](./productivity/progress_bar.py)
 
 **📖 模块简介**: 小宝工具箱 - 命令行进度条 (Progress Bar)
@@ -516,6 +385,44 @@
 | 节点类型 | 名称 | 所在行数 | 核心功能简介 |
 | :--- | :--- | :--- | :--- |
 | ⚙️ **函数 (Func)** | `show_progress_bar` | L26 | 显示进度条 |
+
+---
+
+## 📄 脚本: [productivity\screen_capture.py](./productivity/screen_capture.py)
+
+**📖 模块简介**: 屏幕截图工具 (Screen Capture Tool)
+
+功能：
+- 全屏截图
+- 区域截图
+- 窗口截图
+- 延时截图
+- 自动保存
+
+作者：小宝科技站 (xbkjz.cn)
+日期：2024
+
+
+| 节点类型 | 名称 | 所在行数 | 核心功能简介 |
+| :--- | :--- | :--- | :--- |
+| 🏫 **类 (Class)** | `ScreenCaptureTool` | L28 | 屏幕截图工具 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.__init__` | L31 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.create_widgets` | L54 | 创建界面组件 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.update_quality_label` | L170 | 更新质量标签 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.browse_dir` | L174 | 浏览目录 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.get_filename` | L181 | 生成文件名 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.save_image` | L188 | 保存图片 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.full_screen_capture` | L209 | 全屏截图 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.region_capture` | L225 | 区域截图 — 使用 Canvas 覆盖全屏实现区域选择 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.on_mouse_down` | L266 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.on_mouse_drag` | L272 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.on_mouse_up` | L281 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.on_escape` | L301 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.window_capture` | L311 | 窗口截图 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.delay_capture` | L337 | 延时截图 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.open_file` | L367 | 打开文件 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.open_dir` | L380 | 打开目录 |
+| 🔹 *方法 (Method)* | `ScreenCaptureTool.clear_recent` | L387 | 清空最近列表 |
 
 ---
 
@@ -551,6 +458,74 @@
 | 🔹 *方法 (Method)* | `NewPasswordWindow.__init__` | L95 | 无函数说明文档 |
 | 🔹 *方法 (Method)* | `NewPasswordWindow.reset_password` | L159 | 无函数说明文档 |
 | 🔹 *方法 (Method)* | `NewPasswordWindow.generate_temp_password` | L175 | 使用 secrets 模块生成密码学安全的高强度临时密码 |
+
+---
+
+## 📄 脚本: [productivity\video_frame_extractor.py](./productivity/video_frame_extractor.py)
+
+**📖 模块简介**: 小宝工具箱 - 批量视频截图提取器 (Video Frame Extractor)
+功能：一键载入本地任意格式视频（MP4/MKV/AVI等），支持配置等时间步长（例如每 5 秒提取一张）全自动无损批量导出高清截图；
+     同时提供预览滑块，支持手动单张截取精准画面帧。截图自动归档保存于专属目录下。
+受众：影视解说自媒体人、影视创作者、写电影剧透解析的内容博主、计算机视觉数据集采集人员。
+
+作者：小宝科技站 (xbkjz.cn)
+日期：2026
+
+
+| 节点类型 | 名称 | 所在行数 | 核心功能简介 |
+| :--- | :--- | :--- | :--- |
+| 🏫 **类 (Class)** | `VideoExtractorApp` | L30 | 无类说明文档 |
+| 🔹 *方法 (Method)* | `VideoExtractorApp.__init__` | L31 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `VideoExtractorApp.setup_ui` | L46 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `VideoExtractorApp.select_video` | L147 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `VideoExtractorApp.on_slider_move` | L171 | 当用户拖动滑块时，估算时间点并显示 |
+| 🔹 *方法 (Method)* | `VideoExtractorApp.start_extraction` | L185 | 核心批量提取控制器 |
+| 🔹 *方法 (Method)* | `VideoExtractorApp.run_batch_extraction` | L213 | 子线程运行的批量提取核心循环 |
+| 🔹 *方法 (Method)* | `VideoExtractorApp.grab_single_frame` | L268 | 精准提取滑块选定的一帧并保存 |
+| 🔹 *方法 (Method)* | `VideoExtractorApp.reset_buttons` | L296 | 无函数说明文档 |
+
+---
+
+## 📄 脚本: [system\Delete-Files-Tool\Delete_Files_Tool.py](./system/Delete-Files-Tool/Delete_Files_Tool.py)
+
+**📖 模块简介**: 小宝工具箱 - 文件清理工具 (File Cleaner Tool)
+
+功能：
+- 扫描文件类型并进行分类统计
+- 扫描大文件（默认大于 2MB 的 .sb3 文件）
+- 扫描空文件夹
+- 支持全选、反选以及批量删除选中项目
+
+特点：
+- 界面直观：配备简洁易用的列表与分类面板，支持多选
+- 全局现代字体：全界面微软雅黑渲染，布局排版更加美观
+- 零依赖：仅使用 Python 标准库开发，开箱即用
+
+作者：小宝科技站 (xbkjz.cn)
+日期：2026
+
+
+| 节点类型 | 名称 | 所在行数 | 核心功能简介 |
+| :--- | :--- | :--- | :--- |
+| ⚙️ **函数 (Func)** | `is_excluded` | L46 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `scan_extensions` | L54 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `scan_large_files` | L66 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `scan_empty_folders` | L80 | 无函数说明文档 |
+| 🏫 **类 (Class)** | `FileCleanerApp` | L90 | 无类说明文档 |
+| 🔹 *方法 (Method)* | `FileCleanerApp.__init__` | L91 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `FileCleanerApp._build_ui` | L120 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `FileCleanerApp._scan` | L202 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `FileCleanerApp._scan_large` | L212 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `FileCleanerApp._scan_empty` | L218 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `FileCleanerApp._on_ext_select` | L224 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `FileCleanerApp._refresh_tree` | L234 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `FileCleanerApp._refresh_folder_tree` | L244 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `FileCleanerApp._select_all` | L249 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `FileCleanerApp._invert_selection` | L253 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `FileCleanerApp._delete_selected` | L258 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `弹窗提示_原生` | L296 | 使用 Windows 原生 MessageBoxW 弹窗，支持在子线程安全运行，无 Tkinter 崩溃隐患。 |
+| ⚙️ **函数 (Func)** | `验证密码` | L314 | 弹出一个窗口让用户输入密码。 |
+| ⚙️ **函数 (Func)** | `校验密码` | L341 | 无函数说明文档 |
 
 ---
 
@@ -621,22 +596,14 @@
 
 ## 📄 脚本: [system\Edge-Internet-Control\上网助手.py](./system/Edge-Internet-Control/上网助手.py)
 
-**📖 模块简介**: 小宝工具箱 - 上网助手 (Internet Assistant)
+**📖 模块简介**: 小宝工具箱 - 上网助手 (msedge_helper)
 
 功能：
-- 定时控制 Edge 浏览器联网状态
-- 支持断网和联网时间设置
-- 帮助用户专注工作或学习
-
-使用方法：
-- 需要以管理员权限运行
-- 设置断网和联网时间
-- 点击开始按钮
-
-注意事项：
-- 仅支持 Windows 系统
-- 需要管理员权限
-- 需要安装 pywin32：pip install pywin32
+- 启动即进入后台运行，每 3 秒强制关闭一次 Edge 浏览器（无需前台主界面，防绕过）
+- 双击桌面快捷方式若检测到已运行，则直接弹出密码解锁窗口（密码为大写 BL233）
+- 密码校验成功后，释放 90 分钟的临时上网时间，超时后重新自动锁定
+- 仅支持 Windows 系统（在 macOS 下运行优雅退出）
+- 启动即在代码最前端隐藏控制台黑窗口，不使用 pyinstaller --noconsole，避免杀软误报
 
 作者：小宝科技站 (xbkjz.cn)
 日期：2024
@@ -644,18 +611,39 @@
 
 | 节点类型 | 名称 | 所在行数 | 核心功能简介 |
 | :--- | :--- | :--- | :--- |
-| ⚙️ **函数 (Func)** | `执行隐藏命令` | L60 | 替代 os.system，执行命令时不显示黑窗口，也不显示输出结果 |
-| ⚙️ **函数 (Func)** | `是否有管理员权限` | L80 | 检测当前程序是否以管理员权限运行 |
-| ⚙️ **函数 (Func)** | `智能等待_直到` | L88 | 等待直到某个具体的时间点 |
-| ⚙️ **函数 (Func)** | `弹窗提示_非阻塞` | L94 | 在新线程中弹窗，不卡住主程序计时 |
-| ⚙️ **函数 (Func)** | `_run` | L96 | 无函数说明文档 |
-| ⚙️ **函数 (Func)** | `弹窗_3秒自动关闭` | L108 | 最后的弹窗，显示3秒后自动关闭程序 |
-| ⚙️ **函数 (Func)** | `禁止_edge_上网` | L131 | 无函数说明文档 |
-| ⚙️ **函数 (Func)** | `允许_edge_上网` | L147 | 无函数说明文档 |
-| ⚙️ **函数 (Func)** | `阻断逻辑` | L152 | 无函数说明文档 |
-| ⚙️ **函数 (Func)** | `居中显示` | L205 | 无函数说明文档 |
-| ⚙️ **函数 (Func)** | `开始任务并提示` | L216 | 无函数说明文档 |
-| ⚙️ **函数 (Func)** | `主界面` | L239 | 无函数说明文档 |
+| 🏫 **类 (Class)** | `Mock` | L41 | 无类说明文档 |
+| 🔹 *方法 (Method)* | `Mock.__getattr__` | L42 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `设置窗口图标` | L72 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `执行隐藏命令` | L82 | 替代 os.system，执行命令时不显示黑窗口，也不显示输出结果 |
+| ⚙️ **函数 (Func)** | `弹窗提示_原生` | L108 | 使用 Windows 原生 MessageBoxW 弹窗，支持在子线程安全运行，无 Tkinter 崩溃隐患。 |
+| ⚙️ **函数 (Func)** | `弹窗提示_非阻塞` | L126 | 在新线程中弹窗提示 |
+| ⚙️ **函数 (Func)** | `弹窗_3秒自动关闭` | L131 | 最后的弹窗，显示3秒后自动关闭程序 |
+| ⚙️ **函数 (Func)** | `删除桌面指定文件` | L156 | 删除桌面上所有的 .sb3 和 .ev3 文件（启动后自动清理） |
+| ⚙️ **函数 (Func)** | `清空回收站` | L182 | 通过 Windows API 静默清空系统回收站（无提示音、无确认框、无进度条） |
+| ⚙️ **函数 (Func)** | `禁止_edge_上网` | L195 | 强制结束 Edge 浏览器进程 |
+| ⚙️ **函数 (Func)** | `初始化共享内存` | L202 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `写共享内存` | L214 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `读共享内存` | L224 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `向共享内存写入命令` | L236 | 第二实例向已运行的后台进程发送指令 |
+| ⚙️ **函数 (Func)** | `显示解锁窗口` | L253 | 弹出一个窗口让用户输入密码 |
+| ⚙️ **函数 (Func)** | `校验密码` | L270 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `检查WiFi是否已连接` | L308 | 检查 WiFi 接口的连接状态。 |
+| ⚙️ **函数 (Func)** | `显示WiFi断开警告` | L347 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `创建窗口` | L357 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `on_closing` | L370 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `restore_window` | L375 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `关闭WiFi断开警告` | L418 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `获取当前插入的U盘` | L433 | 扫描 C-Z 盘符，找出当前插入的且类型为可移动磁盘 (DRIVE_REMOVABLE = 2) 且有实际介质可读的盘符列表。 |
+| ⚙️ **函数 (Func)** | `显示U盘锁定警告` | L462 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `创建窗口` | L472 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `on_closing` | L485 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `restore_window` | L490 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `校验密码` | L531 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `关闭U盘锁定警告` | L554 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `阻断逻辑` | L566 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `获取当前Tick` | L576 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `居中显示` | L670 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `主入口` | L681 | 无函数说明文档 |
 
 ---
 
@@ -687,6 +675,79 @@
 | ⚙️ **函数 (Func)** | `run_as_admin` | L41 | 以管理员权限重新运行当前程序 |
 | ⚙️ **函数 (Func)** | `清理规则` | L59 | 执行删除防火墙规则的命令 |
 | ⚙️ **函数 (Func)** | `main` | L70 | 无函数说明文档 |
+
+---
+
+## 📄 脚本: [system\lab-assistant\lab_assistant.py](./system/lab-assistant/lab_assistant.py)
+
+**📖 模块简介**: 小宝工具箱 - 系统权限限制工具 (System Restrictions Controller)
+
+功能：
+- 禁止/允许修改桌面壁纸
+- 移除/恢复桌面"了解此图片"聚焦图标
+- 禁用/启用 Chrome 和 Edge 离线游戏
+- 注入/撤销系统 Hosts 屏蔽规则（拦截娱乐网站）
+- 配置/恢复 pip 国内镜像源（清华 TUNA）
+
+特点：
+- 传统古早UI：使用 Windows 原生灰/白默认界面风格，布局简单直观，非花哨设计
+- 零依赖：纯标准库（tkinter, winreg, ctypes）开发，开箱即用
+- 提权检测：自动检测并请求管理员权限以修改系统策略
+- 实时同步：启动时自动读取注册表，真实反映系统当前状态
+- 智能交互：修改壁纸或图标后支持一键/自动重启资源管理器
+
+作者：小宝科技站 (xbkjz.cn)
+日期：2026
+
+
+| 节点类型 | 名称 | 所在行数 | 核心功能简介 |
+| :--- | :--- | :--- | :--- |
+| ⚙️ **函数 (Func)** | `get_wallpaper_source_path` | L69 | 获取壁纸源文件路径（开发模式取脚本目录，PyInstaller 取 _MEIPASS） |
+| ⚙️ **函数 (Func)** | `设置窗口图标` | L73 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `_deploy_wallpaper` | L82 | 将壁纸图片复制到持久路径供锁屏策略使用。 |
+| ⚙️ **函数 (Func)** | `set_desktop_wallpaper` | L99 | 通过 Win32 API 设置桌面壁纸，返回是否成功 |
+| ⚙️ **函数 (Func)** | `set_lockscreen_image` | L111 | 通过注册表组策略设置锁屏壁纸，返回是否成功 |
+| ⚙️ **函数 (Func)** | `apply_wallpaper_and_lockscreen` | L122 | 部署图片并同时设置桌面壁纸与锁屏。 |
+| ⚙️ **函数 (Func)** | `reg_read_dword` | L165 | 读取注册表 DWORD 值，如果键或值不存在返回 None |
+| ⚙️ **函数 (Func)** | `reg_write_dword` | L178 | 向注册表写入 DWORD 值，返回是否成功 |
+| ⚙️ **函数 (Func)** | `reg_delete_value` | L192 | 从注册表删除特定值，如果不存在也视为成功，返回是否成功 |
+| ⚙️ **函数 (Func)** | `is_admin` | L209 | 判断是否具备管理员权限 |
+| ⚙️ **函数 (Func)** | `run_as_admin` | L217 | 以管理员身份重新运行程序 |
+| ⚙️ **函数 (Func)** | `restart_explorer` | L236 | 重启 Windows 资源管理器进程以应用桌面和壁纸配置 |
+| ⚙️ **函数 (Func)** | `get_wallpaper_locked` | L256 | 获取壁纸锁定的真实状态。1 表示锁定 (True) |
+| ⚙️ **函数 (Func)** | `set_wallpaper_locked` | L262 | 设置壁纸锁定状态 |
+| ⚙️ **函数 (Func)** | `get_spotlight_hidden` | L270 | 获取桌面"了解此图片"隐藏状态。1 表示隐藏 (True) |
+| ⚙️ **函数 (Func)** | `set_spotlight_hidden` | L276 | 设置桌面"了解此图片"隐藏状态 |
+| ⚙️ **函数 (Func)** | `get_browser_games_disabled` | L284 | 检查离线游戏禁用状态。 |
+| ⚙️ **函数 (Func)** | `set_browser_games_disabled` | L301 | 设置浏览器离线游戏禁用状态 |
+| ⚙️ **函数 (Func)** | `get_edge_downloads_disabled` | L320 | 检查 Edge 下载限制状态。 |
+| ⚙️ **函数 (Func)** | `set_edge_downloads_disabled` | L330 | 设置 Edge 浏览器下载限制状态 |
+| ⚙️ **函数 (Func)** | `kill_edge_process` | L344 | 使用 taskkill 强制终止 Edge 浏览器进程 |
+| ⚙️ **函数 (Func)** | `_read_system_hosts` | L359 | 读取系统 hosts 文件内容，出错返回 None |
+| ⚙️ **函数 (Func)** | `_write_system_hosts` | L369 | 写入系统 hosts 文件，返回是否成功 |
+| ⚙️ **函数 (Func)** | `get_hosts_injected` | L383 | 判断系统 hosts 中是否已注入小宝工具箱屏蔽规则 |
+| ⚙️ **函数 (Func)** | `_strip_injection` | L391 | 从 hosts 内容中移除小宝工具箱注入块 |
+| ⚙️ **函数 (Func)** | `inject_hosts` | L408 | 将本地 hosts 屏蔽规则注入系统 hosts 文件，返回 (success, message) |
+| ⚙️ **函数 (Func)** | `remove_hosts` | L447 | 从系统 hosts 中撤销注入的屏蔽规则，返回 (success, message) |
+| ⚙️ **函数 (Func)** | `get_pip_config_file_path` | L473 | 获取用户级别的 pip.ini 配置文件路径 |
+| ⚙️ **函数 (Func)** | `get_pip_mirror_status` | L485 | 通过解析本地配置文件获取当前 pip 全局 index-url 配置。 |
+| ⚙️ **函数 (Func)** | `set_pip_mirror` | L530 | 通过直接读写 pip.ini 文件设置或取消 pip 国内镜像，返回 (success, message) |
+| 🏫 **类 (Class)** | `RestrictionsToolGUI` | L564 | 无类说明文档 |
+| 🔹 *方法 (Method)* | `RestrictionsToolGUI.__init__` | L565 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `RestrictionsToolGUI._build_ui` | L582 | 无函数说明文档 |
+| 🔹 *方法 (Method)* | `RestrictionsToolGUI.refresh_status` | L759 | 读取系统真实状态并更新UI文字 |
+| 🔹 *方法 (Method)* | `RestrictionsToolGUI.trigger_explorer_update` | L816 | 根据自动重启选项，自动或手动重启资源管理器 |
+| 🔹 *方法 (Method)* | `RestrictionsToolGUI.toggle_wallpaper` | L832 | 切换壁纸锁状态。锁定时先强制设置指定壁纸和锁屏，再禁止用户修改。 |
+| 🔹 *方法 (Method)* | `RestrictionsToolGUI.toggle_spotlight` | L857 | 切换桌面"了解此图片"隐藏状态 |
+| 🔹 *方法 (Method)* | `RestrictionsToolGUI.toggle_browser_games` | L867 | 切换浏览器游戏禁用状态 |
+| 🔹 *方法 (Method)* | `RestrictionsToolGUI.toggle_edge_downloads` | L881 | 切换 Edge 浏览器下载限制状态 |
+| 🔹 *方法 (Method)* | `RestrictionsToolGUI.toggle_hosts` | L908 | 切换 Hosts 注入状态 |
+| 🔹 *方法 (Method)* | `RestrictionsToolGUI.toggle_pip_mirror` | L922 | 切换 pip 镜像源 |
+| 🔹 *方法 (Method)* | `RestrictionsToolGUI.manual_restart_explorer` | L934 | 手动重启资源管理器 |
+| ⚙️ **函数 (Func)** | `弹窗提示_原生` | L946 | 使用 Windows 原生 MessageBoxW 弹窗，支持在子线程安全运行，无 Tkinter 崩溃隐患。 |
+| ⚙️ **函数 (Func)** | `验证密码` | L964 | 弹出一个窗口让用户输入密码。 |
+| ⚙️ **函数 (Func)** | `校验密码` | L986 | 无函数说明文档 |
+| ⚙️ **函数 (Func)** | `main` | L1018 | 无函数说明文档 |
 
 ---
 
@@ -791,155 +852,5 @@
 | 🔹 *方法 (Method)* | `SystemCleanupTool.cleanup_system_logs` | L399 | 清理系统日志 |
 | 🔹 *方法 (Method)* | `SystemCleanupTool.cleanup_update_cache` | L415 | 清理Windows更新缓存 |
 | 🔹 *方法 (Method)* | `SystemCleanupTool.cleanup_thumbnails` | L428 | 清理缩略图缓存 |
-
----
-
-## 📄 脚本: [vision\gesture_recognizer.py](./vision/gesture_recognizer.py)
-
-**📖 模块简介**: 小宝工具箱 - 手势识别 (Gesture Recognizer)
-
-功能：
-- 基于 OpenCV 和 MediaPipe 的手势识别
-- 识别手部关键点
-- 触发特定 Windows 系统快捷操作
-
-使用方法：
-- 直接运行即可启动摄像头
-- 使用手势控制屏幕上的角色
-- 按 Escape 键退出
-
-注意事项：
-- 需要安装 opencv-python：pip install opencv-python
-- 需要安装 mediapipe：pip install mediapipe
-- 需要摄像头设备
-
-作者：小宝科技站 (xbkjz.cn)
-日期：2024
-
-
-> ⚠️ *该脚本中未检测到显式的类或函数定义，可能为纯顺序流脚本。*
-
----
-
-## 📄 脚本: [vision\hand_tracking.py](./vision/hand_tracking.py)
-
-**📖 模块简介**: 小宝工具箱 - 手部跟踪 (Hand Tracking)
-
-功能：
-- 实时检测摄像头画面中的手部
-- 识别手部 21 个关键点
-- 实时输出三维坐标
-
-使用方法：
-- 直接运行即可启动摄像头
-- 按 Escape 键退出
-
-注意事项：
-- 需要安装 opencv-python：pip install opencv-python
-- 需要安装 mediapipe：pip install mediapipe
-- 需要摄像头设备
-
-作者：小宝科技站 (xbkjz.cn)
-日期：2024
-
-
-> ⚠️ *该脚本中未检测到显式的类或函数定义，可能为纯顺序流脚本。*
-
----
-
-## 📄 脚本: [vision\image_compressor.py](./vision/image_compressor.py)
-
-**📖 模块简介**: 图片批量压缩工具 (Image Batch Compressor)
-
-功能：
-- 批量压缩图片
-- 支持多种图片格式
-- 自定义压缩质量
-- 保持原始尺寸或调整尺寸
-- 预览压缩效果
-
-作者：小宝科技站 (xbkjz.cn)
-日期：2024
-
-
-| 节点类型 | 名称 | 所在行数 | 核心功能简介 |
-| :--- | :--- | :--- | :--- |
-| 🏫 **类 (Class)** | `ImageCompressor` | L29 | 图片批量压缩器 |
-| 🔹 *方法 (Method)* | `ImageCompressor.__init__` | L32 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `ImageCompressor.create_widgets` | L44 | 创建界面组件 |
-| 🔹 *方法 (Method)* | `ImageCompressor.update_quality_label` | L162 | 更新质量标签 |
-| 🔹 *方法 (Method)* | `ImageCompressor.toggle_resize` | L166 | 切换调整尺寸选项 |
-| 🔹 *方法 (Method)* | `ImageCompressor.add_files` | L175 | 添加文件 |
-| 🔹 *方法 (Method)* | `ImageCompressor.add_directory` | L198 | 添加目录 |
-| 🔹 *方法 (Method)* | `ImageCompressor.clear_files` | L221 | 清空文件列表 |
-| 🔹 *方法 (Method)* | `ImageCompressor.browse_output` | L228 | 浏览输出目录 |
-| 🔹 *方法 (Method)* | `ImageCompressor.format_size` | L234 | 格式化文件大小 |
-| 🔹 *方法 (Method)* | `ImageCompressor.preview_compression` | L242 | 预览压缩效果 |
-| 🔹 *方法 (Method)* | `ImageCompressor.start_compression` | L296 | 开始压缩 |
-| 🔹 *方法 (Method)* | `ImageCompressor.compress_worker` | L315 | 压缩工作线程 |
-| 🔹 *方法 (Method)* | `ImageCompressor.update_status` | L380 | 更新状态 |
-| 🔹 *方法 (Method)* | `ImageCompressor.update_file_status` | L384 | 更新文件状态 |
-| 🔹 *方法 (Method)* | `ImageCompressor.open_output_dir` | L398 | 打开输出目录 |
-| ⚙️ **函数 (Func)** | `main` | L413 | 主函数 |
-
----
-
-## 📄 脚本: [vision\screen_capture.py](./vision/screen_capture.py)
-
-**📖 模块简介**: 屏幕截图工具 (Screen Capture Tool)
-
-功能：
-- 全屏截图
-- 区域截图
-- 窗口截图
-- 延时截图
-- 自动保存
-
-作者：小宝科技站 (xbkjz.cn)
-日期：2024
-
-
-| 节点类型 | 名称 | 所在行数 | 核心功能简介 |
-| :--- | :--- | :--- | :--- |
-| 🏫 **类 (Class)** | `ScreenCaptureTool` | L28 | 屏幕截图工具 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.__init__` | L31 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.create_widgets` | L54 | 创建界面组件 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.update_quality_label` | L170 | 更新质量标签 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.browse_dir` | L174 | 浏览目录 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.get_filename` | L181 | 生成文件名 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.save_image` | L188 | 保存图片 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.full_screen_capture` | L209 | 全屏截图 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.region_capture` | L225 | 区域截图 — 使用 Canvas 覆盖全屏实现区域选择 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.on_mouse_down` | L266 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.on_mouse_drag` | L272 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.on_mouse_up` | L281 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.on_escape` | L301 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.window_capture` | L311 | 窗口截图 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.delay_capture` | L337 | 延时截图 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.open_file` | L367 | 打开文件 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.open_dir` | L380 | 打开目录 |
-| 🔹 *方法 (Method)* | `ScreenCaptureTool.clear_recent` | L387 | 清空最近列表 |
-
----
-
-## 📄 脚本: [vision\video_frame_extractor.py](./vision/video_frame_extractor.py)
-
-**📖 模块简介**: 小宝工具箱 - 批量视频截图提取器 (Video Frame Extractor)
-功能：一键载入本地任意格式视频（MP4/MKV/AVI等），支持配置等时间步长（例如每 5 秒提取一张）全自动无损批量导出高清截图；
-     同时提供预览滑块，支持手动单张截取精准画面帧。截图自动归档保存于专属目录下。
-受众：影视解说自媒体人、影视创作者、写电影剧透解析的内容博主、计算机视觉数据集采集人员。
-
-
-| 节点类型 | 名称 | 所在行数 | 核心功能简介 |
-| :--- | :--- | :--- | :--- |
-| 🏫 **类 (Class)** | `VideoExtractorApp` | L26 | 无类说明文档 |
-| 🔹 *方法 (Method)* | `VideoExtractorApp.__init__` | L27 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `VideoExtractorApp.setup_ui` | L42 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `VideoExtractorApp.select_video` | L110 | 无函数说明文档 |
-| 🔹 *方法 (Method)* | `VideoExtractorApp.on_slider_move` | L134 | 当用户拖动滑块时，估算时间点并显示 |
-| 🔹 *方法 (Method)* | `VideoExtractorApp.start_extraction` | L148 | 核心批量提取控制器 |
-| 🔹 *方法 (Method)* | `VideoExtractorApp.run_batch_extraction` | L176 | 子线程运行的批量提取核心循环 |
-| 🔹 *方法 (Method)* | `VideoExtractorApp.grab_single_frame` | L231 | 精准提取滑块选定的一帧并保存 |
-| 🔹 *方法 (Method)* | `VideoExtractorApp.reset_buttons` | L259 | 无函数说明文档 |
 
 ---

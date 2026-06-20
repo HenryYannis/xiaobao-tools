@@ -28,19 +28,15 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-vision = [
+media = [
     "opencv-python>=4.8.0",
-    "mediapipe>=0.10.0",
-]
-game = [
-    "pygame>=2.5.0",
 ]
 office = [
     "pandas>=2.0.0",
     "openpyxl>=3.1.0",
 ]
 all = [
-    "xiaobao-tools[vision,game,office]",
+    "xiaobao-tools[media,office]",
 ]
 dev = [
     "flake8>=6.0.0",

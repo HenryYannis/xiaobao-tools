@@ -8,42 +8,40 @@
 [![Codex Enabled](https://img.shields.io/badge/OpenAI%20Codex-Enabled-green.svg)](https://openai.com/form/codex-for-oss/)
 [![Build Status](https://github.com/HenryYannis/xiaobao-tools/actions/workflows/lint.yml/badge.svg)](https://github.com/HenryYannis/xiaobao-tools/actions)
 
-**Xiaobao Tools (xiaobao-tools)** is a highly curated, modular open-source toolkit comprising 20+ Python scripts and Windows configuration tools designed for independent developers, system administrators, and office professionals. The project aims to provide out-of-the-box, lightweight, and highly efficient automation solutions, covering registry optimizations, local network interactive utilities, computer vision gesture tracking, multimedia processing, and interactive edutainment.
+**Xiaobao Tools (xiaobao-tools)** is a highly curated, modular open-source toolkit comprising 20+ Python scripts and Windows configuration tools designed for independent developers, system administrators, and office professionals. The project aims to provide out-of-the-box, lightweight, and highly efficient automation solutions, covering registry optimizations, local network interactive utilities, office productivity tools, and multimedia processing.
 
 ---
 
 ## 🌟 Key Features
 
 1. **Zero Threshold, Run Instantly**: The majority of the tools are lightweight, single `.py` files. No complex dependencies or database setups needed. Execute with a simple double-click or CLI command.
-2. **Diverse Scenarios, Solving Real Needs**: Covers daily office productivity, local multiplayer games, computer vision algorithms, and Windows system-level policy tweaks.
+2. **Diverse Scenarios, Solving Real Needs**: Covers daily office productivity, network management utilities, and Windows system-level policy tweaks.
 3. **Engineering Standard & CI Automation**: Integrated with GitHub Actions CI workflows. Follows PEP 8 coding standards and features a forward-looking **OpenAI Codex AI-driven Maintenance Plan**.
 
 ---
 
 ## 🎯 Target Audiences & Scenarios Matrix
 
-This project is not only dedicated to software developers but is highly focused on serving diverse groups of users with distinct automation needs through lightweight scripts. Below are the six typical user cohorts and pain points our tools successfully resolve:
+This project is not only dedicated to software developers but is highly focused on serving diverse groups of users with distinct automation needs through lightweight scripts. Below are the five typical user cohorts and pain points our tools successfully resolve:
 
 | 🎯 Target User Cohort | 💡 Core Problems Resolved (Pain Points) | 🛠️ Recommended Tools |
 | :--- | :--- | :--- |
 | 🧑‍🏫 **Educators & Lab Administrators** | Restricting download actions, locking desktop wallpapers, removing Windows lock screen ads, disabling browser offline games; quick cross-device file sharing. | [System-Restrictions-Tool](./system/System-Restrictions-Tool), [Edge-Disable-Downloads](./system/Edge-Disable-Downloads), [Disable-Wallpaper-Change](./system/Disable-Wallpaper-Change), [Remove-Spotlight-Info](./system/Remove-Spotlight-Info), [LAN-File-Share](./network/lan_file_share.py) |
-| 🎬 **Content Creators & UI Designers** | Merging audio clips locally, converting image formats to ICO; bulk extracting video frames at configurable time steps or manually. | [Image-to-ICO](./productivity/Image-to-ICO), [Audio-Merger](./productivity/Audio-Merger), [Video-Frame-Extractor](./vision/video_frame_extractor.py) |
-| 🧑‍🎓 **Language Learners & Students** | Joining interactive local network multiplayer word matching games to memory English vocabulary effortlessly while having fun. | [LAN-Word-Battle](./network/LAN-Word-Battle) |
+| 🎬 **Content Creators & UI Designers** | Merging audio clips locally, converting image formats to ICO; bulk extracting video frames, screen capturing, and compressing images. | [Image-to-ICO](./productivity/Image-to-ICO), [Audio-Merger](./productivity/Audio-Merger), [Video-Frame-Extractor](./productivity/video_frame_extractor.py), [Image-Compressor](./productivity/image_compressor.py), [Screen-Capture](./productivity/screen_capture.py) |
+| 🧑‍🎓 **Language Learners & Students** | Using local network peer-to-peer vocabulary testing and memorization helper to study English words synchronized with others. | [LAN-Word-Learner](./productivity/LAN-Word-Learner) |
 | 🧑‍💻 **Developers & AI Enthusiasts** | Accessing shared AI chat nodes over local network seamlessly; scanning files via AST to build code outlines for precise LLM Code Reviews. | [LAN-AI-Chat](./network/LAN-AI-Chat), [Code-Structure-Outline-Generator](./productivity/code_outline_generator.py) |
-| 💼 **Office Workers & Time Managers** | Generating secure passwords randomly, displaying dashboard clocks; tracking clipboard history with quick zero-key EN/CN translations. | [temporary_password.py](./productivity/temp_password.py), [dashboard_clock.py](./games_and_fun/dashboard_clock.py), [countdown.py](./productivity/countdown.py), [Clipboard-Translator](./productivity/clipboard_translator.py) |
-| 🤖 **Geeks & CV Algorithm Explorers** | Harnessing 21 landmarks hand skeletal tracing pipelines, or customizing green hacker code-rain screensavers and Turtle 3D roses. | [gesture_recognizer.py](./vision/gesture_recognizer.py), [hand_tracking.py](./vision/hand_tracking.py), [hacker_matrix.py](./games_and_fun/hacker_matrix.py) |
+| 💼 **Office Workers & Time Managers** | Generating secure passwords randomly; tracking clipboard history with quick zero-key EN/CN translations, and precise countdown timer. | [temporary_password.py](./productivity/temp_password.py), [countdown.py](./productivity/countdown.py), [Clipboard-Translator](./productivity/clipboard_translator.py) |
 
 ---
 
 ## 📂 Modular Tool Matrix Directory
 
-To help you quickly locate what you need, our tools are structured into five major category folders:
+To help you quickly locate what you need, our tools are structured into three major category folders:
 
 ### 1. 🛜 Network & LAN Utilities
 | Tool Name / Folder | English Tag | Description |
 | :--- | :--- | :--- |
 | [局域网-Ai对话](./network/LAN-AI-Chat) | `LAN-AI-Chat` | A local LAN server-client utility facilitating multi-device AI chats without complex configurations. |
-| [局域网-单词对战](./network/LAN-Word-Battle) | `LAN-Word-Battle` | An engaging LAN multiplayer English vocabulary battle game combining learning and fun. |
 | [工具-局域网极速文件共享器](./network/lan_file_share.py) | `lan_file_share` | Exposes a beautiful web page for instant LAN file distribution and mobile-to-PC uploads without internet. |
 | [端口扫描工具.py](./network/port_scanner.py) | `port_scanner` | Scan open ports on a target IP address with multi-threading and common service detection. |
 | [网速测试工具.py](./network/speed_test.py) | `speed_test` | Test network download/upload speed, latency, and packet loss rate. |
@@ -71,25 +69,10 @@ To help you quickly locate what you need, our tools are structured into five maj
 | [进度条.py](./productivity/progress_bar.py) | `progress_bar.py` | An elegant, animated CLI progress bar module designed for command-line developers. |
 | [批量文件重命名工具.py](./productivity/batch_file_renamer.py) | `batch_file_renamer` | Batch file renamer supporting multiple modes: prefix/suffix, replace, sequence, date, and regex. |
 | [Excel批量处理工具.py](./productivity/excel_batch_processor.py) | `excel_batch_processor` | Batch read, merge, filter, and analyze multiple Excel files for office productivity. |
-
-### 4. 👁 Interaction & Vision Algorithms
-| Tool Name / Script | English Tag | Description |
-| :--- | :--- | :--- |
-| [手势识别.py](./vision/gesture_recognizer.py) | `gesture_recognizer.py` | Employs OpenCV & MediaPipe to recognize complex gestures and map them into Windows keyboard shortcuts. |
-| [手部跟踪.py](./vision/hand_tracking.py) | `hand_tracking.py` | Fast framework to capture camera video streams, locate 21 hand skeletal landmarks, and stream 3D coordinates. |
-| [工具-批量视频截图提取器.py](./vision/video_frame_extractor.py) | `video_frame_extractor` | Grabs frames from local videos sequentially by configurable time intervals or manually via slider. |
-| [图片批量压缩工具.py](./vision/image_compressor.py) | `image_compressor` | Batch compress images with customizable quality, resize options, and multiple output formats. |
-| [屏幕截图工具.py](./vision/screen_capture.py) | `screen_capture` | Screen capture tool supporting full screen, region, window, and delayed screenshots. |
-
-### 5. 🎮 Games & Interactive Edutainment
-| Tool Name / Script | English Tag | Description |
-| :--- | :--- | :--- |
-| [井字棋.py](./games_and_fun/tic_tac_toe.py) | `tic_tac_toe.py` | A classic double-player Tic-Tac-Toe GUI game based on Tkinter. |
-| [时钟.py](./games_and_fun/clock.py) | `clock.py` | A minimalistic desktop electronic clock window for easy timekeeping. |
-| [全时钟.py](./games_and_fun/dashboard_clock.py) | `dashboard_clock.py` | A feature-rich dashboard clock displaying multi-timezones, alarms, stopwatches, and stopwatch cards. |
-| [黑客特效.py](./games_and_fun/hacker_matrix.py) | `hacker_matrix.py` | The classic green "Hacker Matrix Digital Rain" screen saver and wallpaper simulator written in Pygame. |
-| [玫瑰花程序.py](./games_and_fun/turtle_rose.py) | `turtle_rose.py` | Draws a highly detailed, 3D-shaded aesthetic rose vector animation using Python's Turtle canvas. |
-| [破译程序.py](./games_and_fun/cipher_decrypter.py) | `cipher_decrypter.py` | An educational cipher decryptor illustrating substitution encryption and brute force cryptography theories. |
+| [工具-局域网单词联机学习器](./productivity/LAN-Word-Learner) | `LAN-Word-Learner` | Local network utility to memorize and test English words synchronously, supporting multi-endpoint data synchronization. |
+| [工具-批量视频截图提取器.py](./productivity/video_frame_extractor.py) | `video_frame_extractor` | Grabs frames from local videos sequentially by configurable time intervals or manually via slider. |
+| [图片批量压缩工具.py](./productivity/image_compressor.py) | `image_compressor` | Batch compress images with customizable quality, resize options, and multiple output formats. |
+| [屏幕截图工具.py](./productivity/screen_capture.py) | `screen_capture` | Screen capture tool supporting full screen, region, window, and delayed screenshots. |
 
 ---
 
@@ -98,13 +81,13 @@ To help you quickly locate what you need, our tools are structured into five maj
 As a project maintained by a single core developer, utilizing AI to maximize daily maintenance and QA efficiency is a core focus. We are actively experimenting with integrating **OpenAI Codex & API** into the "xiaobao-tools" software lifecycle across four distinct scenarios:
 
 1. **Automated PR Reviews & Intelligent Refactoring (AI Code Review)**:
-   Leverages Codex to automatically audit incoming community PR submissions, identifying memory issues, code smells, or style violations, and posting refactored, PEP-8 compliant suggestions directly inside PR comments.
+    Leverages Codex to automatically audit incoming community PR submissions, identifying memory issues, code smells, or style violations, and posting refactored, PEP-8 compliant suggestions directly inside PR comments.
 2. **AI-driven Unit Test Generation (AI Test Coverage)**:
-   Uses Codex to analyze input/output boundaries of the 20+ standalone scripts and automatically generate `pytest` regression tests inside the `tests/` directory to assure cross-version Windows compatibility.
+    Uses Codex to analyze input/output boundaries of the 20+ standalone scripts and automatically generate `pytest` regression tests inside the `tests/` directory to assure cross-version Windows compatibility.
 3. **Smart Issue Triage & Bug Diagnosis (Traceback Analysis)**:
-   Feeds user-submitted terminal traceback logs to Codex, automatically extracting environmental details (e.g. OpenCV version, OS version) and auto-assigning tags like `bug` or `os:windows`.
+    Feeds user-submitted terminal traceback logs to Codex, automatically extracting environmental details (e.g. OpenCV version, OS version) and auto-assigning tags like `bug` or `os:windows`.
 4. **Automated Multilingual Docs Sync (AI Localization)**:
-   Extracts code functions to write docstrings using Codex, and keeps the Chinese and English READMEs completely synchronized with zero translation overhead.
+    Extracts code functions to write docstrings using Codex, and keeps the Chinese and English READMEs completely synchronized with zero translation overhead.
 
 ---
 
@@ -118,7 +101,7 @@ cd xiaobao-tools
 ```
 
 ### 2. Install Dependencies
-While simple scripts run on Python's standard library, complex multi-media/vision tools require third-party libraries. Install them via:
+While simple scripts run on Python's standard library, complex multi-media/productivity tools require third-party libraries. Install them via:
 ```bash
 pip install -r requirements.txt
 ```

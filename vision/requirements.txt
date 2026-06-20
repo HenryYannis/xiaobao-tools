@@ -1,4 +1,0 @@
-# 小宝工具箱 - 视觉模块依赖
-opencv-python>=4.8.0
-mediapipe>=0.10.0
-Pillow>=9.5.0
