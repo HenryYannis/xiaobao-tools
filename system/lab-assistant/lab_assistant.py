@@ -145,6 +145,8 @@ REG_CHROME_VALUE = "AllowDinosaurEasterEgg"
 # 4. Edge Surf Game restriction
 REG_EDGE_PATH = r"SOFTWARE\Policies\Microsoft\Edge"
 REG_EDGE_VALUE = "AllowSurfGame"
+REG_EDGE_DOWNLOAD_VALUE = "DownloadRestrictions"
+
 
 
 # --- Registry Helper Functions ---
@@ -298,6 +300,44 @@ def set_browser_games_disabled(disabled):
         success = s1 and s2 and s3 and s4
 
     return success
+
+
+def get_edge_downloads_disabled():
+    """
+    检查 Edge 下载限制状态。
+    DownloadRestrictions = 3 表示禁止所有下载
+    """
+    edge_hklm = reg_read_dword(HKEY_LOCAL_MACHINE, REG_EDGE_PATH, REG_EDGE_DOWNLOAD_VALUE)
+    edge_hkcu = reg_read_dword(HKEY_CURRENT_USER, REG_EDGE_PATH, REG_EDGE_DOWNLOAD_VALUE)
+    return edge_hklm == 3 or edge_hkcu == 3
+
+
+def set_edge_downloads_disabled(disabled):
+    """设置 Edge 浏览器下载限制状态"""
+    success = True
+    if disabled:
+        s1 = reg_write_dword(HKEY_LOCAL_MACHINE, REG_EDGE_PATH, REG_EDGE_DOWNLOAD_VALUE, 3)
+        s2 = reg_write_dword(HKEY_CURRENT_USER, REG_EDGE_PATH, REG_EDGE_DOWNLOAD_VALUE, 3)
+        success = s1 or s2
+    else:
+        s1 = reg_delete_value(HKEY_LOCAL_MACHINE, REG_EDGE_PATH, REG_EDGE_DOWNLOAD_VALUE)
+        s2 = reg_delete_value(HKEY_CURRENT_USER, REG_EDGE_PATH, REG_EDGE_DOWNLOAD_VALUE)
+        success = s1 and s2
+    return success
+
+
+def kill_edge_process():
+    """使用 taskkill 强制终止 Edge 浏览器进程"""
+    try:
+        subprocess.run(
+            ["taskkill", "/f", "/im", "msedge.exe"],
+            check=False,
+            creationflags=subprocess.CREATE_NO_WINDOW
+        )
+        return True
+    except Exception as e:
+        print(f"关闭 Edge 进程出错: {e}")
+        return False
 
 
 # --- Hosts Injection Functions ---
@@ -469,7 +509,7 @@ class RestrictionsToolGUI:
         self.root.resizable(False, False)
 
         # 居中窗口（高度足够容纳所有功能区域）
-        w, h = 480, 480
+        w, h = 480, 520
         x = (self.root.winfo_screenwidth() - w) // 2
         y = (self.root.winfo_screenheight() - h) // 2
         self.root.geometry(f"{w}x{h}+{x}+{y}")
@@ -521,7 +561,7 @@ class RestrictionsToolGUI:
 
         tk.Label(
             author_frame,
-            text="作者：小宝科技站 (xbkjz.cn)　",
+            text="作者：小宝科技站 (",
             font=("微软雅黑", 8),
             fg="gray"
         ).pack(side=tk.LEFT)
@@ -537,6 +577,13 @@ class RestrictionsToolGUI:
         link_lbl.bind("<Button-1>", lambda e: webbrowser.open("https://xbkjz.cn"))
         link_lbl.bind("<Enter>", lambda e: link_lbl.configure(fg="#0044AA"))
         link_lbl.bind("<Leave>", lambda e: link_lbl.configure(fg="#0066CC"))
+
+        tk.Label(
+            author_frame,
+            text=")",
+            font=("微软雅黑", 8),
+            fg="gray"
+        ).pack(side=tk.LEFT)
 
         # ── 主内容区（从上往下 pack）─────────────────────────────────────────
 
@@ -596,6 +643,18 @@ class RestrictionsToolGUI:
             width=10, command=self.toggle_browser_games
         )
         self.bg_btn.pack(side=tk.RIGHT)
+
+        # 4. Edge 下载限制
+        ed_frame = tk.Frame(content_frame)
+        ed_frame.pack(fill=tk.X, pady=3)
+        self.ed_lbl = tk.Label(ed_frame, text="Edge 浏览器下载限制：读取中...", font=("微软雅黑", 9))
+        self.ed_lbl.pack(side=tk.LEFT)
+        self.ed_btn = tk.Button(
+            ed_frame, text="读取中...", font=("微软雅黑", 9),
+            width=10, command=self.toggle_edge_downloads
+        )
+        self.ed_btn.pack(side=tk.RIGHT)
+
 
         # 网站屏蔽（Hosts 注入）LabelFrame
         hosts_lf = tk.LabelFrame(
@@ -666,7 +725,16 @@ class RestrictionsToolGUI:
             self.bg_lbl.configure(text="浏览器离线小游戏：正常启用")
             self.bg_btn.configure(text="禁用游戏")
 
-        # 4. Hosts 注入状态
+        # 4. Edge 下载限制状态
+        ed_disabled = get_edge_downloads_disabled()
+        if ed_disabled:
+            self.ed_lbl.configure(text="Edge 浏览器下载限制：已禁用下载")
+            self.ed_btn.configure(text="允许下载")
+        else:
+            self.ed_lbl.configure(text="Edge 浏览器下载限制：允许下载")
+            self.ed_btn.configure(text="禁用下载")
+
+        # 5. Hosts 注入状态
         hosts_injected = get_hosts_injected()
         if hosts_injected:
             self.hosts_lbl.configure(text="屏蔽规则：已注入系统 Hosts")
@@ -675,7 +743,7 @@ class RestrictionsToolGUI:
             self.hosts_lbl.configure(text="屏蔽规则：未注入")
             self.hosts_btn.configure(text="注入规则")
 
-        # 5. pip 镜像状态
+        # 6. pip 镜像状态
         pip_mirror, pip_url = get_pip_mirror_status()
         if pip_mirror:
             short = pip_url if len(pip_url) <= 38 else pip_url[:35] + "..."
@@ -749,6 +817,33 @@ class RestrictionsToolGUI:
             self.status_lbl.configure(text="设置已保存，需要重启浏览器生效。")
         else:
             messagebox.showerror("错误", "修改浏览器游戏限制失败，请检查管理员权限。")
+
+    def toggle_edge_downloads(self):
+        """切换 Edge 浏览器下载限制状态"""
+        current_state = get_edge_downloads_disabled()
+        next_state = not current_state
+        if set_edge_downloads_disabled(next_state):
+            self.refresh_status()
+            
+            action_text = "已禁用：Edge 将阻止所有下载。" if next_state else "已恢复：Edge 允许所有下载。"
+            
+            ans = messagebox.askyesno(
+                "操作成功",
+                f"Edge 下载设置已保存！\n{action_text}\n\n是否立即尝试关闭 Edge 浏览器以应用设置？"
+            )
+            if ans:
+                self.status_lbl.configure(text="正在尝试关闭 Edge 浏览器...")
+                self.root.update()
+                if kill_edge_process():
+                    self.status_lbl.configure(text="设置已保存，Edge 已成功关闭。")
+                    messagebox.showinfo("提示", "Edge 浏览器已成功关闭，设置已生效。")
+                else:
+                    self.status_lbl.configure(text="设置已保存，但未能关闭 Edge。")
+                    messagebox.showwarning("警告", "未能关闭 Edge 浏览器进程，请手动重启 Edge 浏览器。")
+            else:
+                self.status_lbl.configure(text="设置已保存，需要重启浏览器生效。")
+        else:
+            messagebox.showerror("错误", "修改 Edge 浏览器下载限制失败，请检查管理员权限。")
 
     def toggle_hosts(self):
         """切换 Hosts 注入状态"""
