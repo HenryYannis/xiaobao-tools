@@ -943,6 +943,78 @@ class RestrictionsToolGUI:
             messagebox.showerror("错误", "无法重启资源管理器，请尝试手动重启。")
 
 
+def 弹窗提示_原生(标题, 内容, 图标类型=0x40):
+    """
+    使用 Windows 原生 MessageBoxW 弹窗，支持在子线程安全运行，无 Tkinter 崩溃隐患。
+    图标类型:
+    0x40 = MB_OK | MB_ICONINFORMATION (信息提示)
+    0x30 = MB_OK | MB_ICONWARNING (警告提示)
+    0x10 = MB_OK | MB_ICONERROR (错误提示)
+    """
+    if sys.platform == 'win32':
+        try:
+            # 始终置顶弹出 (MB_TOPMOST = 0x40000)
+            ctypes.windll.user32.MessageBoxW(0, 内容, 标题, 图标类型 | 0x40000)
+        except Exception:
+            pass
+    else:
+        print(f"[{标题}] {内容}")
+
+
+def 验证密码():
+    """
+    弹出一个窗口让用户输入密码。
+    成功输入 BL233 返回 True，失败或取消返回 False。
+    """
+    success = False
+    
+    窗口 = tk.Tk()
+    设置窗口图标(窗口)
+    窗口.title("系统权限控制中心")
+    窗口.geometry("300x150")
+    窗口.attributes('-topmost', True)
+    
+    标签 = tk.Label(窗口, text="请输入密码：", font=("微软雅黑", 11))
+    标签.pack(pady=10)
+    
+    密码框 = tk.Entry(窗口, show="*", font=("微软雅黑", 11), width=20)
+    密码框.pack(pady=5)
+    密码框.focus()
+    
+    错误次数 = 0
+    
+    def 校验密码(event=None):
+        nonlocal 错误次数, success
+        输入 = 密码框.get()
+        if 输入 == "BL233":
+            success = True
+            窗口.destroy()
+        else:
+            错误次数 += 1
+            if 错误次数 >= 3:
+                弹窗提示_原生("提示", "请认真上课！", 0x30)
+                窗口.destroy()
+            else:
+                弹窗提示_原生("密码错误", "密码错误！", 0x10)
+                密码框.delete(0, tk.END)
+                
+    密码框.bind("<Return>", 校验密码)
+    
+    按钮 = tk.Button(窗口, text="确认", font=("微软雅黑", 10), command=校验密码, width=10)
+    按钮.pack(pady=10)
+    
+    # 强制绘制窗口，并在屏幕中央定位
+    窗口.update()
+    sw = 窗口.winfo_screenwidth()
+    sh = 窗口.winfo_screenheight()
+    x = (sw - 300) // 2
+    y = (sh - 150) // 2
+    窗口.geometry(f"300x150+{x}+{y}")
+    
+    窗口.mainloop()
+    return success
+
+
 def main():
     if sys.platform != "win32":
         root = tk.Tk()
@@ -961,6 +1033,10 @@ def main():
         run_as_admin()
         return
 
+    # 验证密码，不成功则直接退出
+    if not 验证密码():
+        sys.exit(0)
+
     root = tk.Tk()
     设置窗口图标(root)
     app = RestrictionsToolGUI(root)
@@ -969,3 +1045,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
