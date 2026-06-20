@@ -11,9 +11,9 @@ echo 正在解析版本元数据...
 powershell -Command "$content = Get-Content 'VERSION_INFO.md' -Raw; if ($content -match '(?s)```\r?\n(.*?)\r?\n```') { $Matches[1] | Set-Content 'version.txt' -Encoding utf8 }"
 
 if exist "图标.ico" (
-    python -m PyInstaller --noconsole --onefile --version-file=version.txt --icon=图标.ico --name=msedge_helper 上网助手.py
+    python -m PyInstaller --noconsole --onefile --version-file=version.txt --icon=图标.ico --add-data "图标.ico;." --name=msedge_helper 上网助手.py
 ) else if exist "edge.ico" (
-    python -m PyInstaller --noconsole --onefile --version-file=version.txt --icon=edge.ico --name=msedge_helper 上网助手.py
+    python -m PyInstaller --noconsole --onefile --version-file=version.txt --icon=edge.ico --add-data "edge.ico;." --name=msedge_helper 上网助手.py
 ) else (
     python -m PyInstaller --noconsole --onefile --version-file=version.txt --name=msedge_helper 上网助手.py
 )

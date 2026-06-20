@@ -206,12 +206,15 @@ def run_as_admin():
     """以管理员身份重新运行程序"""
     if getattr(sys, 'frozen', False):
         executable = sys.executable
-        params = ""
+        params = "--elevated"
     else:
         executable = sys.executable
-        params = f'"{__file__}"'
+        params = f'"{__file__}" --elevated'
     try:
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", executable, params, None, 1)
+        ret = ctypes.windll.shell32.ShellExecuteW(None, "runas", executable, params, None, 1)
+        if int(ret) <= 32:
+            # 提权失败（例如用户在UAC弹窗中点击了“否”）
+            sys.exit(1)
         sys.exit(0)
     except Exception as e:
         print(f"提权失败: {e}")
@@ -891,6 +894,11 @@ def main():
         sys.exit(1)
 
     if not is_admin():
+        if "--elevated" in sys.argv:
+            root = tk.Tk()
+            root.withdraw()
+            messagebox.showerror("权限不足", "本工具需要管理员权限才能运行。\n请右键点击程序并选择“以管理员身份运行”。")
+            sys.exit(1)
         run_as_admin()
         return
 

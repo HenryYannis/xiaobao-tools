@@ -26,11 +26,13 @@ from tkinter import ttk, messagebox
 
 
 if getattr(sys, 'frozen', False):
+    RESOURCE_DIR = sys._MEIPASS
     SCRIPT_DIR = os.path.dirname(os.path.abspath(sys.executable))
+    FOLDER_PATH = os.path.dirname(SCRIPT_DIR)
 else:
-    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-FOLDER_PATH = os.path.dirname(SCRIPT_DIR)
+    RESOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
+    SCRIPT_DIR = RESOURCE_DIR
+    FOLDER_PATH = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 EXCLUDED_FOLDERS = [
     os.path.join(FOLDER_PATH, '.verysync'),
     os.path.join(FOLDER_PATH, 'Scratch 初始程序'),
@@ -90,6 +92,14 @@ class FileCleanerApp:
         self.root.title("文件清理工具")
         self.root.geometry("850x600")
         self.root.minsize(700, 500)
+
+        # 设置窗口图标
+        icon_path = os.path.join(RESOURCE_DIR, "bin.ico")
+        if os.path.exists(icon_path):
+            try:
+                self.root.iconbitmap(icon_path)
+            except Exception:
+                pass
 
         # 优化全局 UI 样式与字体排版
         self.style = ttk.Style()

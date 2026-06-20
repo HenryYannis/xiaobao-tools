@@ -64,6 +64,21 @@ global_mmap_file = None
 显示_休息文本 = 联网时长_分钟
 
 
+if getattr(sys, 'frozen', False):
+    RESOURCE_DIR = sys._MEIPASS
+else:
+    RESOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def 设置窗口图标(window):
+    for name in ["图标.ico", "edge.ico"]:
+        icon_path = os.path.join(RESOURCE_DIR, name)
+        if os.path.exists(icon_path):
+            try:
+                window.iconbitmap(icon_path)
+                break
+            except Exception:
+                pass
+
 def 执行隐藏命令(command):
     """
     替代 os.system，执行命令时不显示黑窗口，也不显示输出结果
@@ -117,9 +132,11 @@ def 弹窗_3秒自动关闭(标题, 内容):
     """最后的弹窗，显示3秒后自动关闭程序"""
     try:
         root = tk.Tk()
+        设置窗口图标(root)
         root.withdraw()
         
         top = tk.Toplevel(root)
+        设置窗口图标(top)
         top.title(标题)
         top.attributes('-topmost', True)
         
@@ -236,6 +253,7 @@ def 向共享内存写入命令(命令):
 def 显示解锁窗口():
     """弹出一个窗口让用户输入密码"""
     窗口 = tk.Tk()
+    设置窗口图标(窗口)
     窗口.title("上网助手")
     窗口.geometry("300x150")
     窗口.attributes('-topmost', True)
@@ -340,6 +358,7 @@ def 显示WiFi断开警告():
         global wifi_warning_window
         try:
             wifi_warning_window = tk.Tk()
+            设置窗口图标(wifi_warning_window)
             wifi_warning_window.title("网络连接警告")
             wifi_warning_window.configure(bg='#1e1e1e')  # 暗黑背景
             
@@ -454,6 +473,7 @@ def 显示U盘锁定警告():
         global usb_warning_window, usb_unlocked
         try:
             usb_warning_window = tk.Tk()
+            设置窗口图标(usb_warning_window)
             usb_warning_window.title("安全警告")
             usb_warning_window.configure(bg='#1e1e1e')  # 暗黑背景
             
