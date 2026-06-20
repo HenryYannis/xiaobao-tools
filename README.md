@@ -14,7 +14,7 @@
 
 ## 🌟 项目特色
 
-1. **零门槛，开箱即用**：绝大多数工具为单一 `.py` 文件，无复杂配置，极速双击或命令行启动。
+1. **零门槛，开箱即用**：绝大多数工具为单一子文件夹收纳，无复杂配置，极速双击或命令行启动。
 2. **场景丰富，解决刚需**：涵盖日常办公、网络管理、多媒体处理、系统底层优化等多维应用场景。
 3. **高规范与自动化**：集成了 GitHub Actions 自动化检查流，遵循 PEP 8 代码规范，并规划了完善的 **OpenAI Codex AI 辅助工作流**。
 
@@ -26,11 +26,11 @@
 
 | 🎯 目标用户群体 | 💡 核心解决需求 (痛点) | 🛠️ 推荐小工具 |
 | :--- | :--- | :--- |
-| 🧑‍🏫 **教育工作者与机房管理员** | 想要在公共机房中限制用户随意下载、乱改壁纸，或移除 Windows 锁屏悬浮小广告；禁用浏览器离线游戏；跨端极速分发课件。 | [系统限制控制中心](./system/System-Restrictions-Tool), [Edge-禁止下载](./system/Edge-Disable-Downloads), [禁止-修改壁纸](./system/Disable-Wallpaper-Change), [移除-了解此图片](./system/Remove-Spotlight-Info), [工具-局域网极速文件共享器](./network/lan_file_share.py) |
-| 🎬 **新媒体创作者与设计师** | 在本地快速进行多段语音拼接录音，或将图片转为高保真 ICO 图标；等时间步长批量无损截取视频画面帧、屏幕截图与图片压缩。 | [工具-图片转图标](./productivity/Image-to-ICO), [工具-音频合并](./productivity/Audio-Merger), [工具-批量视频截图提取器](./productivity/video_frame_extractor.py), [图片批量压缩](./productivity/image_compressor.py), [屏幕截图](./productivity/screen_capture.py) |
+| 🧑‍🏫 **教育工作者与机房管理员** | 想要在公共机房中限制用户随意下载、乱改壁纸，或移除 Windows 锁屏悬浮小广告；禁用浏览器离线游戏；跨端极速分发课件。 | [系统限制控制中心](./system/System-Restrictions-Tool), [Edge-禁止下载](./system/Edge-Disable-Downloads), [禁止-修改壁纸](./system/Disable-Wallpaper-Change), [移除-了解此图片](./system/Remove-Spotlight-Info), [工具-局域网极速文件共享器](./network/LAN-File-Share/lan_file_share.py) |
+| 🎬 **新媒体创作者与设计师** | 在本地快速进行多段语音拼接录音，或将图片转为高保真 ICO 图标；等时间步长批量无损截取视频画面帧、屏幕截图与图片压缩。 | [工具-图片转图标](./productivity/Image-to-ICO), [工具-音频合并](./productivity/Audio-Merger), [工具-批量视频截图提取器](./productivity/Video-Frame-Extractor/video_frame_extractor.py), [图片批量压缩](./productivity/Image-Compressor/image_compressor.py), [屏幕截图](./productivity/Screen-Capture/screen_capture.py) |
 | 🧑‍🎓 **外语学习者与青少年** | 希望在局域网内与同学联机记忆英语单词并进行自我检测，同步提高词汇量。 | [工具-局域网单词联机学习器](./productivity/LAN-Word-Learner) |
-| 🧑‍💻 **独立开发者与 AI 狂热者** | 想要在本地免代理搭建局域网 AI 共享网关；或者一键提取项目所有脚本大纲，供大模型精准进行 Code Review。 | [局域网-Ai对话](./network/LAN-AI-Chat), [工具-代码结构大纲生成器.py](./productivity/code_outline_generator.py) |
-| 💼 **普通办公族与效率达人** | 频繁需要随机生成高强度账户临时密码，或者是精确倒计时；自动记录并一键极速翻译剪贴板文本。 | [临时密码.py](./productivity/temp_password.py), [数字倒计时.py](./productivity/countdown.py), [工具-简易剪贴板历史翻译器](./productivity/clipboard_translator.py) |
+| 🧑‍💻 **独立开发者与 AI 狂热者** | 想要在本地免代理搭建局域网 AI 共享网关；或者一键提取项目所有脚本大纲，供大模型精准进行 Code Review。 | [局域网-Ai对话](./network/LAN-AI-Chat), [工具-代码结构大纲生成器.py](./productivity/Code-Outline-Generator/code_outline_generator.py) |
+| 💼 **普通办公族与效率达人** | 频繁需要随机生成高强度账户临时密码，或者是精确倒计时；自动记录并一键极速翻译剪贴板文本。 | [临时密码.py](./productivity/Temp-Password/temp_password.py), [数字倒计时.py](./productivity/Countdown/countdown.py), [工具-简易剪贴板历史翻译器](./productivity/Clipboard-Translator/clipboard_translator.py) |
 
 ---
 
@@ -42,9 +42,9 @@
 | 工具名称/文件夹 | 英文标识 | 核心功能简介 |
 | :--- | :--- | :--- |
 | [局域网-Ai对话](./network/LAN-AI-Chat) | `LAN-AI-Chat` | 本地局域网内提供多端 AI 对话的前后端交互工具，实现局域网设备免梯免配置共享 AI 能力。 |
-| [工具-局域网极速文件共享器](./network/lan_file_share.py) | `lan_file_share` | 本地目录一键变身局域网文件共享中心与免流量极速跨端上传分发服务。 |
-| [端口扫描工具.py](./network/port_scanner.py) | `port_scanner` | 扫描指定IP地址的开放端口，支持多线程扫描和常见服务识别。 |
-| [网速测试工具.py](./network/speed_test.py) | `speed_test` | 测试网络下载/上传速度、延迟和丢包率的网速测试工具。 |
+| [工具-局域网极速文件共享器](./network/LAN-File-Share/lan_file_share.py) | `lan_file_share` | 本地目录一键变身局域网文件共享中心与免流量极速跨端上传分发服务。 |
+| [端口扫描工具.py](./network/Port-Scanner/port_scanner.py) | `port_scanner` | 扫描指定IP地址的开放端口，支持多线程扫描和常见服务识别。 |
+| [网速测试工具.py](./network/Speed-Test/speed_test.py) | `speed_test` | 测试网络下载/上传速度、延迟和丢包率的网速测试工具。 |
 
 ### 2. 💻 系统管理与浏览器控制 (System & Browser Optimization)
 | 工具名称/文件夹 | 英文标识 | 核心功能简介 |
@@ -54,25 +54,25 @@
 | [Edge-联网控制](./system/Edge-Internet-Control) | `Edge-Internet-Control` | 限制或解除 Edge 浏览器联网权限的实用底层脚本。 |
 | [禁止-修改壁纸](./system/Disable-Wallpaper-Change) | `Disable-Wallpaper-Change` | 限制用户修改 Windows 桌面壁纸，防误触/统一企业展示或展台的桌面配置工具。 |
 | [移除-了解此图片](./system/Remove-Spotlight-Info) | `Remove-Spotlight-Info` | 一键移除 Windows 聚焦锁屏界面右上方繁琐的”了解此图片”浮窗，让锁屏界面重回极简干净。 |
-| [系统垃圾清理工具.py](./system/system_cleanup.py) | `system_cleanup` | 清理临时文件、回收站、浏览器缓存、系统日志等系统垃圾的一键清理工具。 |
-| [开机启动项管理工具.py](./system/startup_manager.py) | `startup_manager` | 查看、添加、删除Windows开机启动项的系统管理工具。 |
+| [系统垃圾清理工具.py](./system/System-Cleanup/system_cleanup.py) | `system_cleanup` | 清理临时文件、回收站、浏览器缓存、系统日志等系统垃圾的一键清理工具。 |
+| [开机启动项管理工具.py](./system/Startup-Manager/startup_manager.py) | `startup_manager` | 查看、添加、删除Windows开机启动项的系统管理工具。 |
 
 ### 3. 🛠 办公自动化与实用程序 (Office Automation & Productivity)
 | 工具名称/脚本 | 英文标识 | 核心功能简介 |
 | :--- | :--- | :--- |
 | [工具-图片转图标](./productivity/Image-to-ICO) | `Image-to-ICO` | 本地快速将常用图片格式（PNG/JPG）一键转换为 Windows 支持的 `.ico` 图标，支持多分辨率合并。 |
 | [工具-音频合并](./productivity/Audio-Merger) | `Audio-Merger` | 快速扫描目录并拼接合并多段音频（如 MP3 拼接）的实用多媒体处理脚本。 |
-| [工具-代码结构大纲生成器.py](./productivity/code_outline_generator.py) | `code_outline_generator` | 一键扫描项目，提取其中所有的类、函数定义及文档注释(Docstring)，自动生成精美的项目大纲文档，方便开发者或 AI (Codex) 快速阅读代码架构。 |
-| [工具-简易剪贴板历史翻译器.py](./productivity/clipboard_translator.py) | `clipboard_translator` | 自动捕获系统剪贴板历史，提供无缝的免 Key 极速中英互译并支持一键重新复制。 |
-| [临时密码.py](./productivity/temp_password.py) | `temp_password.py` | 快速生成包含大小写字母、数字和符号的高强度随机临时密码，保障日常账户安全。 |
-| [数字倒计时.py](./productivity/countdown.py) | `countdown.py` | 精确到秒的轻量级数字倒计时及声音提醒程序。 |
-| [进度条.py](./productivity/progress_bar.py) | `progress_bar.py` | 提供给终端和命令行开发者使用的优雅、动感命令行进度条输出模块。 |
-| [批量文件重命名工具.py](./productivity/batch_file_renamer.py) | `batch_file_renamer` | 支持多种重命名模式（前缀/后缀、替换、序号、日期、正则）的批量文件重命名工具。 |
-| [Excel批量处理工具.py](./productivity/excel_batch_processor.py) | `excel_batch_processor` | 批量读取、合并、筛选、统计多个Excel文件的办公效率工具。 |
+| [工具-代码结构大纲生成器.py](./productivity/Code-Outline-Generator/code_outline_generator.py) | `code_outline_generator` | 一键扫描项目，提取其中所有的类、函数定义及文档注释(Docstring)，自动生成精美的项目大纲文档，方便开发者或 AI (Codex) 快速阅读代码架构。 |
+| [工具-简易剪贴板历史翻译器.py](./productivity/Clipboard-Translator/clipboard_translator.py) | `clipboard_translator` | 自动捕获系统剪贴板历史，提供无缝的免 Key 极速中英互译并支持一键重新复制。 |
+| [临时密码.py](./productivity/Temp-Password/temp_password.py) | `temp_password.py` | 快速生成包含大小写字母、数字和符号的高强度随机临时密码，保障日常账户安全。 |
+| [数字倒计时.py](./productivity/Countdown/countdown.py) | `countdown.py` | 精确到秒的轻量级数字倒计时及声音提醒程序。 |
+| [进度条.py](./productivity/Progress-Bar/progress_bar.py) | `progress_bar.py` | 提供给终端和命令行开发者使用的优雅、动感命令行进度条输出模块。 |
+| [批量文件重命名工具.py](./productivity/Batch-File-Renamer/batch_file_renamer.py) | `batch_file_renamer` | 支持多种重命名模式（前缀/后缀、替换、序号、日期、正则）的批量文件重命名工具。 |
+| [Excel批量处理工具.py](./productivity/Excel-Batch-Processor/excel_batch_processor.py) | `excel_batch_processor` | 批量读取、合并、筛选、统计多个Excel文件的办公效率工具。 |
 | [工具-局域网单词联机学习器](./productivity/LAN-Word-Learner) | `LAN-Word-Learner` | 局域网内与同学进行英语单词联机测试与同步记忆的实用学习工具，支持多端数据交互。 |
-| [工具-批量视频截图提取器.py](./productivity/video_frame_extractor.py) | `video_frame_extractor` | 提供视频载入、滑块精准选帧截图，或配置时间步长全自动无损批量截图导出。 |
-| [图片批量压缩工具.py](./productivity/image_compressor.py) | `image_compressor` | 批量压缩图片，支持自定义压缩质量、调整尺寸和多种输出格式。 |
-| [屏幕截图工具.py](./productivity/screen_capture.py) | `screen_capture` | 支持全屏、区域、窗口、延时截图的屏幕截图工具。 |
+| [工具-批量视频截图提取器.py](./productivity/Video-Frame-Extractor/video_frame_extractor.py) | `video_frame_extractor` | 提供视频载入、滑块精准选帧截图，或配置时间步长全自动无损批量截图导出。 |
+| [图片批量压缩工具.py](./productivity/Image-Compressor/image_compressor.py) | `image_compressor` | 批量压缩图片，支持自定义压缩质量、调整尺寸和多种输出格式。 |
+| [屏幕截图工具.py](./productivity/Screen-Capture/screen_capture.py) | `screen_capture` | 支持全屏、区域、窗口、延时截图的屏幕截图工具。 |
 
 ---
 
@@ -83,7 +83,7 @@
 1. **自动化 PR 审查与代码重构 (AI Code Review)**：
    利用 Codex API，在社区或维护者提交新的 Python 小工具 Pull Request 时，自动执行静态代码分析，发现“坏味道”（如内存泄露、冗长逻辑），并直接在 PR 评论中提供重构后的代码片段。
 2. **一键生成单元测试 (AI-driven TDD)**：
-   针对仓库中 20+ 个独立 Python 脚本，使用 Codex 解析其输入和输出，自动在 `tests/` 文件夹下生成基于 `pytest` 的单元测试。这能极大降低个人维护者在 Windows/macOS/Linux 等多平台上进行兼容性测试的成本。
+   针对仓库中 20+ 个独立 Python 脚本，使用 Codex 解析其输入 and 输出，自动在 `tests/` 文件夹下生成基于 `pytest` 的单元测试。这能极大降低个人维护者在 Windows/macOS/Linux 等多平台上进行兼容性测试的成本。
 3. **智能 Issue 诊断与标签分类 (Smart Tagging)**：
    通过 Codex 自动解析用户在 Issue 模版中提交的报错日志（Traceback），识别出错所涉模块（如 `mediapipe`、`pygame`）与操作系统，并自动标记对应的 `os:windows`、`module:vision` 标签，进行首轮自动化排查。
 4. **多语言文档与注释自动补全 (Automated Localization)**：
@@ -110,7 +110,7 @@ pip install -r requirements.txt
 ### 3. 运行示例
 直接在终端或双击运行你感兴趣的工具：
 ```bash
-python productivity/temp_password.py
+python productivity/Temp-Password/temp_password.py
 ```
 
 ---

@@ -26,11 +26,11 @@ This project is not only dedicated to software developers but is highly focused 
 
 | 🎯 Target User Cohort | 💡 Core Problems Resolved (Pain Points) | 🛠️ Recommended Tools |
 | :--- | :--- | :--- |
-| 🧑‍🏫 **Educators & Lab Administrators** | Restricting download actions, locking desktop wallpapers, removing Windows lock screen ads, disabling browser offline games; quick cross-device file sharing. | [System-Restrictions-Tool](./system/System-Restrictions-Tool), [Edge-Disable-Downloads](./system/Edge-Disable-Downloads), [Disable-Wallpaper-Change](./system/Disable-Wallpaper-Change), [Remove-Spotlight-Info](./system/Remove-Spotlight-Info), [LAN-File-Share](./network/lan_file_share.py) |
-| 🎬 **Content Creators & UI Designers** | Merging audio clips locally, converting image formats to ICO; bulk extracting video frames, screen capturing, and compressing images. | [Image-to-ICO](./productivity/Image-to-ICO), [Audio-Merger](./productivity/Audio-Merger), [Video-Frame-Extractor](./productivity/video_frame_extractor.py), [Image-Compressor](./productivity/image_compressor.py), [Screen-Capture](./productivity/screen_capture.py) |
+| 🧑‍🏫 **Educators & Lab Administrators** | Restricting download actions, locking desktop wallpapers, removing Windows lock screen ads, disabling browser offline games; quick cross-device file sharing. | [System-Restrictions-Tool](./system/System-Restrictions-Tool), [Edge-Disable-Downloads](./system/Edge-Disable-Downloads), [Disable-Wallpaper-Change](./system/Disable-Wallpaper-Change), [Remove-Spotlight-Info](./system/Remove-Spotlight-Info), [LAN-File-Share](./network/LAN-File-Share/lan_file_share.py) |
+| 🎬 **Content Creators & UI Designers** | Merging audio clips locally, converting image formats to ICO; bulk extracting video frames, screen capturing, and compressing images. | [Image-to-ICO](./productivity/Image-to-ICO), [Audio-Merger](./productivity/Audio-Merger), [Video-Frame-Extractor](./productivity/Video-Frame-Extractor/video_frame_extractor.py), [Image-Compressor](./productivity/Image-Compressor/image_compressor.py), [Screen-Capture](./productivity/Screen-Capture/screen_capture.py) |
 | 🧑‍🎓 **Language Learners & Students** | Using local network peer-to-peer vocabulary testing and memorization helper to study English words synchronized with others. | [LAN-Word-Learner](./productivity/LAN-Word-Learner) |
-| 🧑‍💻 **Developers & AI Enthusiasts** | Accessing shared AI chat nodes over local network seamlessly; scanning files via AST to build code outlines for precise LLM Code Reviews. | [LAN-AI-Chat](./network/LAN-AI-Chat), [Code-Structure-Outline-Generator](./productivity/code_outline_generator.py) |
-| 💼 **Office Workers & Time Managers** | Generating secure passwords randomly; tracking clipboard history with quick zero-key EN/CN translations, and precise countdown timer. | [temporary_password.py](./productivity/temp_password.py), [countdown.py](./productivity/countdown.py), [Clipboard-Translator](./productivity/clipboard_translator.py) |
+| 🧑‍💻 **Developers & AI Enthusiasts** | Accessing shared AI chat nodes over local network seamlessly; scanning files via AST to build code outlines for precise LLM Code Reviews. | [LAN-AI-Chat](./network/LAN-AI-Chat), [Code-Structure-Outline-Generator](./productivity/Code-Outline-Generator/code_outline_generator.py) |
+| 💼 **Office Workers & Time Managers** | Generating secure passwords randomly; tracking clipboard history with quick zero-key EN/CN translations, and precise countdown timer. | [temporary_password.py](./productivity/Temp-Password/temp_password.py), [countdown.py](./productivity/Countdown/countdown.py), [Clipboard-Translator](./productivity/Clipboard-Translator/clipboard_translator.py) |
 
 ---
 
@@ -42,9 +42,9 @@ To help you quickly locate what you need, our tools are structured into three ma
 | Tool Name / Folder | English Tag | Description |
 | :--- | :--- | :--- |
 | [局域网-Ai对话](./network/LAN-AI-Chat) | `LAN-AI-Chat` | A local LAN server-client utility facilitating multi-device AI chats without complex configurations. |
-| [工具-局域网极速文件共享器](./network/lan_file_share.py) | `lan_file_share` | Exposes a beautiful web page for instant LAN file distribution and mobile-to-PC uploads without internet. |
-| [端口扫描工具.py](./network/port_scanner.py) | `port_scanner` | Scan open ports on a target IP address with multi-threading and common service detection. |
-| [网速测试工具.py](./network/speed_test.py) | `speed_test` | Test network download/upload speed, latency, and packet loss rate. |
+| [工具-局域网极速文件共享器](./network/LAN-File-Share/lan_file_share.py) | `lan_file_share` | Exposes a beautiful web page for instant LAN file distribution and mobile-to-PC uploads without internet. |
+| [端口扫描工具.py](./network/Port-Scanner/port_scanner.py) | `port_scanner` | Scan open ports on a target IP address with multi-threading and common service detection. |
+| [网速测试工具.py](./network/Speed-Test/speed_test.py) | `speed_test` | Test network download/upload speed, latency, and packet loss rate. |
 
 ### 2. 💻 System & Browser Optimization
 | Tool Name / Folder | English Tag | Description |
@@ -54,25 +54,25 @@ To help you quickly locate what you need, our tools are structured into three ma
 | [Edge-联网控制](./system/Edge-Internet-Control) | `Edge-Internet-Control` | A powerful lower-level script to block or permit MS Edge internet permissions dynamically. |
 | [禁止-修改壁纸](./system/Disable-Wallpaper-Change) | `Disable-Wallpaper-Change` | Restricts wallpaper modifications to lock desktop wallpaper, ideal for kiosks or public displays. |
 | [移除-了解此图片](./system/Remove-Spotlight-Info) | `Remove-Spotlight-Info` | Instantly removes the distracting "Learn about this picture" spotlight pop-up from Windows lock screens. |
-| [系统垃圾清理工具.py](./system/system_cleanup.py) | `system_cleanup` | One-click cleanup tool for temporary files, recycle bin, browser cache, system logs, and more. |
-| [开机启动项管理工具.py](./system/startup_manager.py) | `startup_manager` | View, add, and remove Windows startup programs for system management. |
+| [系统垃圾清理工具.py](./system/System-Cleanup/system_cleanup.py) | `system_cleanup` | One-click cleanup tool for temporary files, recycle bin, browser cache, system logs, and more. |
+| [开机启动项管理工具.py](./system/Startup-Manager/startup_manager.py) | `startup_manager` | View, add, and remove Windows startup programs for system management. |
 
 ### 3. 🛠 Office Automation & Productivity
 | Tool Name / Script | English Tag | Description |
 | :--- | :--- | :--- |
 | [工具-图片转图标](./productivity/Image-to-ICO) | `Image-to-ICO` | Converts ordinary image formats (PNG/JPG) locally into high-resolution, multi-size Windows `.ico` icons. |
 | [工具-音频合并](./productivity/Audio-Merger) | `Audio-Merger` | Scans directories and concatenates multiple audio clips (e.g. MP3 files) effortlessly. |
-| [工具-代码结构大纲生成器.py](./productivity/code_outline_generator.py) | `code_outline_generator` | Scans files using Python's AST parser to extract classes, functions, and docstrings into a beautiful markdown outline. |
-| [工具-简易剪贴板历史翻译器.py](./productivity/clipboard_translator.py) | `clipboard_translator` | Tracks copy history on the clipboard and delivers instant zero-key EN-CN bilingual translation. |
-| [临时密码.py](./productivity/temp_password.py) | `temp_password.py` | Generates highly secure, random passwords with customizable lengths and character sets. |
-| [数字倒计时.py](./productivity/countdown.py) | `countdown.py` | A lightweight countdown timer with sound notifications precise to the second. |
-| [进度条.py](./productivity/progress_bar.py) | `progress_bar.py` | An elegant, animated CLI progress bar module designed for command-line developers. |
-| [批量文件重命名工具.py](./productivity/batch_file_renamer.py) | `batch_file_renamer` | Batch file renamer supporting multiple modes: prefix/suffix, replace, sequence, date, and regex. |
-| [Excel批量处理工具.py](./productivity/excel_batch_processor.py) | `excel_batch_processor` | Batch read, merge, filter, and analyze multiple Excel files for office productivity. |
+| [工具-代码结构大纲生成器.py](./productivity/Code-Outline-Generator/code_outline_generator.py) | `code_outline_generator` | Scans files using Python's AST parser to extract classes, functions, and docstrings into a beautiful markdown outline. |
+| [工具-简易剪贴板历史翻译器.py](./productivity/Clipboard-Translator/clipboard_translator.py) | `clipboard_translator` | Tracks copy history on the clipboard and delivers instant zero-key EN-CN bilingual translation. |
+| [临时密码.py](./productivity/Temp-Password/temp_password.py) | `temp_password.py` | Generates highly secure, random passwords with customizable lengths and character sets. |
+| [数字倒计时.py](./productivity/Countdown/countdown.py) | `countdown.py` | A lightweight countdown timer with sound notifications precise to the second. |
+| [进度条.py](./productivity/Progress-Bar/progress_bar.py) | `progress_bar.py` | An elegant, animated CLI progress bar module designed for command-line developers. |
+| [批量文件重命名工具.py](./productivity/Batch-File-Renamer/batch_file_renamer.py) | `batch_file_renamer` | Batch file renamer supporting multiple modes: prefix/suffix, replace, sequence, date, and regex. |
+| [Excel批量处理工具.py](./productivity/Excel-Batch-Processor/excel_batch_processor.py) | `excel_batch_processor` | Batch read, merge, filter, and analyze multiple Excel files for office productivity. |
 | [工具-局域网单词联机学习器](./productivity/LAN-Word-Learner) | `LAN-Word-Learner` | Local network utility to memorize and test English words synchronously, supporting multi-endpoint data synchronization. |
-| [工具-批量视频截图提取器.py](./productivity/video_frame_extractor.py) | `video_frame_extractor` | Grabs frames from local videos sequentially by configurable time intervals or manually via slider. |
-| [图片批量压缩工具.py](./productivity/image_compressor.py) | `image_compressor` | Batch compress images with customizable quality, resize options, and multiple output formats. |
-| [屏幕截图工具.py](./productivity/screen_capture.py) | `screen_capture` | Screen capture tool supporting full screen, region, window, and delayed screenshots. |
+| [工具-批量视频截图提取器.py](./productivity/Video-Frame-Extractor/video_frame_extractor.py) | `video_frame_extractor` | Grabs frames from local videos sequentially by configurable time intervals or manually via slider. |
+| [图片批量压缩工具.py](./productivity/Image-Compressor/image_compressor.py) | `image_compressor` | Batch compress images with customizable quality, resize options, and multiple output formats. |
+| [屏幕截图工具.py](./productivity/Screen-Capture/screen_capture.py) | `screen_capture` | Screen capture tool supporting full screen, region, window, and delayed screenshots. |
 
 ---
 
@@ -109,7 +109,7 @@ pip install -r requirements.txt
 ### 3. Run a Tool
 Execute any Python script directly inside your terminal:
 ```bash
-python productivity/temp_password.py
+python productivity/Temp-Password/temp_password.py
 ```
 
 ---

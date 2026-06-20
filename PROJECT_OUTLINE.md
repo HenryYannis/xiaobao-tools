@@ -6,7 +6,7 @@
 
 ---
 
-## 📄 脚本: [network\lan_file_share.py](./network/lan_file_share.py)
+## 📄 脚本: [network\LAN-File-Share\lan_file_share.py](./network/LAN-File-Share/lan_file_share.py)
 
 **📖 模块简介**: 小宝工具箱 - 局域网极速文件共享器 (LAN File Share Server)
 功能：一键将电脑上的指定目录化身局域网文件共享中心，局域网内的任何手机、平板、电脑只需输入网页地址，
@@ -37,7 +37,7 @@
 
 ---
 
-## 📄 脚本: [network\port_scanner.py](./network/port_scanner.py)
+## 📄 脚本: [network\Port-Scanner\port_scanner.py](./network/Port-Scanner/port_scanner.py)
 
 **📖 模块简介**: 端口扫描工具 (Port Scanner)
 
@@ -69,7 +69,7 @@
 
 ---
 
-## 📄 脚本: [network\speed_test.py](./network/speed_test.py)
+## 📄 脚本: [network\Speed-Test\speed_test.py](./network/Speed-Test/speed_test.py)
 
 **📖 模块简介**: 网速测试工具 (Speed Test Tool)
 
@@ -142,7 +142,7 @@
 
 ---
 
-## 📄 脚本: [productivity\batch_file_renamer.py](./productivity/batch_file_renamer.py)
+## 📄 脚本: [productivity\Batch-File-Renamer\batch_file_renamer.py](./productivity/Batch-File-Renamer/batch_file_renamer.py)
 
 **📖 模块简介**: 批量文件重命名工具 (Batch File Renamer)
 
@@ -172,7 +172,7 @@
 
 ---
 
-## 📄 脚本: [productivity\clipboard_translator.py](./productivity/clipboard_translator.py)
+## 📄 脚本: [productivity\Clipboard-Translator\clipboard_translator.py](./productivity/Clipboard-Translator/clipboard_translator.py)
 
 **📖 模块简介**: 小宝工具箱 - 简易剪贴板历史翻译器 (Clipboard History & Quick Translator)
 功能：后台静默监听系统剪贴板，自动记录历史复制内容，提供一键翻译（中英互译，基于免 key 翻译 API）并一键写回剪贴板。
@@ -199,7 +199,7 @@
 
 ---
 
-## 📄 脚本: [productivity\countdown.py](./productivity/countdown.py)
+## 📄 脚本: [productivity\Countdown\countdown.py](./productivity/Countdown/countdown.py)
 
 **📖 模块简介**: 小宝工具箱 - 倒计时器 (Countdown Timer)
 
@@ -235,7 +235,7 @@
 
 ---
 
-## 📄 脚本: [productivity\excel_batch_processor.py](./productivity/excel_batch_processor.py)
+## 📄 脚本: [productivity\Excel-Batch-Processor\excel_batch_processor.py](./productivity/Excel-Batch-Processor/excel_batch_processor.py)
 
 **📖 模块简介**: Excel批量处理工具 (Excel Batch Processor)
 
@@ -271,7 +271,7 @@
 
 ---
 
-## 📄 脚本: [productivity\image_compressor.py](./productivity/image_compressor.py)
+## 📄 脚本: [productivity\Image-Compressor\image_compressor.py](./productivity/Image-Compressor/image_compressor.py)
 
 **📖 模块简介**: 图片批量压缩工具 (Image Batch Compressor)
 
@@ -361,7 +361,7 @@
 
 ---
 
-## 📄 脚本: [productivity\progress_bar.py](./productivity/progress_bar.py)
+## 📄 脚本: [productivity\Progress-Bar\progress_bar.py](./productivity/Progress-Bar/progress_bar.py)
 
 **📖 模块简介**: 小宝工具箱 - 命令行进度条 (Progress Bar)
 
@@ -388,7 +388,7 @@
 
 ---
 
-## 📄 脚本: [productivity\screen_capture.py](./productivity/screen_capture.py)
+## 📄 脚本: [productivity\Screen-Capture\screen_capture.py](./productivity/Screen-Capture/screen_capture.py)
 
 **📖 模块简介**: 屏幕截图工具 (Screen Capture Tool)
 
@@ -426,7 +426,7 @@
 
 ---
 
-## 📄 脚本: [productivity\temp_password.py](./productivity/temp_password.py)
+## 📄 脚本: [productivity\Temp-Password\temp_password.py](./productivity/Temp-Password/temp_password.py)
 
 **📖 模块简介**: 小宝工具箱 - 临时密码生成器 (Temporary Password Generator)
 
@@ -461,7 +461,7 @@
 
 ---
 
-## 📄 脚本: [productivity\video_frame_extractor.py](./productivity/video_frame_extractor.py)
+## 📄 脚本: [productivity\Video-Frame-Extractor\video_frame_extractor.py](./productivity/Video-Frame-Extractor/video_frame_extractor.py)
 
 **📖 模块简介**: 小宝工具箱 - 批量视频截图提取器 (Video Frame Extractor)
 功能：一键载入本地任意格式视频（MP4/MKV/AVI等），支持配置等时间步长（例如每 5 秒提取一张）全自动无损批量导出高清截图；
@@ -782,7 +782,7 @@
 
 ---
 
-## 📄 脚本: [system\startup_manager.py](./system/startup_manager.py)
+## 📄 脚本: [system\Startup-Manager\startup_manager.py](./system/Startup-Manager/startup_manager.py)
 
 **📖 模块简介**: 开机启动项管理工具 (Startup Manager)
 
@@ -812,7 +812,7 @@
 
 ---
 
-## 📄 脚本: [system\system_cleanup.py](./system/system_cleanup.py)
+## 📄 脚本: [system\System-Cleanup\system_cleanup.py](./system/System-Cleanup/system_cleanup.py)
 
 **📖 模块简介**: 系统垃圾清理工具 (System Cleanup Tool)
 

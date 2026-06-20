@@ -165,7 +165,7 @@ def generate_outline(target_dir, output_file):
 
 if __name__ == "__main__":
     # 默认扫描当前脚本所在的项目根目录（当前路径的上一级或根目录）
-    current_dir = Path(__file__).resolve().parents[1]
+    current_dir = Path(__file__).resolve().parents[2]
     output_report = current_dir / "PROJECT_OUTLINE.md"
     
     print("=" * 60)
