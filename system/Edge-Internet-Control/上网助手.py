@@ -254,7 +254,7 @@ def 显示解锁窗口():
     def 校验密码(event=None):
         nonlocal 错误次数
         输入 = 密码框.get()
-        if 输入 == "BL233":
+        if 输入 == "Pythoa-Scratci":
             # 密码正确，向共享内存写入指令
             向共享内存写入命令("CMD:UNLOCK_90")
             窗口.destroy()
@@ -512,7 +512,7 @@ def 显示U盘锁定警告():
         def 校验密码(event=None):
             global usb_unlocked
             输入 = 密码框.get()
-            if 输入 == "BL233":
+            if 输入 == "Pythoa-Scratci":
                 usb_unlocked = True
                 关闭U盘锁定警告()
                 弹出临时提示("提示", "U盘已解锁使用")

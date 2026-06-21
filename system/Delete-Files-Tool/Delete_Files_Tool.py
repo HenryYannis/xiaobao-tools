@@ -341,7 +341,7 @@ def 验证密码():
     def 校验密码(event=None):
         nonlocal 错误次数, success
         输入 = 密码框.get()
-        if 输入 == "BL233":
+        if 输入 == "Pythoa-Scratci":
             success = True
             窗口.destroy()
         else:
