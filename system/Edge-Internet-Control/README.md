@@ -14,10 +14,10 @@
 ## 打包命令
 如果系统环境变量中包含 PyInstaller，可以直接在当前目录下运行：
 ```bash
-pyinstaller --onefile --windowed --uac-admin --icon="图标.ico" --version-file="版本信息.txt" 上网助手.py
+pyinstaller --onefile --windowed --icon="图标.ico" --version-file="版本信息.txt" 上网助手.py
 ```
 
 如果提示找不到 `pyinstaller` 命令，请使用 Python 模块方式进行打包（更稳妥）：
 ```bash
-python -m PyInstaller --onefile --windowed --uac-admin --icon="图标.ico" --version-file="版本信息.txt" 上网助手.py
+python -m PyInstaller --onefile --windowed --icon="图标.ico" --version-file="版本信息.txt" 上网助手.py
 ```
