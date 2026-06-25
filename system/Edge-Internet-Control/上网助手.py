@@ -50,6 +50,10 @@ else:
 MUTEX_NAME = "Local\\MyApp_msedge_helper_Mutex"
 SHARED_MEM_NAME = "Local\\MyApp_msedge_helper_Time_Share"
 global_mmap_file = None
+
+# 自动关机时间配置（24小时制，例如 20:15 表示晚上 8:15）
+SHUTDOWN_HOUR = 20
+SHUTDOWN_MINUTE = 15
 # ===============================================
 
 
@@ -542,6 +546,7 @@ def 关闭U盘锁定警告():
 # ================= 【主阻断逻辑】 =================
 
 解锁截止单调 = 0.0
+关机已触发 = False
 
 def 保持弹窗最前():
     global wifi_warning_window, usb_warning_window
@@ -566,9 +571,17 @@ def 保持弹窗最前():
 
 
 def 周期检测():
-    global 解锁截止单调, usb_unlocked, root
+    global 解锁截止单调, usb_unlocked, root, 关机已触发
     try:
-        # 0. WiFi 状态检测
+        现在 = datetime.now()
+        # 0. 自动关机检测 (比如晚上 8:15 之后自动关机)
+        if 现在.hour > SHUTDOWN_HOUR or (现在.hour == SHUTDOWN_HOUR and 现在.minute >= SHUTDOWN_MINUTE):
+            if not 关机已触发:
+                关机已触发 = True
+                # 启动 60 秒倒计时关机
+                执行隐藏命令("shutdown -s -t 60")
+
+        # 0.1 WiFi 状态检测
         if not 检查WiFi是否已连接():
             显示WiFi断开警告()
         else:
@@ -646,8 +659,6 @@ def 主入口():
 
     # 如果是首个运行的实例，直接作为主程序静默在后台启动，无须人工确认
     初始化共享内存()
-    # 执行静默关机命令（12小时后关机）
-    执行隐藏命令("shutdown -s -t 43200")
     # 删除桌面上的 .sb3 和 .ev3 文件
     删除桌面指定文件()
     # 清空系统回收站
