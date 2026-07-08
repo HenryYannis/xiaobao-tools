@@ -406,6 +406,8 @@ def 关闭WiFi断开警告():
 
 usb_warning_window = None
 usb_unlocked = False
+usb_password_entry = None
+usb_confirm_button = None
 
 def 获取当前插入的U盘():
     """
@@ -414,25 +416,31 @@ def 获取当前插入的U盘():
     u盘列表 = []
     if sys.platform != 'win32':
         return u盘列表
-    for letter in "CDEFGHIJKLMNOPQRSTUVWXYZ":
-        drive = f"{letter}:\\"
-        try:
-            dtype = ctypes.windll.kernel32.GetDriveTypeW(drive)
-            if dtype == 2:  # DRIVE_REMOVABLE = 2
-                # 检查该盘符是否真的有介质且可读，排除空读卡器和未插入介质的情况
-                free_bytes = ctypes.c_uint64()
-                total_bytes = ctypes.c_uint64()
-                total_free = ctypes.c_uint64()
-                res = ctypes.windll.kernel32.GetDiskFreeSpaceExW(
-                    drive,
-                    ctypes.byref(free_bytes),
-                    ctypes.byref(total_bytes),
-                    ctypes.byref(total_free)
-                )
-                if res != 0:
-                    u盘列表.append(drive)
-        except Exception:
-            pass
+        
+    # 临时屏蔽 Windows 系统自带的“驱动器中没有磁盘 / 请插入磁盘”系统弹窗提示
+    old_mode = ctypes.windll.kernel32.SetErrorMode(1)  # SEM_FAILCRITICALERRORS = 0x0001
+    try:
+        for letter in "CDEFGHIJKLMNOPQRSTUVWXYZ":
+            drive = f"{letter}:\\"
+            try:
+                dtype = ctypes.windll.kernel32.GetDriveTypeW(drive)
+                if dtype == 2:  # DRIVE_REMOVABLE = 2
+                    # 检查该盘符是否真的有介质且可读，排除空读卡器和未插入介质的情况
+                    free_bytes = ctypes.c_uint64()
+                    total_bytes = ctypes.c_uint64()
+                    total_free = ctypes.c_uint64()
+                    res = ctypes.windll.kernel32.GetDiskFreeSpaceExW(
+                        drive,
+                        ctypes.byref(free_bytes),
+                        ctypes.byref(total_bytes),
+                        ctypes.byref(total_free)
+                    )
+                    if res != 0:
+                        u盘列表.append(drive)
+            except Exception:
+                pass
+    finally:
+        ctypes.windll.kernel32.SetErrorMode(old_mode)
     return u盘列表
 
 
@@ -454,12 +462,21 @@ def 弹出临时提示(标题, 内容):
 
 
 def 显示U盘锁定警告():
-    global usb_warning_window, usb_unlocked, root
+    global usb_warning_window, usb_password_entry, usb_confirm_button, usb_unlocked, root
     if usb_warning_window and usb_warning_window.winfo_exists():
         try:
-            usb_warning_window.attributes('-topmost', True)
-            usb_warning_window.lift()
-            usb_warning_window.focus_force()
+            # 仅当应用失去焦点，或者焦点既不在密码框也不在确认按钮上时，才恢复焦点
+            curr_focus = root.focus_get() if root else None
+            if curr_focus is None:
+                usb_warning_window.attributes('-topmost', True)
+                usb_warning_window.lift()
+                if usb_password_entry and usb_password_entry.winfo_exists():
+                    usb_password_entry.focus_force()
+                else:
+                    usb_warning_window.focus_force()
+            elif curr_focus != usb_password_entry and curr_focus != usb_confirm_button:
+                if usb_password_entry and usb_password_entry.winfo_exists():
+                    usb_password_entry.focus()
         except Exception:
             pass
         return
@@ -511,7 +528,8 @@ def 显示U盘锁定警告():
         # 密码输入框
         密码框 = tk.Entry(main_frame, show="*", font=("微软雅黑", 14), width=25, justify='center')
         密码框.pack(pady=10)
-        密码框.focus()
+        密码框.focus_force()
+        usb_password_entry = 密码框
         
         def 校验密码(event=None):
             global usb_unlocked
@@ -523,17 +541,19 @@ def 显示U盘锁定警告():
             else:
                 弹窗提示_原生("密码错误", "密码错误！", 0x10)
                 密码框.delete(0, tk.END)
+                密码框.focus()
                 
         密码框.bind("<Return>", 校验密码)
         
         按钮 = tk.Button(main_frame, text="确认解锁", font=("微软雅黑", 12), command=校验密码, width=12)
         按钮.pack(pady=10)
+        usb_confirm_button = 按钮
     except Exception:
         pass
 
 
 def 关闭U盘锁定警告():
-    global usb_warning_window
+    global usb_warning_window, usb_password_entry, usb_confirm_button
     if usb_warning_window and usb_warning_window.winfo_exists():
         try:
             usb_warning_window.grab_release()
@@ -541,6 +561,8 @@ def 关闭U盘锁定警告():
         except Exception:
             pass
         usb_warning_window = None
+        usb_password_entry = None
+        usb_confirm_button = None
 
 
 # ================= 【主阻断逻辑】 =================
@@ -553,8 +575,11 @@ def 保持弹窗最前():
     # U盘警告窗口在最上
     if usb_warning_window and usb_warning_window.winfo_exists():
         try:
-            usb_warning_window.attributes('-topmost', True)
-            usb_warning_window.lift()
+            curr_focus = root.focus_get() if root else None
+            # 只有当应用失去焦点时，才强制 lift，避免频繁调用 lift 干扰输入
+            if curr_focus is None:
+                usb_warning_window.attributes('-topmost', True)
+                usb_warning_window.lift()
             if not usb_warning_window.grab_status():
                 usb_warning_window.grab_set()
         except Exception:
@@ -562,8 +587,11 @@ def 保持弹窗最前():
     # WiFi警告窗口
     elif wifi_warning_window and wifi_warning_window.winfo_exists():
         try:
-            wifi_warning_window.attributes('-topmost', True)
-            wifi_warning_window.lift()
+            curr_focus = root.focus_get() if root else None
+            # 只有当应用失去焦点时，才强制 lift
+            if curr_focus is None:
+                wifi_warning_window.attributes('-topmost', True)
+                wifi_warning_window.lift()
             if not wifi_warning_window.grab_status():
                 wifi_warning_window.grab_set()
         except Exception:
