@@ -292,6 +292,9 @@ def 显示解锁窗口():
 # ================= 【WiFi 连接状态检测】 =================
 
 wifi_warning_window = None
+wifi_unlocked = False
+wifi_password_entry = None
+wifi_confirm_button = None
 root = None
 
 def 检查WiFi是否已连接():
@@ -334,12 +337,21 @@ def 检查WiFi是否已连接():
 
 
 def 显示WiFi断开警告():
-    global wifi_warning_window, root
+    global wifi_warning_window, wifi_password_entry, wifi_confirm_button, wifi_unlocked, root
     if wifi_warning_window and wifi_warning_window.winfo_exists():
         try:
-            wifi_warning_window.attributes('-topmost', True)
-            wifi_warning_window.lift()
-            wifi_warning_window.focus_force()
+            # 仅当应用失去焦点，或者焦点既不在密码框也不在确认按钮上时，才恢复焦点
+            curr_focus = root.focus_get() if root else None
+            if curr_focus is None:
+                wifi_warning_window.attributes('-topmost', True)
+                wifi_warning_window.lift()
+                if wifi_password_entry and wifi_password_entry.winfo_exists():
+                    wifi_password_entry.focus_force()
+                else:
+                    wifi_warning_window.focus_force()
+            elif curr_focus != wifi_password_entry and curr_focus != wifi_confirm_button:
+                if wifi_password_entry and wifi_password_entry.winfo_exists():
+                    wifi_password_entry.focus()
         except Exception:
             pass
         return
@@ -378,7 +390,7 @@ def 显示WiFi断开警告():
         
         label_desc = tk.Label(
             main_frame, 
-            text="检测到您的 WiFi 已断开，请立刻重新连接！\n\n温馨提示：即使处于断网状态，也无法打开浏览器或游玩离线小游戏。", 
+            text="检测到您的 WiFi 已断开，请立刻重新连接！\n\n如需临时关闭全屏提示，请输入解锁密码：", 
             font=("微软雅黑", 18), 
             fg="#ffffff",
             bg='#1e1e1e',
@@ -387,12 +399,36 @@ def 显示WiFi断开警告():
             justify='center'
         )
         label_desc.pack()
+        
+        # 密码输入框
+        密码框 = tk.Entry(main_frame, show="*", font=("微软雅黑", 14), width=25, justify='center')
+        密码框.pack(pady=10)
+        密码框.focus_force()
+        wifi_password_entry = 密码框
+        
+        def 校验密码(event=None):
+            global wifi_unlocked
+            输入 = 密码框.get()
+            if 输入 == "Pythoa-Scratci":
+                wifi_unlocked = True
+                关闭WiFi断开警告()
+                弹出临时提示("提示", "WiFi断网警告已解锁")
+            else:
+                弹窗提示_原生("密码错误", "密码错误！", 0x10)
+                密码框.delete(0, tk.END)
+                密码框.focus()
+                
+        密码框.bind("<Return>", 校验密码)
+        
+        按钮 = tk.Button(main_frame, text="确认解锁", font=("微软雅黑", 12), command=校验密码, width=12)
+        按钮.pack(pady=10)
+        wifi_confirm_button = 按钮
     except Exception:
         pass
 
 
 def 关闭WiFi断开警告():
-    global wifi_warning_window
+    global wifi_warning_window, wifi_password_entry, wifi_confirm_button
     if wifi_warning_window and wifi_warning_window.winfo_exists():
         try:
             wifi_warning_window.grab_release()
@@ -400,6 +436,8 @@ def 关闭WiFi断开警告():
         except Exception:
             pass
         wifi_warning_window = None
+        wifi_password_entry = None
+        wifi_confirm_button = None
 
 
 # ================= 【U 盘连接状态检测】 =================
@@ -599,7 +637,7 @@ def 保持弹窗最前():
 
 
 def 周期检测():
-    global 解锁截止单调, usb_unlocked, root, 关机已触发
+    global 解锁截止单调, usb_unlocked, wifi_unlocked, root, 关机已触发
     try:
         现在 = datetime.now()
         # 0. 自动关机检测 (比如晚上 8:15 之后自动关机)
@@ -611,8 +649,10 @@ def 周期检测():
 
         # 0.1 WiFi 状态检测
         if not 检查WiFi是否已连接():
-            显示WiFi断开警告()
+            if not wifi_unlocked:
+                显示WiFi断开警告()
         else:
+            wifi_unlocked = False
             关闭WiFi断开警告()
 
         # 0.1 U 盘状态检测
