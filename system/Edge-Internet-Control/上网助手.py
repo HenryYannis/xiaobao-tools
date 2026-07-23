@@ -275,8 +275,10 @@ def 显示解锁窗口():
         if 输入 == "Pythoa-Scratci":
             # 密码正确，向共享内存写入指令
             向共享内存写入命令("CMD:UNLOCK_90")
-            窗口.destroy()
-            弹窗提示_原生("提示", "联网成功，您获得了 90 分钟的临时上网时间！", 0x40)
+            for widget in 窗口.winfo_children():
+                widget.destroy()
+            tk.Label(窗口, text="联网成功，\n已获得 90 分钟的临时联网时间！", font=("微软雅黑", 11), fg="green").pack(expand=True)
+            窗口.after(3000, 窗口.destroy)
         else:
             错误次数 += 1
             if 错误次数 >= 3:
@@ -380,7 +382,7 @@ def 显示WiFi断开警告():
         
         label_desc = tk.Label(
             main_frame, 
-            text="检测到您的 WiFi 已断开，请立刻重新连接！\n\n如需临时关闭全屏提示，请输入解锁密码：", 
+            text="检测到 WiFi 已断开，请立刻重新连接！\n\n如需临时关闭全屏提示，请输入解锁密码：", 
             font=("微软雅黑", 18), 
             fg="#ffffff",
             bg='#1e1e1e',
