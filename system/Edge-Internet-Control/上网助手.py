@@ -116,29 +116,7 @@ def 弹窗提示_原生(标题, 内容, 图标类型=0x40):
         print(f"[{标题}] {内容}")
 
 
-def 弹窗_3秒自动关闭(标题, 内容):
-    """最后的弹窗，显示3秒后自动关闭程序"""
-    try:
-        root = tk.Tk()
-        设置窗口图标(root)
-        root.withdraw()
-        
-        top = tk.Toplevel(root)
-        设置窗口图标(top)
-        top.title(标题)
-        top.attributes('-topmost', True)
-        
-        tk.Label(top, text=内容, font=("微软雅黑", 10), padx=20, pady=20).pack()
-        
-        top.update_idletasks()
-        w, h = top.winfo_width(), top.winfo_height()
-        sw, sh = root.winfo_screenwidth(), root.winfo_screenheight()
-        top.geometry(f"+{(sw-w)//2}+{(sh-h)//2}")
-        
-        root.after(3000, root.destroy)
-        root.mainloop()
-    except:
-        pass
+
 
 
 def 删除桌面指定文件():
@@ -181,8 +159,42 @@ def 清空回收站():
 
 
 def 禁止_edge_上网():
-    """强制结束 Edge 浏览器进程"""
-    执行隐藏命令('taskkill /f /im msedge.exe')
+    """强制结束 Edge 浏览器进程 (使用纯内存 API，0进程创建)"""
+    if sys.platform != 'win32': return
+    try:
+        kernel32 = ctypes.windll.kernel32
+        TH32CS_SNAPPROCESS = 0x00000002
+        class PROCESSENTRY32(ctypes.Structure):
+            _fields_ = [("dwSize", ctypes.c_uint32),
+                        ("cntUsage", ctypes.c_uint32),
+                        ("th32ProcessID", ctypes.c_uint32),
+                        ("th32DefaultHeapID", ctypes.POINTER(ctypes.c_ulong)),
+                        ("th32ModuleID", ctypes.c_uint32),
+                        ("cntThreads", ctypes.c_uint32),
+                        ("th32ParentProcessID", ctypes.c_uint32),
+                        ("pcPriClassBase", ctypes.c_long),
+                        ("dwFlags", ctypes.c_uint32),
+                        ("szExeFile", ctypes.c_char * 260)]
+        snapshot = kernel32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+        if snapshot != -1:
+            pe32 = PROCESSENTRY32()
+            pe32.dwSize = ctypes.sizeof(PROCESSENTRY32)
+            if kernel32.Process32First(snapshot, ctypes.byref(pe32)):
+                while True:
+                    try:
+                        exe_name = pe32.szExeFile.decode('ansi', errors='ignore').lower()
+                        if exe_name == 'msedge.exe':
+                            hProcess = kernel32.OpenProcess(0x0001, False, pe32.th32ProcessID)
+                            if hProcess:
+                                kernel32.TerminateProcess(hProcess, 0)
+                                kernel32.CloseHandle(hProcess)
+                    except:
+                        pass
+                    if not kernel32.Process32Next(snapshot, ctypes.byref(pe32)):
+                        break
+            kernel32.CloseHandle(snapshot)
+    except:
+        pass
 
 
 # ================= 【共享内存操作】 =================
@@ -245,6 +257,8 @@ def 显示解锁窗口():
     窗口.title("上网助手")
     窗口.geometry("300x150")
     窗口.attributes('-topmost', True)
+    窗口.lift()
+    窗口.focus_force()
     
     标签 = tk.Label(窗口, text="请输入密码：", font=("微软雅黑", 11))
     标签.pack(pady=10)
@@ -262,8 +276,7 @@ def 显示解锁窗口():
             # 密码正确，向共享内存写入指令
             向共享内存写入命令("CMD:UNLOCK_90")
             窗口.destroy()
-            # 自动关闭的联网成功提示
-            弹窗_3秒自动关闭("提示", "联网成功")
+            弹窗提示_原生("提示", "联网成功，您获得了 90 分钟的临时上网时间！", 0x40)
         else:
             错误次数 += 1
             if 错误次数 >= 3:
@@ -299,39 +312,16 @@ root = None
 
 def 检查WiFi是否已连接():
     """
-    检查 WiFi 接口的连接状态。
-    返回: True (WiFi 已连接，或系统无 WiFi 接口无需报错)，False (有 WiFi 接口但处于断开状态)
+    检查网络连接状态 (重构为极速纯内存 Windows API 检测，支持所有有线/无线网卡，0 CPU开销)
+    返回: True (有网络), False (断网)
     """
     if sys.platform != 'win32':
         return True
     try:
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        res = subprocess.run(
-            'netsh wlan show interfaces',
-            startupinfo=startupinfo,
-            shell=True,
-            capture_output=True,
-            text=True,
-            encoding='gbk'
-        )
-        output = res.stdout
-        
-        # 如果系统里没有无线网卡，不判定为断开
-        if "没有无线接口" in output or "no wireless interface" in output or "There is no wireless interface" in output:
-            return True
-            
-        # 如果有无线网卡，检查其状态
-        for line in output.splitlines():
-            line_lower = line.lower()
-            if "state" in line_lower or "状态" in line_lower:
-                if "connected" in line_lower or "已连接" in line_lower:
-                    return True
-                if "disconnected" in line_lower or "已断开" in line_lower:
-                    return False
-        
-        # 默认返回 True 避免误报
-        return True
+        flags = ctypes.c_ulong(0)
+        # InternetGetConnectedState 判断当前是否连接了局域网或互联网
+        res = ctypes.windll.wininet.InternetGetConnectedState(ctypes.byref(flags), 0)
+        return bool(res)
     except Exception:
         return True
 
