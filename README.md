@@ -46,18 +46,22 @@
 | [端口扫描工具.py](./network/Port-Scanner/port_scanner.py) | `port_scanner` | 扫描指定IP地址的开放端口，支持多线程扫描和常见服务识别。 |
 | [网速测试工具.py](./network/Speed-Test/speed_test.py) | `speed_test` | 测试网络下载/上传速度、延迟和丢包率的网速测试工具。 |
 
-### 2. 💻 系统管理与浏览器控制 (System & Browser Optimization)
+### 2. ⭐ 常用工具收藏夹 (Favorites - Most Used Tools)
 | 工具名称/文件夹 | 英文标识 | 核心功能简介 |
 | :--- | :--- | :--- |
-| [系统限制控制中心](./system/System-Restrictions-Tool) | `System-Restrictions-Tool` | 一体化系统策略控制工具，集合禁止修改壁纸、移除桌面“了解此图片”、禁止 Chrome 和 Edge 离线小游戏功能。 |
+| [Edge-联网控制](./favorites/Edge-Internet-Control) | `Edge-Internet-Control` | 后台强制关闭 Edge 浏览器，密码解锁临时上网时间，适合家长控制或自律管理。 |
+| [系统限制控制中心](./favorites/lab-assistant) | `lab-assistant` | 一体化系统策略控制：禁止修改壁纸、移除"了解此图片"、禁用浏览器离线游戏、Hosts 屏蔽、pip 镜像配置。 |
+
+### 3. 💻 系统管理与浏览器控制 (System & Browser Optimization)
+| 工具名称/文件夹 | 英文标识 | 核心功能简介 |
+| :--- | :--- | :--- |
 | [Edge-禁止下载](./system/Edge-Disable-Downloads) | `Edge-Disable-Downloads` | 通过注册表与组策略，安全快捷地禁用 Edge 浏览器下载功能，适合公共机器、机房或少儿教学环境。 |
-| [Edge-联网控制](./system/Edge-Internet-Control) | `Edge-Internet-Control` | 限制或解除 Edge 浏览器联网权限的实用底层脚本。 |
 | [禁止-修改壁纸](./system/Disable-Wallpaper-Change) | `Disable-Wallpaper-Change` | 限制用户修改 Windows 桌面壁纸，防误触/统一企业展示或展台的桌面配置工具。 |
 | [移除-了解此图片](./system/Remove-Spotlight-Info) | `Remove-Spotlight-Info` | 一键移除 Windows 聚焦锁屏界面右上方繁琐的”了解此图片”浮窗，让锁屏界面重回极简干净。 |
 | [系统垃圾清理工具.py](./system/System-Cleanup/system_cleanup.py) | `system_cleanup` | 清理临时文件、回收站、浏览器缓存、系统日志等系统垃圾的一键清理工具。 |
 | [开机启动项管理工具.py](./system/Startup-Manager/startup_manager.py) | `startup_manager` | 查看、添加、删除Windows开机启动项的系统管理工具。 |
 
-### 3. 🛠 办公自动化与实用程序 (Office Automation & Productivity)
+### 4. 🛠 办公自动化与实用程序 (Office Automation & Productivity)
 | 工具名称/脚本 | 英文标识 | 核心功能简介 |
 | :--- | :--- | :--- |
 | [工具-图片转图标](./productivity/Image-to-ICO) | `Image-to-ICO` | 本地快速将常用图片格式（PNG/JPG）一键转换为 Windows 支持的 `.ico` 图标，支持多分辨率合并。 |
