@@ -23,9 +23,6 @@ import subprocess
 
 # ================= 【Windows 最前端控制台隐藏 & 安全导入】 =================
 if sys.platform == 'win32':
-    import win32event
-    import win32api
-    import winerror
     import ctypes
     
     # 【免报毒隐藏技术】：获取当前 Python 控制台的句柄并隐藏，实现完美后台静默
@@ -38,10 +35,6 @@ else:
     class Mock:
         def __getattr__(self, name):
             return lambda *args, **kwargs: None
-    win32event = Mock()
-    win32api = Mock()
-    winerror = Mock()
-    winerror.ERROR_ALREADY_EXISTS = 183
     ctypes = Mock()
 
 # ================= 【共享配置】 =================
@@ -54,7 +47,7 @@ SHUTDOWN_MINUTE = 15
 
 
 if getattr(sys, 'frozen', False):
-    RESOURCE_DIR = sys._MEIPASS
+    RESOURCE_DIR = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
 else:
     RESOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -368,10 +361,12 @@ def 主入口():
         sys.exit(0)
 
     handle = None
+    ERROR_ALREADY_EXISTS = 183
     try:
-        # 使用 Mutex 限制单例运行
-        handle = win32event.CreateMutex(None, 1, MUTEX_NAME)
-        is_already_running = (win32api.GetLastError() == winerror.ERROR_ALREADY_EXISTS)
+        # 使用 Windows 原生 Mutex 限制单例运行 (ctypes 零第三方依赖)
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.CreateMutexW(None, False, MUTEX_NAME)
+        is_already_running = (kernel32.GetLastError() == ERROR_ALREADY_EXISTS)
     except Exception:
         sys.exit(1)
 
@@ -380,7 +375,7 @@ def 主入口():
         弹窗提示_原生("提示", "上网助手已在后台运行中。", 0x40)
         if handle:
             try:
-                handle.close()
+                ctypes.windll.kernel32.CloseHandle(handle)
             except Exception:
                 pass
         sys.exit(0)
@@ -398,8 +393,7 @@ def 主入口():
     finally:
         if handle:
             try:
-                win32event.ReleaseMutex(handle)
-                handle.close()
+                ctypes.windll.kernel32.CloseHandle(handle)
             except Exception:
                 pass
         sys.exit(0)
