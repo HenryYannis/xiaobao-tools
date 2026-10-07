@@ -1,0 +1,30 @@
+# UTF-8
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    # 将版本数字都改为 (4, 5, 1, 5)
+    filevers=(4, 5, 1, 5),
+    prodvers=(4, 5, 1, 5),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+    ),
+  kids=[
+    StringFileInfo(
+      [
+      StringTable(
+        u'000004b0',
+        [StringStruct(u'CompanyName', u'Microsoft Corporation'),
+        StringStruct(u'FileDescription', u'Microsoft Edge Manager Helper'),  # ⬅️ 更改这里
+        StringStruct(u'FileVersion', u'125.0.2535.85'),
+        StringStruct(u'InternalName', u'msedge_helper'),
+        StringStruct(u'LegalCopyright', u'© Microsoft Corporation. All rights reserved.'),
+        StringStruct(u'OriginalFilename', u'msedge_helper.exe'),
+        StringStruct(u'ProductName', u'Microsoft Edge'),
+        StringStruct(u'ProductVersion', u'125.0.2535.85')])
+      ]),
+    VarFileInfo([VarStruct(u'Translation', [0, 1200])])
+  ]
+)
