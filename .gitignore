@@ -80,3 +80,7 @@ Desktop.ini
 *.exe
 *.bat
 !system/Edge-Internet-Control/*.bat
+
+# Agent runtime and scratch
+.box-agent/
+.box-agent-scratch/

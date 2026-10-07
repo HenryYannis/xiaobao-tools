@@ -1,0 +1,31 @@
+# 机房教学策略配置 - 浏览器允许访问的网址白名单
+# 规则说明：每行一个域名，支持标准域名 (包含子域名与路径)
+# 无需添加 http/https 前缀或末尾斜杠通配符
+
+# 本地与浏览器内部协议
+localhost
+127.0.0.1
+file://*
+edge://*
+chrome://*
+
+# 必应、MSN 与微软底层服务 (保障新标签页与系统弹窗畅通)
+bing.com
+bing.net
+bingapis.com
+msn.cn
+msn.com
+microsoft.com
+live.com
+azureedge.net
+aka.ms
+
+# 小宝科技站 & xbyxz.cn
+xbkjz.cn
+xbyxz.cn
+
+# 中国电子学会考评系统 (QCEIT)
+qceit.org.cn
+
+# Tinkercad 3D/电路设计
+tinkercad.com
