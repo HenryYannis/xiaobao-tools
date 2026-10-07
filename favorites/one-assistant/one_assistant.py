@@ -19,6 +19,8 @@
 
 import os
 import sys
+import time
+import tempfile
 import ctypes
 import configparser
 import shutil
@@ -184,39 +186,33 @@ def apply_wallpaper_and_lockscreen():
 
 
 # --- 辅助函数：注册表底层读写 ---
-def reg_read_dword(hkey, path, value_name):
+def reg_read_value(hkey, path, value_name):
+    """读取注册表键值，自动返回对应类型（DWORD为int，SZ为str）"""
     try:
         with OpenKey(hkey, path, 0, KEY_READ) as key:
             val, _ = QueryValueEx(key, value_name)
             return val
     except Exception:
         return None
+
+# 兼容别名
+reg_read_dword = reg_read_value
+reg_read_string = reg_read_value
+
+def reg_write_value(hkey, path, value_name, value, reg_type=REG_DWORD):
+    try:
+        with CreateKey(hkey, path) as key:
+            SetValueEx(key, value_name, 0, reg_type, value)
+        return True
+    except Exception as e:
+        print(f"[RegWriteError] {path}\\{value_name}: {e}")
+        return False
 
 def reg_write_dword(hkey, path, value_name, value):
-    try:
-        with CreateKey(hkey, path) as key:
-            SetValueEx(key, value_name, 0, REG_DWORD, value)
-        return True
-    except Exception as e:
-        print(f"[RegWriteDwordError] {path}\\{value_name}: {e}")
-        return False
-
-def reg_read_string(hkey, path, value_name):
-    try:
-        with OpenKey(hkey, path, 0, KEY_READ) as key:
-            val, _ = QueryValueEx(key, value_name)
-            return val
-    except Exception:
-        return None
+    return reg_write_value(hkey, path, value_name, value, REG_DWORD)
 
 def reg_write_string(hkey, path, value_name, value):
-    try:
-        with CreateKey(hkey, path) as key:
-            SetValueEx(key, value_name, 0, REG_SZ, value)
-        return True
-    except Exception as e:
-        print(f"[RegWriteStringError] {path}\\{value_name}: {e}")
-        return False
+    return reg_write_value(hkey, path, value_name, value, REG_SZ)
 
 def reg_delete_value(hkey, path, value_name):
     try:
@@ -285,31 +281,23 @@ def restart_explorer():
             pass
         return False
 
-def kill_edge_process():
+def kill_browser_process(process_image):
     try:
         subprocess.run(
-            ["taskkill", "/f", "/im", "msedge.exe"],
+            ["taskkill", "/f", "/im", process_image],
             check=False,
             creationflags=subprocess.CREATE_NO_WINDOW
         )
-        import time
         time.sleep(0.5)
         return True
     except Exception:
         return False
 
+def kill_edge_process():
+    return kill_browser_process("msedge.exe")
+
 def kill_chrome_process():
-    try:
-        subprocess.run(
-            ["taskkill", "/f", "/im", "chrome.exe"],
-            check=False,
-            creationflags=subprocess.CREATE_NO_WINDOW
-        )
-        import time
-        time.sleep(0.5)
-        return True
-    except Exception:
-        return False
+    return kill_browser_process("chrome.exe")
 
 
 # --- 白名单读写配置 ---
@@ -393,7 +381,6 @@ def _set_browser_whitelist(base_reg_path, enabled, custom_rules=None):
 
 # --- 桌面快捷方式管理 (解决单机环境下浏览器启动直达) ---
 def _run_vbs_script(vbs_code):
-    import tempfile
     vbs_path = os.path.join(tempfile.gettempdir(), f"_shortcut_{os.getpid()}.vbs")
     try:
         with open(vbs_path, "w", encoding="utf-8") as f:
@@ -532,6 +519,22 @@ def _set_browser_downloads_disabled(base_reg_path, disabled):
         return s1 and s2
 
 
+def _get_browser_game_disabled(base_reg_path, game_value_name):
+    hklm = reg_read_value(HKEY_LOCAL_MACHINE, base_reg_path, game_value_name)
+    hkcu = reg_read_value(HKEY_CURRENT_USER, base_reg_path, game_value_name)
+    return hklm == 0 or hkcu == 0
+
+def _set_browser_game_disabled(base_reg_path, game_value_name, disabled):
+    if disabled:
+        s1 = reg_write_dword(HKEY_LOCAL_MACHINE, base_reg_path, game_value_name, 0)
+        s2 = reg_write_dword(HKEY_CURRENT_USER, base_reg_path, game_value_name, 0)
+        return s1 or s2
+    else:
+        s1 = reg_delete_value(HKEY_LOCAL_MACHINE, base_reg_path, game_value_name)
+        s2 = reg_delete_value(HKEY_CURRENT_USER, base_reg_path, game_value_name)
+        return s1 and s2
+
+
 # --- Edge 专属函数 ---
 def get_edge_whitelist_locked():
     return _get_browser_whitelist_status(REG_EDGE_PATH)
@@ -546,19 +549,10 @@ def set_edge_startup(enabled, target_url=DEFAULT_STARTUP_URL):
     return set_browser_shortcut("Edge", enabled, target_url)
 
 def get_edge_game_disabled():
-    hklm = reg_read_dword(HKEY_LOCAL_MACHINE, REG_EDGE_PATH, REG_EDGE_GAME_VALUE)
-    hkcu = reg_read_dword(HKEY_CURRENT_USER, REG_EDGE_PATH, REG_EDGE_GAME_VALUE)
-    return hklm == 0 or hkcu == 0
+    return _get_browser_game_disabled(REG_EDGE_PATH, REG_EDGE_GAME_VALUE)
 
 def set_edge_game_disabled(disabled):
-    if disabled:
-        s1 = reg_write_dword(HKEY_LOCAL_MACHINE, REG_EDGE_PATH, REG_EDGE_GAME_VALUE, 0)
-        s2 = reg_write_dword(HKEY_CURRENT_USER, REG_EDGE_PATH, REG_EDGE_GAME_VALUE, 0)
-        return s1 or s2
-    else:
-        s1 = reg_delete_value(HKEY_LOCAL_MACHINE, REG_EDGE_PATH, REG_EDGE_GAME_VALUE)
-        s2 = reg_delete_value(HKEY_CURRENT_USER, REG_EDGE_PATH, REG_EDGE_GAME_VALUE)
-        return s1 and s2
+    return _set_browser_game_disabled(REG_EDGE_PATH, REG_EDGE_GAME_VALUE, disabled)
 
 def get_edge_downloads_disabled():
     return _get_browser_downloads_disabled(REG_EDGE_PATH)
@@ -580,32 +574,52 @@ def get_chrome_startup_status():
 def set_chrome_startup(enabled, target_url=DEFAULT_STARTUP_URL):
     return set_browser_shortcut("Chrome", enabled, target_url)
 
-# 函数别名
-get_edge_shortcut_status = get_edge_startup_status
-set_edge_shortcut = set_edge_startup
-get_chrome_shortcut_status = get_chrome_startup_status
-set_chrome_shortcut = set_chrome_startup
-
 def get_chrome_game_disabled():
-    hklm = reg_read_dword(HKEY_LOCAL_MACHINE, REG_CHROME_PATH, REG_CHROME_GAME_VALUE)
-    hkcu = reg_read_dword(HKEY_CURRENT_USER, REG_CHROME_PATH, REG_CHROME_GAME_VALUE)
-    return hklm == 0 or hkcu == 0
+    return _get_browser_game_disabled(REG_CHROME_PATH, REG_CHROME_GAME_VALUE)
 
 def set_chrome_game_disabled(disabled):
-    if disabled:
-        s1 = reg_write_dword(HKEY_LOCAL_MACHINE, REG_CHROME_PATH, REG_CHROME_GAME_VALUE, 0)
-        s2 = reg_write_dword(HKEY_CURRENT_USER, REG_CHROME_PATH, REG_CHROME_GAME_VALUE, 0)
-        return s1 or s2
-    else:
-        s1 = reg_delete_value(HKEY_LOCAL_MACHINE, REG_CHROME_PATH, REG_CHROME_GAME_VALUE)
-        s2 = reg_delete_value(HKEY_CURRENT_USER, REG_CHROME_PATH, REG_CHROME_GAME_VALUE)
-        return s1 and s2
+    return _set_browser_game_disabled(REG_CHROME_PATH, REG_CHROME_GAME_VALUE, disabled)
 
 def get_chrome_downloads_disabled():
     return _get_browser_downloads_disabled(REG_CHROME_PATH)
 
 def set_chrome_downloads_disabled(disabled):
     return _set_browser_downloads_disabled(REG_CHROME_PATH, disabled)
+
+
+# --- 浏览器集中配置映射 ---
+BROWSERS = {
+    "Edge": {
+        "name": "Edge",
+        "cmd": "msedge",
+        "proc": "msedge.exe",
+        "game_label": "离线冲浪游戏 (Surf)",
+        "game_short_name": "冲浪游戏",
+        "get_wl": get_edge_whitelist_locked,
+        "set_wl": set_edge_whitelist_locked,
+        "get_startup": get_edge_startup_status,
+        "set_startup": set_edge_startup,
+        "get_game": get_edge_game_disabled,
+        "set_game": set_edge_game_disabled,
+        "get_dl": get_edge_downloads_disabled,
+        "set_dl": set_edge_downloads_disabled,
+    },
+    "Chrome": {
+        "name": "Chrome",
+        "cmd": "chrome",
+        "proc": "chrome.exe",
+        "game_label": "离线恐龙游戏 (Dino)",
+        "game_short_name": "恐龙游戏",
+        "get_wl": get_chrome_whitelist_locked,
+        "set_wl": set_chrome_whitelist_locked,
+        "get_startup": get_chrome_startup_status,
+        "set_startup": set_chrome_startup,
+        "get_game": get_chrome_game_disabled,
+        "set_game": set_chrome_game_disabled,
+        "get_dl": get_chrome_downloads_disabled,
+        "set_dl": set_chrome_downloads_disabled,
+    }
+}
 
 
 # --- 桌面与系统常规策略 ---
@@ -860,161 +874,10 @@ class CodingLabAssistantGUI:
         main_content = tk.Frame(self.root, bg="#F8FAFC", padx=16)
         main_content.pack(fill=tk.X, pady=(0, 4))
 
-        # 1. Edge 浏览器访问管控
-        card_edge = tk.LabelFrame(
-            main_content,
-            text=" Edge 浏览器访问策略 ",
-            font=("Microsoft YaHei UI", 9, "bold"),
-            bg="#FFFFFF",
-            fg="#0F172A",
-            padx=12,
-            pady=5,
-            relief=tk.SOLID,
-            bd=1
-        )
-        card_edge.pack(fill=tk.X, pady=(0, 5))
-
-        # 1.1 Edge 白名单
-        row_ewl = tk.Frame(card_edge, bg="#FFFFFF")
-        row_ewl.pack(fill=tk.X, pady=2)
-        self.edge_wl_lbl = tk.Label(row_ewl, text="网址白名单锁定：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        self.edge_wl_lbl.pack(side=tk.LEFT)
-
-        self.edge_wl_cfg_btn = tk.Button(
-            row_ewl, text="管理白名单", font=("Microsoft YaHei UI", 8),
-            bg="#F8FAFC", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
-            command=self.open_whitelist_manager
-        )
-        self.edge_wl_cfg_btn.pack(side=tk.RIGHT, padx=(4, 0))
-
-        self.edge_wl_btn = tk.Button(
-            row_ewl, text="...", font=("Microsoft YaHei UI", 8),
-            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
-            command=self.toggle_edge_whitelist
-        )
-        self.edge_wl_btn.pack(side=tk.RIGHT)
-
-        # 1.2 Edge 桌面直达启动图标
-        row_ept = tk.Frame(card_edge, bg="#FFFFFF")
-        row_ept.pack(fill=tk.X, pady=2)
-        self.edge_portal_lbl = tk.Label(row_ept, text="桌面直达启动图标：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        self.edge_portal_lbl.pack(side=tk.LEFT)
-
-        self.edge_test_btn = tk.Button(
-            row_ept, text="测试打开", font=("Microsoft YaHei UI", 8),
-            bg="#F8FAFC", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
-            command=self.test_open_edge
-        )
-        self.edge_test_btn.pack(side=tk.RIGHT, padx=(4, 0))
-
-        self.edge_portal_btn = tk.Button(
-            row_ept, text="...", font=("Microsoft YaHei UI", 8),
-            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
-            command=self.toggle_edge_startup
-        )
-        self.edge_portal_btn.pack(side=tk.RIGHT)
-
-        # 1.3 Edge 离线游戏
-        row_egm = tk.Frame(card_edge, bg="#FFFFFF")
-        row_egm.pack(fill=tk.X, pady=2)
-        self.edge_game_lbl = tk.Label(row_egm, text="离线冲浪游戏 (Surf)：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        self.edge_game_lbl.pack(side=tk.LEFT)
-        self.edge_game_btn = tk.Button(
-            row_egm, text="...", font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
-            command=self.toggle_edge_game
-        )
-        self.edge_game_btn.pack(side=tk.RIGHT)
-
-        # 1.4 Edge 下载限制
-        row_edl = tk.Frame(card_edge, bg="#FFFFFF")
-        row_edl.pack(fill=tk.X, pady=2)
-        self.edge_dl_lbl = tk.Label(row_edl, text="文件下载限制：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        self.edge_dl_lbl.pack(side=tk.LEFT)
-        self.edge_dl_btn = tk.Button(
-            row_edl, text="...", font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
-            command=self.toggle_edge_downloads
-        )
-        self.edge_dl_btn.pack(side=tk.RIGHT)
-
-        # 2. Chrome 浏览器访问管控 (1:1 对照)
-        card_chrome = tk.LabelFrame(
-            main_content,
-            text=" Chrome 浏览器访问策略 ",
-            font=("Microsoft YaHei UI", 9, "bold"),
-            bg="#FFFFFF",
-            fg="#0F172A",
-            padx=12,
-            pady=5,
-            relief=tk.SOLID,
-            bd=1
-        )
-        card_chrome.pack(fill=tk.X, pady=(0, 5))
-
-        # 2.1 Chrome 白名单
-        row_cwl = tk.Frame(card_chrome, bg="#FFFFFF")
-        row_cwl.pack(fill=tk.X, pady=2)
-        self.chrome_wl_lbl = tk.Label(row_cwl, text="网址白名单锁定：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        self.chrome_wl_lbl.pack(side=tk.LEFT)
-
-        self.chrome_wl_cfg_btn = tk.Button(
-            row_cwl, text="管理白名单", font=("Microsoft YaHei UI", 8),
-            bg="#F8FAFC", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
-            command=self.open_whitelist_manager
-        )
-        self.chrome_wl_cfg_btn.pack(side=tk.RIGHT, padx=(4, 0))
-
-        self.chrome_wl_btn = tk.Button(
-            row_cwl, text="...", font=("Microsoft YaHei UI", 8),
-            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
-            command=self.toggle_chrome_whitelist
-        )
-        self.chrome_wl_btn.pack(side=tk.RIGHT)
-
-        # 2.2 Chrome 桌面直达启动图标
-        row_cpt = tk.Frame(card_chrome, bg="#FFFFFF")
-        row_cpt.pack(fill=tk.X, pady=2)
-        self.chrome_portal_lbl = tk.Label(row_cpt, text="桌面直达启动图标：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        self.chrome_portal_lbl.pack(side=tk.LEFT)
-
-        self.chrome_test_btn = tk.Button(
-            row_cpt, text="测试打开", font=("Microsoft YaHei UI", 8),
-            bg="#F8FAFC", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
-            command=self.test_open_chrome
-        )
-        self.chrome_test_btn.pack(side=tk.RIGHT, padx=(4, 0))
-
-        self.chrome_portal_btn = tk.Button(
-            row_cpt, text="...", font=("Microsoft YaHei UI", 8),
-            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
-            command=self.toggle_chrome_startup
-        )
-        self.chrome_portal_btn.pack(side=tk.RIGHT)
-
-        # 2.3 Chrome 离线游戏
-        row_cgm = tk.Frame(card_chrome, bg="#FFFFFF")
-        row_cgm.pack(fill=tk.X, pady=2)
-        self.chrome_game_lbl = tk.Label(row_cgm, text="离线恐龙游戏 (Dino)：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        self.chrome_game_lbl.pack(side=tk.LEFT)
-        self.chrome_game_btn = tk.Button(
-            row_cgm, text="...", font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
-            command=self.toggle_chrome_game
-        )
-        self.chrome_game_btn.pack(side=tk.RIGHT)
-
-        # 2.4 Chrome 下载限制
-        row_cdl = tk.Frame(card_chrome, bg="#FFFFFF")
-        row_cdl.pack(fill=tk.X, pady=2)
-        self.chrome_dl_lbl = tk.Label(row_cdl, text="文件下载限制：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        self.chrome_dl_lbl.pack(side=tk.LEFT)
-        self.chrome_dl_btn = tk.Button(
-            row_cdl, text="...", font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
-            command=self.toggle_chrome_downloads
-        )
-        self.chrome_dl_btn.pack(side=tk.RIGHT)
+        # 1 & 2. 浏览器访问管控 (Edge 与 Chrome 统一结构)
+        self.browser_widgets = {}
+        for b_key in ("Edge", "Chrome"):
+            self._build_browser_card(main_content, b_key)
 
         # 3. 桌面与系统规范
         card_desk = tk.LabelFrame(
@@ -1119,73 +982,131 @@ class CodingLabAssistantGUI:
         )
         self.lp_btn.pack(side=tk.RIGHT)
 
+    def _build_browser_card(self, parent, b_key):
+        cfg = BROWSERS[b_key]
+        name = cfg["name"]
+        card = tk.LabelFrame(
+            parent,
+            text=f" {name} 浏览器访问策略 ",
+            font=("Microsoft YaHei UI", 9, "bold"),
+            bg="#FFFFFF",
+            fg="#0F172A",
+            padx=12,
+            pady=5,
+            relief=tk.SOLID,
+            bd=1
+        )
+        card.pack(fill=tk.X, pady=(0, 5))
+
+        widgets = {}
+
+        # 1. 白名单
+        row_wl = tk.Frame(card, bg="#FFFFFF")
+        row_wl.pack(fill=tk.X, pady=2)
+        widgets["wl_lbl"] = tk.Label(row_wl, text="网址白名单锁定：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
+        widgets["wl_lbl"].pack(side=tk.LEFT)
+
+        widgets["wl_cfg_btn"] = tk.Button(
+            row_wl, text="管理白名单", font=("Microsoft YaHei UI", 8),
+            bg="#F8FAFC", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
+            command=self.open_whitelist_manager
+        )
+        widgets["wl_cfg_btn"].pack(side=tk.RIGHT, padx=(4, 0))
+
+        widgets["wl_btn"] = tk.Button(
+            row_wl, text="...", font=("Microsoft YaHei UI", 8),
+            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
+            command=lambda: self._toggle_browser_whitelist(b_key)
+        )
+        widgets["wl_btn"].pack(side=tk.RIGHT)
+
+        # 2. 桌面直达启动图标
+        row_pt = tk.Frame(card, bg="#FFFFFF")
+        row_pt.pack(fill=tk.X, pady=2)
+        widgets["portal_lbl"] = tk.Label(row_pt, text="桌面直达启动图标：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
+        widgets["portal_lbl"].pack(side=tk.LEFT)
+
+        widgets["test_btn"] = tk.Button(
+            row_pt, text="测试打开", font=("Microsoft YaHei UI", 8),
+            bg="#F8FAFC", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
+            command=lambda: self._test_open_browser(b_key)
+        )
+        widgets["test_btn"].pack(side=tk.RIGHT, padx=(4, 0))
+
+        widgets["portal_btn"] = tk.Button(
+            row_pt, text="...", font=("Microsoft YaHei UI", 8),
+            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
+            command=lambda: self._toggle_browser_startup(b_key)
+        )
+        widgets["portal_btn"].pack(side=tk.RIGHT)
+
+        # 3. 离线游戏
+        row_gm = tk.Frame(card, bg="#FFFFFF")
+        row_gm.pack(fill=tk.X, pady=2)
+        widgets["game_lbl"] = tk.Label(row_gm, text=f"{cfg['game_label']}：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
+        widgets["game_lbl"].pack(side=tk.LEFT)
+        widgets["game_btn"] = tk.Button(
+            row_gm, text="...", font=("Microsoft YaHei UI", 8),
+            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
+            command=lambda: self._toggle_browser_game(b_key)
+        )
+        widgets["game_btn"].pack(side=tk.RIGHT)
+
+        # 4. 下载限制
+        row_dl = tk.Frame(card, bg="#FFFFFF")
+        row_dl.pack(fill=tk.X, pady=2)
+        widgets["dl_lbl"] = tk.Label(row_dl, text="文件下载限制：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
+        widgets["dl_lbl"].pack(side=tk.LEFT)
+        widgets["dl_btn"] = tk.Button(
+            row_dl, text="...", font=("Microsoft YaHei UI", 8),
+            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
+            command=lambda: self._toggle_browser_downloads(b_key)
+        )
+        widgets["dl_btn"].pack(side=tk.RIGHT)
+
+        self.browser_widgets[b_key] = widgets
+
+    def _refresh_browser_status(self, b_key):
+        cfg = BROWSERS[b_key]
+        w = self.browser_widgets[b_key]
+
+        wl_locked = cfg["get_wl"]()
+        if wl_locked:
+            w["wl_lbl"].configure(text="网址白名单锁定：已开启限制 (仅允许白名单网站)")
+            w["wl_btn"].configure(text="解除限制", bg="#FFFFFF", fg="#0F172A")
+        else:
+            w["wl_lbl"].configure(text="网址白名单锁定：未锁定 (允许自由访问全网)")
+            w["wl_btn"].configure(text="开启限制", bg="#0F172A", fg="#FFFFFF")
+
+        pt_on = cfg["get_startup"]()
+        if pt_on:
+            w["portal_lbl"].configure(text="桌面直达启动图标：已配置直达 (双击直达目标主页)")
+            w["portal_btn"].configure(text="恢复默认", bg="#FFFFFF", fg="#0F172A")
+        else:
+            w["portal_lbl"].configure(text="桌面直达启动图标：默认启动图标 (未绑定直达参数)")
+            w["portal_btn"].configure(text="配置直达", bg="#0F172A", fg="#FFFFFF")
+
+        gm_off = cfg["get_game"]()
+        if gm_off:
+            w["game_lbl"].configure(text=f"{cfg['game_label']}：已禁用")
+            w["game_btn"].configure(text="允许游戏")
+        else:
+            w["game_lbl"].configure(text=f"{cfg['game_label']}：未禁用")
+            w["game_btn"].configure(text="禁用游戏")
+
+        dl_off = cfg["get_dl"]()
+        if dl_off:
+            w["dl_lbl"].configure(text="文件下载限制：已禁止所有文件下载")
+            w["dl_btn"].configure(text="允许下载")
+        else:
+            w["dl_lbl"].configure(text="文件下载限制：允许下载")
+            w["dl_btn"].configure(text="禁止下载")
+
     # ── 状态读取与刷新 ────────────────────────────────────────────────
     def refresh_status(self):
-        # 1. Edge 策略刷新
-        edge_wl_locked = get_edge_whitelist_locked()
-        if edge_wl_locked:
-            self.edge_wl_lbl.configure(text="网址白名单锁定：已开启限制 (仅允许白名单网站)")
-            self.edge_wl_btn.configure(text="解除限制", bg="#FFFFFF", fg="#0F172A")
-        else:
-            self.edge_wl_lbl.configure(text="网址白名单锁定：未锁定 (允许自由访问全网)")
-            self.edge_wl_btn.configure(text="开启限制", bg="#0F172A", fg="#FFFFFF")
-
-        edge_pt_on = get_edge_startup_status()
-        if edge_pt_on:
-            self.edge_portal_lbl.configure(text="桌面直达启动图标：已配置直达 (双击直达目标主页)")
-            self.edge_portal_btn.configure(text="恢复默认", bg="#FFFFFF", fg="#0F172A")
-        else:
-            self.edge_portal_lbl.configure(text="桌面直达启动图标：默认启动图标 (未绑定直达参数)")
-            self.edge_portal_btn.configure(text="配置直达", bg="#0F172A", fg="#FFFFFF")
-
-        edge_gm_off = get_edge_game_disabled()
-        if edge_gm_off:
-            self.edge_game_lbl.configure(text="离线冲浪游戏 (Surf)：已禁用")
-            self.edge_game_btn.configure(text="允许游戏")
-        else:
-            self.edge_game_lbl.configure(text="离线冲浪游戏 (Surf)：未禁用")
-            self.edge_game_btn.configure(text="禁用游戏")
-
-        edge_dl_off = get_edge_downloads_disabled()
-        if edge_dl_off:
-            self.edge_dl_lbl.configure(text="文件下载限制：已禁止所有文件下载")
-            self.edge_dl_btn.configure(text="允许下载")
-        else:
-            self.edge_dl_lbl.configure(text="文件下载限制：允许下载")
-            self.edge_dl_btn.configure(text="禁止下载")
-
-        # 2. Chrome 策略刷新
-        chrome_wl_locked = get_chrome_whitelist_locked()
-        if chrome_wl_locked:
-            self.chrome_wl_lbl.configure(text="网址白名单锁定：已开启限制 (仅允许白名单网站)")
-            self.chrome_wl_btn.configure(text="解除限制", bg="#FFFFFF", fg="#0F172A")
-        else:
-            self.chrome_wl_lbl.configure(text="网址白名单锁定：未锁定 (允许自由访问全网)")
-            self.chrome_wl_btn.configure(text="开启限制", bg="#0F172A", fg="#FFFFFF")
-
-        chrome_pt_on = get_chrome_startup_status()
-        if chrome_pt_on:
-            self.chrome_portal_lbl.configure(text="桌面直达启动图标：已配置直达 (双击直达目标主页)")
-            self.chrome_portal_btn.configure(text="恢复默认", bg="#FFFFFF", fg="#0F172A")
-        else:
-            self.chrome_portal_lbl.configure(text="桌面直达启动图标：默认启动图标 (未绑定直达参数)")
-            self.chrome_portal_btn.configure(text="配置直达", bg="#0F172A", fg="#FFFFFF")
-
-        chrome_gm_off = get_chrome_game_disabled()
-        if chrome_gm_off:
-            self.chrome_game_lbl.configure(text="离线恐龙游戏 (Dino)：已禁用")
-            self.chrome_game_btn.configure(text="允许游戏")
-        else:
-            self.chrome_game_lbl.configure(text="离线恐龙游戏 (Dino)：未禁用")
-            self.chrome_game_btn.configure(text="禁用游戏")
-
-        chrome_dl_off = get_chrome_downloads_disabled()
-        if chrome_dl_off:
-            self.chrome_dl_lbl.configure(text="文件下载限制：已禁止所有文件下载")
-            self.chrome_dl_btn.configure(text="允许下载")
-        else:
-            self.chrome_dl_lbl.configure(text="文件下载限制：允许下载")
-            self.chrome_dl_btn.configure(text="禁止下载")
+        # 1 & 2. 浏览器策略刷新 (Edge 与 Chrome 统一处理)
+        for b_key in ("Edge", "Chrome"):
+            self._refresh_browser_status(b_key)
 
         # 3. 桌面与系统规范
         wp_locked = get_wallpaper_locked()
@@ -1287,22 +1208,16 @@ class CodingLabAssistantGUI:
             raw = text_area.get("1.0", tk.END).strip().splitlines()
             cleaned = [line.strip() for line in raw if line.strip() and not line.strip().startswith("#")]
             if save_whitelist(cleaned):
-                edge_on = get_edge_whitelist_locked()
-                chrome_on = get_chrome_whitelist_locked()
-                if edge_on:
-                    set_edge_whitelist_locked(True, cleaned)
-                if chrome_on:
-                    set_chrome_whitelist_locked(True, cleaned)
+                active_browsers = [cfg for cfg in BROWSERS.values() if cfg["get_wl"]()]
+                for b_cfg in active_browsers:
+                    b_cfg["set_wl"](True, cleaned)
                 win.destroy()
                 self.refresh_status()
-                if edge_on or chrome_on:
+                if active_browsers:
                     if messagebox.askyesno("保存成功", f"白名单规则已更新并同步写入注册表（共 {len(cleaned)} 条）。\n\n新策略需要重启浏览器生效，是否立即关闭并重启浏览器？"):
-                        if edge_on:
-                            kill_edge_process()
-                            subprocess.Popen(["cmd", "/c", "start", "msedge"], shell=True)
-                        if chrome_on:
-                            kill_chrome_process()
-                            subprocess.Popen(["cmd", "/c", "start", "chrome"], shell=True)
+                        for b_cfg in active_browsers:
+                            kill_browser_process(b_cfg["proc"])
+                            subprocess.Popen(["cmd", "/c", "start", b_cfg["cmd"]], shell=True)
                 else:
                     messagebox.showinfo("成功", f"白名单清单已保存（共 {len(cleaned)} 条）。\n当前白名单处于未开启状态，点击主界面的【开启限制】即可应用。")
             else:
@@ -1331,119 +1246,93 @@ class CodingLabAssistantGUI:
             command=win.destroy
         ).pack(side=tk.LEFT)
 
-    # ── Edge 动作 ──
-    def toggle_edge_whitelist(self):
-        curr = get_edge_whitelist_locked()
+    # ── 浏览器通用动作 ──
+    def _toggle_browser_whitelist(self, b_key):
+        cfg = BROWSERS[b_key]
+        name = cfg["name"]
+        curr = cfg["get_wl"]()
         nxt = not curr
-        if nxt and not messagebox.askyesno("确认", "开启后 Edge 将阻断所有非白名单网站，是否继续？"):
+        if nxt and not messagebox.askyesno("确认", f"开启后 {name} 将阻断所有非白名单网站，是否继续？"):
             return
-        if set_edge_whitelist_locked(nxt):
+        if cfg["set_wl"](nxt):
             self.refresh_status()
-            tip = "Edge 白名单限制已开启。" if nxt else "Edge 白名单限制已解除。"
+            tip = f"{name} 白名单限制已开启。" if nxt else f"{name} 白名单限制已解除。"
             self.status_lbl.configure(text=tip)
-            if messagebox.askyesno("提示", f"{tip}\n\n是否立即重启 Edge 浏览器生效？"):
-                kill_edge_process()
-                subprocess.Popen(["cmd", "/c", "start", "msedge"], shell=True)
+            if messagebox.askyesno("提示", f"{tip}\n\n是否立即重启 {name} 浏览器生效？"):
+                kill_browser_process(cfg["proc"])
+                subprocess.Popen(["cmd", "/c", "start", cfg["cmd"]], shell=True)
         else:
-            messagebox.showerror("错误", "修改 Edge 白名单策略失败。")
+            messagebox.showerror("错误", f"修改 {name} 白名单策略失败。")
 
-    def toggle_edge_startup(self):
-        curr = get_edge_startup_status()
+    def _toggle_browser_startup(self, b_key):
+        cfg = BROWSERS[b_key]
+        name = cfg["name"]
+        curr = cfg["get_startup"]()
         nxt = not curr
-        if set_edge_startup(nxt):
+        if cfg["set_startup"](nxt):
             self.refresh_status()
-            tip = f"Edge 桌面图标已配置直达：{DEFAULT_STARTUP_URL}" if nxt else "Edge 桌面图标已恢复为默认启动。"
+            tip = f"{name} 桌面图标已配置直达：{DEFAULT_STARTUP_URL}" if nxt else f"{name} 桌面图标已恢复为默认启动。"
             self.status_lbl.configure(text=tip)
             if nxt:
-                if messagebox.askyesno("配置成功", f"{tip}\n\n是否立即通过直达参数启动 Edge 验证效果？"):
-                    self.test_open_edge()
+                if messagebox.askyesno("配置成功", f"{tip}\n\n是否立即通过直达参数启动 {name} 验证效果？"):
+                    self._test_open_browser(b_key)
             else:
                 messagebox.showinfo("提示", tip)
         else:
-            messagebox.showerror("错误", "修改 Edge 桌面快捷方式失败，未找到 Edge 安装路径。")
+            messagebox.showerror("错误", f"修改 {name} 桌面快捷方式失败，未找到 {name} 安装路径。")
 
-    def test_open_edge(self):
+    def _test_open_browser(self, b_key):
+        cmd = BROWSERS[b_key]["cmd"]
         try:
-            subprocess.Popen(["cmd", "/c", "start", "msedge", DEFAULT_STARTUP_URL], shell=True)
+            subprocess.Popen(["cmd", "/c", "start", cmd, DEFAULT_STARTUP_URL], shell=True)
         except Exception:
             webbrowser.open(DEFAULT_STARTUP_URL)
 
-    def toggle_edge_game(self):
-        curr = get_edge_game_disabled()
+    def _toggle_browser_game(self, b_key):
+        cfg = BROWSERS[b_key]
+        name = cfg["name"]
+        curr = cfg["get_game"]()
         nxt = not curr
-        if set_edge_game_disabled(nxt):
+        if cfg["set_game"](nxt):
             self.refresh_status()
-            messagebox.showinfo("提示", "Edge 冲浪游戏策略已保存，重启浏览器后生效。")
+            messagebox.showinfo("提示", f"{name} {cfg['game_short_name']}策略已保存，重启浏览器后生效。")
         else:
-            messagebox.showerror("错误", "修改 Edge 游戏策略失败。")
+            messagebox.showerror("错误", f"修改 {name} 游戏策略失败。")
 
-    def toggle_edge_downloads(self):
-        curr = get_edge_downloads_disabled()
+    def _toggle_browser_downloads(self, b_key):
+        cfg = BROWSERS[b_key]
+        name = cfg["name"]
+        curr = cfg["get_dl"]()
         nxt = not curr
-        if set_edge_downloads_disabled(nxt):
+        if cfg["set_dl"](nxt):
             self.refresh_status()
-            act = "已禁止 Edge 下载文件。" if nxt else "已允许 Edge 下载文件。"
-            if messagebox.askyesno("提示", f"{act}\n\n是否立即关闭 Edge 浏览器？"):
-                kill_edge_process()
+            act = f"已禁止 {name} 下载文件。" if nxt else f"已允许 {name} 下载文件。"
+            if messagebox.askyesno("提示", f"{act}\n\n是否立即关闭 {name} 浏览器？"):
+                kill_browser_process(cfg["proc"])
         else:
-            messagebox.showerror("错误", "修改 Edge 下载策略失败。")
+            messagebox.showerror("错误", f"修改 {name} 下载策略失败。")
 
-    # ── Chrome 动作 ──
-    def toggle_chrome_whitelist(self):
-        curr = get_chrome_whitelist_locked()
-        nxt = not curr
-        if nxt and not messagebox.askyesno("确认", "开启后 Chrome 将阻断所有非白名单网站，是否继续？"):
-            return
-        if set_chrome_whitelist_locked(nxt):
-            self.refresh_status()
-            tip = "Chrome 白名单限制已开启。" if nxt else "Chrome 白名单限制已解除。"
-            self.status_lbl.configure(text=tip)
-            if messagebox.askyesno("提示", f"{tip}\n\n是否立即重启 Chrome 浏览器生效？"):
-                kill_chrome_process()
-                subprocess.Popen(["cmd", "/c", "start", "chrome"], shell=True)
-        else:
-            messagebox.showerror("错误", "修改 Chrome 白名单策略失败。")
+    def _manual_restart_browser(self, b_key):
+        cfg = BROWSERS[b_key]
+        name = cfg["name"]
+        kill_browser_process(cfg["proc"])
+        self.status_lbl.configure(text=f"{name} 浏览器已关闭。")
+        messagebox.showinfo("提示", f"{name} 浏览器已关闭，请重新启动以应用新策略。")
 
-    def toggle_chrome_startup(self):
-        curr = get_chrome_startup_status()
-        nxt = not curr
-        if set_chrome_startup(nxt):
-            self.refresh_status()
-            tip = f"Chrome 桌面图标已配置直达：{DEFAULT_STARTUP_URL}" if nxt else "Chrome 桌面图标已恢复为默认启动。"
-            self.status_lbl.configure(text=tip)
-            if nxt:
-                if messagebox.askyesno("配置成功", f"{tip}\n\n是否立即通过直达参数启动 Chrome 验证效果？"):
-                    self.test_open_chrome()
-            else:
-                messagebox.showinfo("提示", tip)
-        else:
-            messagebox.showerror("错误", "修改 Chrome 桌面快捷方式失败，未找到 Chrome 安装路径。")
+    # 快捷委托方法（保留方法接口兼容）
+    def toggle_edge_whitelist(self): self._toggle_browser_whitelist("Edge")
+    def toggle_edge_startup(self): self._toggle_browser_startup("Edge")
+    def test_open_edge(self): self._test_open_browser("Edge")
+    def toggle_edge_game(self): self._toggle_browser_game("Edge")
+    def toggle_edge_downloads(self): self._toggle_browser_downloads("Edge")
+    def manual_restart_edge(self): self._manual_restart_browser("Edge")
 
-    def test_open_chrome(self):
-        try:
-            subprocess.Popen(["cmd", "/c", "start", "chrome", DEFAULT_STARTUP_URL], shell=True)
-        except Exception:
-            webbrowser.open(DEFAULT_STARTUP_URL)
-
-    def toggle_chrome_game(self):
-        curr = get_chrome_game_disabled()
-        nxt = not curr
-        if set_chrome_game_disabled(nxt):
-            self.refresh_status()
-            messagebox.showinfo("提示", "Chrome 恐龙游戏策略已保存，重启浏览器后生效。")
-        else:
-            messagebox.showerror("错误", "修改 Chrome 游戏策略失败。")
-
-    def toggle_chrome_downloads(self):
-        curr = get_chrome_downloads_disabled()
-        nxt = not curr
-        if set_chrome_downloads_disabled(nxt):
-            self.refresh_status()
-            act = "已禁止 Chrome 下载文件。" if nxt else "已允许 Chrome 下载文件。"
-            if messagebox.askyesno("提示", f"{act}\n\n是否立即关闭 Chrome 浏览器？"):
-                kill_chrome_process()
-        else:
-            messagebox.showerror("错误", "修改 Chrome 下载策略失败。")
+    def toggle_chrome_whitelist(self): self._toggle_browser_whitelist("Chrome")
+    def toggle_chrome_startup(self): self._toggle_browser_startup("Chrome")
+    def test_open_chrome(self): self._test_open_browser("Chrome")
+    def toggle_chrome_game(self): self._toggle_browser_game("Chrome")
+    def toggle_chrome_downloads(self): self._toggle_browser_downloads("Chrome")
+    def manual_restart_chrome(self): self._manual_restart_browser("Chrome")
 
     # ── 桌面与系统动作 ──
     def toggle_wallpaper(self):
@@ -1511,32 +1400,22 @@ class CodingLabAssistantGUI:
             self.status_lbl.configure(text="资源管理器重启失败。")
             messagebox.showerror("错误", "无法重启资源管理器。")
 
-    def manual_restart_edge(self):
-        kill_edge_process()
-        self.status_lbl.configure(text="Edge 浏览器已关闭。")
-        messagebox.showinfo("提示", "Edge 浏览器已关闭，请重新启动以应用新策略。")
 
-    def manual_restart_chrome(self):
-        kill_chrome_process()
-        self.status_lbl.configure(text="Chrome 浏览器已关闭。")
-        messagebox.showinfo("提示", "Chrome 浏览器已关闭，请重新启动以应用新策略。")
+def _show_error_and_exit(title, message):
+    root = tk.Tk()
+    设置窗口图标(root)
+    root.withdraw()
+    messagebox.showerror(title, message)
+    sys.exit(1)
 
 
 def main():
     if sys.platform != "win32":
-        root = tk.Tk()
-        设置窗口图标(root)
-        root.withdraw()
-        messagebox.showerror("系统不支持", "本工具仅支持 Windows 操作系统。")
-        sys.exit(1)
+        _show_error_and_exit("系统不支持", "本工具仅支持 Windows 操作系统。")
 
     if not is_admin():
         if "--elevated" in sys.argv:
-            root = tk.Tk()
-            设置窗口图标(root)
-            root.withdraw()
-            messagebox.showerror("权限不足", "本工具需要管理员权限才能运行。\n请右键点击程序并选择“以管理员身份运行”。")
-            sys.exit(1)
+            _show_error_and_exit("权限不足", "本工具需要管理员权限才能运行。\n请右键点击程序并选择“以管理员身份运行”。")
         run_as_admin()
         return
 
