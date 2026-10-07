@@ -14,6 +14,7 @@ if _CURRENT_DIR not in sys.path:
 from config import (
     RESOURCE_DIR,
     CLOUD_SYNC_TASK_NAME,
+    AUTO_SHUTDOWN_TASK_NAME,
     CLOUD_SYNC_SCRIPT_FILENAME,
     CLOUD_SYNC_DEPLOY_DIR,
     CLOUD_SYNC_SCRIPT_PATH,
@@ -68,7 +69,7 @@ def install_cloud_sync_task():
         res = subprocess.run(cmd, capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
         if res.returncode == 0:
             run_cloud_sync_now()
-            return True, "开机静默云端同步任务已成功部署！\n\n- 运行机制：开机自动以最高 SYSTEM 权限在后台静默运行\n- 权限特性：彻底免 UAC 弹窗、无黑框界面、普通学生无权修改\n- 同步源：https://xbkjz.cn/edu/whitelist.txt\n\n学生机每次开机将自动静默同步最新白名单，无需插 U 盘！"
+            return True, "开机静默云端同步任务已成功部署！\n\n- 运行机制：开机自动以最高 SYSTEM 权限在后台静默运行\n- 浏览器管控：自动同步最新白名单并加锁 Edge/Chrome\n- 晚间纪律：自动部署每日 20:15 定时关机策略\n- 权限特性：彻底免 UAC 弹窗、无黑框界面、普通学生无权修改\n- 同步源：https://xbkjz.cn/edu/whitelist.txt\n\n学生机每次开机将自动静默同步最新白名单并确保关机任务生效！"
         else:
             err = res.stderr.strip() or res.stdout.strip()
             return False, f"创建计划任务失败：{err}"
@@ -83,8 +84,15 @@ def uninstall_cloud_sync_task():
             text=True,
             creationflags=subprocess.CREATE_NO_WINDOW
         )
+        # 同步清理关联的晚间定时关机计划任务
+        subprocess.run(
+            ["schtasks", "/delete", "/tn", AUTO_SHUTDOWN_TASK_NAME, "/f"],
+            capture_output=True,
+            text=True,
+            creationflags=subprocess.CREATE_NO_WINDOW
+        )
         if res.returncode == 0:
-            return True, "已成功移除开机云端同步任务。"
+            return True, "已成功移除开机云端同步及晚间自动关机任务。"
         else:
             return False, f"移除任务失败：{res.stderr.strip() or res.stdout.strip()}"
     except Exception as e:

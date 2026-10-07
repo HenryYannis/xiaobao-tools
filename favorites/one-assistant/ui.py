@@ -168,10 +168,10 @@ class CodingLabAssistantGUI:
         for b_key in ("Edge", "Chrome"):
             self._build_browser_card(main_content, b_key)
 
-        # 3. 云端白名单开机自动同步
+        # 3. 开机教学策略与晚间纪律
         card_sync = tk.LabelFrame(
             main_content,
-            text=" 云端白名单开机自动同步 (推荐) ",
+            text=" 开机教学策略与晚间纪律 (推荐) ",
             font=("Microsoft YaHei UI", 9, "bold"),
             bg="#FFFFFF",
             fg="#0F172A",
@@ -184,7 +184,7 @@ class CodingLabAssistantGUI:
 
         row_sync1 = tk.Frame(card_sync, bg="#FFFFFF")
         row_sync1.pack(fill=tk.X, pady=2)
-        self.sync_lbl = tk.Label(row_sync1, text="开机静默同步任务：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
+        self.sync_lbl = tk.Label(row_sync1, text="开机教学策略：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
         self.sync_lbl.pack(side=tk.LEFT)
 
         self.sync_now_btn = tk.Button(
@@ -205,7 +205,7 @@ class CodingLabAssistantGUI:
         row_sync2.pack(fill=tk.X, pady=(2, 1))
         tk.Label(
             row_sync2,
-            text="同步源：https://xbkjz.cn/edu/whitelist.txt (开机免 UAC 静默更新，学生机无需留 exe)",
+            text="包含特性：开机免 UAC 静默更新白名单 | 每日 20:15 定时自动关机",
             font=("Microsoft YaHei UI", 8),
             bg="#FFFFFF",
             fg="#64748B"
@@ -452,14 +452,14 @@ class CodingLabAssistantGUI:
         for b_key in ("Edge", "Chrome"):
             self._refresh_browser_status(b_key)
 
-        # 3. 云端白名单自动同步
+        # 3. 开机教学策略与晚间纪律
         sync_installed = get_cloud_sync_installed()
         if sync_installed:
-            self.sync_lbl.configure(text="开机静默同步任务：已就绪 (开机自动拉取更新)")
+            self.sync_lbl.configure(text="开机教学策略：已就绪 (白名单更新 + 晚间 20:15 关机)")
             self.sync_btn.configure(text="移除开机任务", bg="#FFFFFF", fg="#0F172A")
         else:
-            self.sync_lbl.configure(text="开机静默同步任务：未部署 (需手动插 U 盘更新)")
-            self.sync_btn.configure(text="部署开机同步", bg="#0F172A", fg="#FFFFFF")
+            self.sync_lbl.configure(text="开机教学策略：未部署 (未启用自动同步与关机)")
+            self.sync_btn.configure(text="部署开机任务", bg="#0F172A", fg="#FFFFFF")
 
         # 3. 桌面与系统规范
         wp_locked = get_wallpaper_locked()
@@ -710,7 +710,7 @@ class CodingLabAssistantGUI:
                 self.status_lbl.configure(text="开机同步任务部署失败。")
                 messagebox.showerror("部署失败", msg)
         else:
-            if messagebox.askyesno("移除确认", "是否移除本机的开机云端同步任务？\n\n移除后，学生机将不再自动从云端更新白名单。"):
+            if messagebox.askyesno("移除确认", "是否移除本机的开机静默教学策略？\n\n移除后，学生机将不再自动同步白名单，且晚间自动关机任务将被清理。"):
                 self.status_lbl.configure(text="正在移除开机同步任务...")
                 self.root.update()
                 ok, msg = uninstall_cloud_sync_task()
