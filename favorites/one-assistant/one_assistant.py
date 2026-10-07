@@ -82,6 +82,8 @@ DEFAULT_ALLOWLIST = [
     "qceit.org.cn",
     # Tinkercad 建模与电路
     "tinkercad.com",
+    # 信息学奥赛一本通
+    "ybt.ssoier.cn",
 ]
 
 # --- 注册表路径常量 ---
@@ -622,6 +624,220 @@ BROWSERS = {
 }
 
 
+# --- 云端白名单静默同步配置与任务调度 ---
+CLOUD_WHITELIST_URL = "https://xbkjz.cn/edu/whitelist.txt"
+CLOUD_SYNC_TASK_NAME = "XiaobaoPolicySync"
+CLOUD_SYNC_SCRIPT_FILENAME = "Sync-Whitelist.ps1"
+CLOUD_SYNC_DEPLOY_DIR = r"C:\ProgramData\XiaobaoTools"
+CLOUD_SYNC_SCRIPT_PATH = os.path.join(CLOUD_SYNC_DEPLOY_DIR, CLOUD_SYNC_SCRIPT_FILENAME)
+CLOUD_SYNC_LOG_PATH = os.path.join(CLOUD_SYNC_DEPLOY_DIR, "sync.log")
+
+SYNC_SCRIPT_CONTENT = """# ==============================================================================
+# 机房教学策略 - 浏览器白名单静默同步脚本 (PowerShell 原生版)
+# 设计原则：
+# 1. 兼容 Windows PowerShell 5.1 及更高版本
+# 2. 纯静默无界面运行 (WindowStyle Hidden)
+# 3. 单向拉取与加锁：只有“拉取并锁定白名单”功能，无任何“解除/解锁”代码，防学生逆向与破坏
+# 4. 离线/故障自动降级：网络异常时保留本地缓存，不影响正常使用
+# ==============================================================================
+
+$ErrorActionPreference = 'SilentlyContinue'
+
+$RemoteUrl = "https://xbkjz.cn/edu/whitelist.txt"
+$LocalFallbackPath = "C:\\Users\\A3\\Desktop\\Website\\xiaobao-tech\\edu\\whitelist.txt"
+$CacheDir = "C:\\ProgramData\\XiaobaoTools"
+$CachePath = "C:\\ProgramData\\XiaobaoTools\\whitelist_cache.txt"
+
+$rawText = $null
+
+# 1. 尝试从云端拉取
+try {
+    $wc = New-Object System.Net.WebClient
+    $wc.Encoding = [System.Text.Encoding]::UTF8
+    $rawText = $wc.DownloadString($RemoteUrl)
+    if ($rawText -and $rawText.Trim().Length -gt 0) {
+        if (-not (Test-Path $CacheDir)) {
+            New-Item -ItemType Directory -Path $CacheDir -Force | Out-Null
+        }
+        [System.IO.File]::WriteAllText($CachePath, $rawText, [System.Text.Encoding]::UTF8)
+    }
+} catch {
+    $rawText = $null
+}
+
+# 2. 若云端不可达，尝试读取本地发布文件
+if (-not $rawText) {
+    if (Test-Path $LocalFallbackPath) {
+        try {
+            $rawText = [System.IO.File]::ReadAllText($LocalFallbackPath, [System.Text.Encoding]::UTF8)
+        } catch {
+            $rawText = $null
+        }
+    }
+}
+
+# 3. 若依然没有，尝试读取本地缓存文件
+if (-not $rawText) {
+    if (Test-Path $CachePath) {
+        try {
+            $rawText = [System.IO.File]::ReadAllText($CachePath, [System.Text.Encoding]::UTF8)
+        } catch {
+            $rawText = $null
+        }
+    }
+}
+
+# 如果没有获得任何有效内容，退出以避免破坏现有配置
+if (-not $rawText) {
+    exit 0
+}
+
+# 4. 解析白名单规则
+$rules = New-Object System.Collections.Generic.List[string]
+$lines = $rawText.Split(@("`r`n", "`r", "`n"), [System.StringSplitOptions]::None)
+foreach ($line in $lines) {
+    $trimmed = $line.Trim()
+    if ($trimmed.Length -gt 0 -and -not $trimmed.StartsWith("#")) {
+        $rules.Add($trimmed)
+    }
+}
+
+if ($rules.Count -eq 0) {
+    exit 0
+}
+
+# 5. 写入 Edge 与 Chrome 策略 (涵盖 HKLM 与 HKCU)
+$policyTargets = @(
+    "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+    "HKLM:\\SOFTWARE\\Policies\\Google\\Chrome",
+    "HKCU:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+    "HKCU:\\SOFTWARE\\Policies\\Google\\Chrome"
+)
+
+foreach ($baseKey in $policyTargets) {
+    $blockKey = "$baseKey\\URLBlocklist"
+    $allowKey = "$baseKey\\URLAllowlist"
+
+    if (-not (Test-Path $baseKey)) {
+        New-Item -Path $baseKey -Force | Out-Null
+    }
+    if (-not (Test-Path $blockKey)) {
+        New-Item -Path $blockKey -Force | Out-Null
+    }
+
+    # 封禁非白名单网址
+    Set-ItemProperty -Path $blockKey -Name "1" -Value "*" -Type String -Force
+
+    # 清空并重新写入白名单列表
+    if (Test-Path $allowKey) {
+        Remove-Item -Path $allowKey -Recurse -Force
+    }
+    New-Item -Path $allowKey -Force | Out-Null
+
+    for ($i = 0; $i -lt $rules.Count; $i++) {
+        $idxName = ($i + 1).ToString()
+        Set-ItemProperty -Path $allowKey -Name $idxName -Value $rules[$i] -Type String -Force
+    }
+
+    # 禁用浏览器后台常驻与启动加速，确保策略即时生效
+    Set-ItemProperty -Path $baseKey -Name "StartupBoostEnabled" -Value 0 -Type DWord -Force
+    Set-ItemProperty -Path $baseKey -Name "BackgroundModeEnabled" -Value 0 -Type DWord -Force
+}
+
+# 写入完成日志标记
+try {
+    $logMsg = "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Synced $($rules.Count) rules successfully. Last: $($rules[$rules.Count - 1])`r`n"
+    [System.IO.File]::AppendAllText("C:\\ProgramData\\XiaobaoTools\\sync.log", $logMsg, [System.Text.Encoding]::UTF8)
+} catch {
+    $null
+}
+"""
+
+def get_cloud_sync_installed():
+    if not os.path.exists(CLOUD_SYNC_SCRIPT_PATH):
+        return False
+    try:
+        res = subprocess.run(
+            ["schtasks", "/query", "/tn", CLOUD_SYNC_TASK_NAME],
+            capture_output=True,
+            text=True,
+            creationflags=subprocess.CREATE_NO_WINDOW
+        )
+        return res.returncode == 0
+    except Exception:
+        return False
+
+def deploy_sync_script():
+    try:
+        os.makedirs(CLOUD_SYNC_DEPLOY_DIR, exist_ok=True)
+        src = os.path.join(RESOURCE_DIR, CLOUD_SYNC_SCRIPT_FILENAME)
+        content = ""
+        if os.path.exists(src):
+            try:
+                with open(src, "r", encoding="utf-8-sig") as f:
+                    content = f.read()
+            except Exception:
+                pass
+        if not content:
+            content = SYNC_SCRIPT_CONTENT
+        with open(CLOUD_SYNC_SCRIPT_PATH, "w", encoding="utf-8-sig") as f:
+            f.write(content)
+        return True
+    except Exception:
+        return False
+
+def install_cloud_sync_task():
+    if not deploy_sync_script():
+        return False, "部署同步脚本到系统目录失败。"
+    cmd = [
+        "schtasks", "/create",
+        "/tn", CLOUD_SYNC_TASK_NAME,
+        "/tr", f'powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File "{CLOUD_SYNC_SCRIPT_PATH}"',
+        "/sc", "onstart",
+        "/ru", "SYSTEM",
+        "/f"
+    ]
+    try:
+        res = subprocess.run(cmd, capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        if res.returncode == 0:
+            run_cloud_sync_now()
+            return True, "开机静默云端同步任务已成功部署！\\n\\n- 运行机制：开机自动以最高 SYSTEM 权限在后台静默运行\\n- 权限特性：彻底免 UAC 弹窗、无黑框界面、普通学生无权修改\\n- 同步源：https://xbkjz.cn/edu/whitelist.txt\\n\\n学生机每次开机将自动静默同步最新白名单，无需插 U 盘！"
+        else:
+            err = res.stderr.strip() or res.stdout.strip()
+            return False, f"创建计划任务失败：{err}"
+    except Exception as e:
+        return False, f"执行异常：{e}"
+
+def uninstall_cloud_sync_task():
+    try:
+        res = subprocess.run(
+            ["schtasks", "/delete", "/tn", CLOUD_SYNC_TASK_NAME, "/f"],
+            capture_output=True,
+            text=True,
+            creationflags=subprocess.CREATE_NO_WINDOW
+        )
+        if res.returncode == 0:
+            return True, "已成功移除开机云端同步任务。"
+        else:
+            return False, f"移除任务失败：{res.stderr.strip() or res.stdout.strip()}"
+    except Exception as e:
+        return False, f"执行异常：{e}"
+
+def run_cloud_sync_now():
+    if not os.path.exists(CLOUD_SYNC_SCRIPT_PATH):
+        deploy_sync_script()
+    try:
+        subprocess.run(
+            ["powershell.exe", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", CLOUD_SYNC_SCRIPT_PATH],
+            capture_output=True,
+            creationflags=subprocess.CREATE_NO_WINDOW
+        )
+        return True, "云端同步执行完成，白名单已刷新。"
+    except Exception as e:
+        return False, f"同步执行失败：{e}"
+
+
+
 # --- 桌面与系统常规策略 ---
 def get_wallpaper_locked():
     val = reg_read_dword(HKEY_CURRENT_USER, REG_WALLPAPER_PATH, REG_WALLPAPER_VALUE)
@@ -879,6 +1095,50 @@ class CodingLabAssistantGUI:
         for b_key in ("Edge", "Chrome"):
             self._build_browser_card(main_content, b_key)
 
+        # 3. 云端白名单开机自动同步
+        card_sync = tk.LabelFrame(
+            main_content,
+            text=" 云端白名单开机自动同步 (推荐) ",
+            font=("Microsoft YaHei UI", 9, "bold"),
+            bg="#FFFFFF",
+            fg="#0F172A",
+            padx=12,
+            pady=5,
+            relief=tk.SOLID,
+            bd=1
+        )
+        card_sync.pack(fill=tk.X, pady=(0, 5))
+
+        row_sync1 = tk.Frame(card_sync, bg="#FFFFFF")
+        row_sync1.pack(fill=tk.X, pady=2)
+        self.sync_lbl = tk.Label(row_sync1, text="开机静默同步任务：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
+        self.sync_lbl.pack(side=tk.LEFT)
+
+        self.sync_now_btn = tk.Button(
+            row_sync1, text="立即从云端拉取", font=("Microsoft YaHei UI", 8),
+            bg="#F8FAFC", fg="#0F172A", relief=tk.SOLID, bd=1, width=12, cursor="hand2",
+            command=self.manual_sync_now
+        )
+        self.sync_now_btn.pack(side=tk.RIGHT, padx=(4, 0))
+
+        self.sync_btn = tk.Button(
+            row_sync1, text="...", font=("Microsoft YaHei UI", 8),
+            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=12, cursor="hand2",
+            command=self.toggle_cloud_sync
+        )
+        self.sync_btn.pack(side=tk.RIGHT)
+
+        row_sync2 = tk.Frame(card_sync, bg="#FFFFFF")
+        row_sync2.pack(fill=tk.X, pady=(2, 1))
+        tk.Label(
+            row_sync2,
+            text="同步源：https://xbkjz.cn/edu/whitelist.txt (开机免 UAC 静默更新，学生机无需留 exe)",
+            font=("Microsoft YaHei UI", 8),
+            bg="#FFFFFF",
+            fg="#64748B"
+        ).pack(side=tk.LEFT)
+
+
         # 3. 桌面与系统规范
         card_desk = tk.LabelFrame(
             main_content,
@@ -1108,6 +1368,16 @@ class CodingLabAssistantGUI:
         for b_key in ("Edge", "Chrome"):
             self._refresh_browser_status(b_key)
 
+        # 3. 云端白名单自动同步
+        sync_installed = get_cloud_sync_installed()
+        if sync_installed:
+            self.sync_lbl.configure(text="开机静默同步任务：已就绪 (开机自动拉取更新)")
+            self.sync_btn.configure(text="移除开机任务", bg="#FFFFFF", fg="#0F172A")
+        else:
+            self.sync_lbl.configure(text="开机静默同步任务：未部署 (需手动插 U 盘更新)")
+            self.sync_btn.configure(text="部署开机同步", bg="#0F172A", fg="#FFFFFF")
+
+
         # 3. 桌面与系统规范
         wp_locked = get_wallpaper_locked()
         if wp_locked:
@@ -1333,6 +1603,49 @@ class CodingLabAssistantGUI:
     def toggle_chrome_game(self): self._toggle_browser_game("Chrome")
     def toggle_chrome_downloads(self): self._toggle_browser_downloads("Chrome")
     def manual_restart_chrome(self): self._manual_restart_browser("Chrome")
+
+    # ── 云端同步动作 ──
+    def toggle_cloud_sync(self):
+        curr = get_cloud_sync_installed()
+        if not curr:
+            self.status_lbl.configure(text="正在向系统注册开机静默同步计划任务...")
+            self.root.update()
+            ok, msg = install_cloud_sync_task()
+            self.refresh_status()
+            if ok:
+                self.status_lbl.configure(text="开机静默云端同步任务已部署完成。")
+                messagebox.showinfo("部署成功", msg)
+            else:
+                self.status_lbl.configure(text="开机同步任务部署失败。")
+                messagebox.showerror("部署失败", msg)
+        else:
+            if messagebox.askyesno("移除确认", "是否移除本机的开机云端同步任务？\\n\\n移除后，学生机将不再自动从云端更新白名单。"):
+                self.status_lbl.configure(text="正在移除开机同步任务...")
+                self.root.update()
+                ok, msg = uninstall_cloud_sync_task()
+                self.refresh_status()
+                if ok:
+                    self.status_lbl.configure(text="开机同步任务已移除。")
+                    messagebox.showinfo("提示", msg)
+                else:
+                    self.status_lbl.configure(text="移除开机同步任务失败。")
+                    messagebox.showerror("错误", msg)
+
+    def manual_sync_now(self):
+        self.status_lbl.configure(text="正在从云端拉取白名单并注入系统注册表...")
+        self.root.update()
+        ok, msg = run_cloud_sync_now()
+        self.refresh_status()
+        if ok:
+            active_browsers = [cfg for cfg in BROWSERS.values() if cfg["get_wl"]()]
+            self.status_lbl.configure(text="云端白名单同步已完成。")
+            if messagebox.askyesno("同步完成", "云端白名单已成功拉取并写入系统注册表！\\n\\n是否立即重启浏览器以使新策略生效？"):
+                for b_cfg in active_browsers:
+                    kill_browser_process(b_cfg["proc"])
+                    subprocess.Popen(["cmd", "/c", "start", b_cfg["cmd"]], shell=True)
+        else:
+            self.status_lbl.configure(text="云端同步执行失败。")
+            messagebox.showerror("同步失败", msg)
 
     # ── 桌面与系统动作 ──
     def toggle_wallpaper(self):

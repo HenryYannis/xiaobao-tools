@@ -45,6 +45,7 @@ pyinstaller --onefile --windowed --uac-admin `
   --add-data "bizhi.jpg;." `
   --add-data "system.ico;." `
   --add-data "whitelist.txt;." `
+  --add-data "Sync-Whitelist.ps1;." `
   --icon "system.ico" `
   --name="LabAssistant" one_assistant.py
 ```

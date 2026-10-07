@@ -29,3 +29,6 @@ qceit.org.cn
 
 # Tinkercad 3D/电路设计
 tinkercad.com
+
+# 信息学奥赛一本通
+ybt.ssoier.cn
