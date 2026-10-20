@@ -73,6 +73,7 @@ To help you quickly locate what you need, our tools are structured into three ma
 | [工具-批量视频截图提取器.py](./productivity/Video-Frame-Extractor/video_frame_extractor.py) | `video_frame_extractor` | Grabs frames from local videos sequentially by configurable time intervals or manually via slider. |
 | [图片批量压缩工具.py](./productivity/Image-Compressor/image_compressor.py) | `image_compressor` | Batch compress images with customizable quality, resize options, and multiple output formats. |
 | [屏幕截图工具.py](./productivity/Screen-Capture/screen_capture.py) | `screen_capture` | Screen capture tool supporting full screen, region, window, and delayed screenshots. |
+| [Bitwarden Vault Cleaner & TOTP Migrator](./productivity/Bitwarden-Vault-Cleaner) | `Bitwarden-Vault-Cleaner` | 100% offline, client-side Bitwarden vault deduplication, plaintext password auditing, TOTP QR code migration, and Passkey preservation tool. |
 
 ---
 

@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bitwarden 密码去重清洗与 TOTP 扫码迁移工具</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #151b28;
+      --card-border: #232d42;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --danger-bg: rgba(239, 68, 68, 0.1);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --mono: ui-monospace, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .badge-offline {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+    p.subtitle { color: var(--text-muted); font-size: 13px; margin-top: 6px; }
+
+    /* Drop Zone */
+    .drop-zone {
+      border: 2px dashed var(--card-border);
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 48px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 24px;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--primary);
+      background: rgba(37, 99, 235, 0.05);
+    }
+    .drop-icon { font-size: 42px; margin-bottom: 8px; }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 14px 18px;
+    }
+    .stat-title { font-size: 12px; color: var(--text-muted); }
+    .stat-val { font-size: 26px; font-weight: 700; margin-top: 4px; }
+
+    /* TOTP Migration Card */
+    .totp-migration-card {
+      background: rgba(37, 99, 235, 0.04);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+    .totp-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .totp-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #93c5fd;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Actions Bar */
+    .actions-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .search-input {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      width: 260px;
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { background: #059669; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.05); }
+
+    /* Groups */
+    .group-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .group-card.done {
+      border-color: rgba(16, 185, 129, 0.3);
+      background: rgba(16, 185, 129, 0.02);
+    }
+    .group-header {
+      padding: 12px 18px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .domain-title { font-size: 15px; font-weight: 600; color: #93c5fd; }
+    .user-badge {
+      font-family: var(--mono);
+      background: rgba(0, 0, 0, 0.3);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #f8fafc;
+    }
+
+    /* Items Table */
+    .item-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .item-table th, .item-table td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .item-table th { color: var(--text-muted); font-size: 12px; }
+    .item-table tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+    /* Row Deleted State */
+    .row-deleted {
+      opacity: 0.45;
+      background: rgba(239, 68, 68, 0.04) !important;
+    }
+    .row-deleted td {
+      text-decoration: line-through;
+    }
+    .row-deleted .no-strike {
+      text-decoration: none !important;
+    }
+
+    /* Passwords & Tags */
+    .mono { font-family: var(--mono); }
+    .pwd-tag {
+      font-family: var(--mono);
+      background: rgba(0, 0, 0, 0.4);
+      color: #93c5fd;
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-size: 12px;
+      border: 1px solid rgba(147, 197, 253, 0.2);
+      word-break: break-all;
+    }
+    .tag-feature {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+    .tag-passkey { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .tag-totp { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .tag-kept { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+
+    /* Buttons */
+    .btn-delete {
+      background: var(--danger-bg);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-delete:hover {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-restore {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-restore:hover {
+      background: rgba(245, 158, 11, 0.25);
+    }
+
+    /* Modal for QR Code */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-box {
+      background: #1e293b;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 480px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .qr-canvas-wrap {
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 10px;
+      display: inline-block;
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>
+      🔐 Bitwarden 密码去重清洗与 TOTP 扫码迁移
+      <span class="badge-offline">100% 离线运行</span>
+    </h1>
+    <p class="subtitle">密码去重 · TOTP 手机直接扫码迁移 · 一键剥离清空动态码并安全导出</p>
+  </header>
+
+  <!-- 拖入 JSON 区域 -->
+  <div class="drop-zone" id="dropZone">
+    <div class="drop-icon">📄</div>
+    <h3 style="font-size: 16px; margin-bottom: 4px;">点击选择 或 拖入 Bitwarden 导出的 .json 文件</h3>
+    <p style="color: var(--text-muted); font-size: 12px;">数据仅在你的浏览器内存中处理，绝不上网，随时可断网使用</p>
+    <input type="file" id="fileInput" accept=".json" style="display: none;">
+  </div>
+
+  <!-- 主操作工作区 -->
+  <div id="workspace" style="display: none;">
+
+    <!-- 📲 TOTP 动态验证码扫码迁移中心 -->
+    <div class="totp-migration-card">
+      <div class="totp-header">
+        <div class="totp-title">
+          <span>📲 TOTP 动态验证码迁移中心 (<span id="totpCountBadge">0</span> 项待迁移)</span>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-outline" style="font-size: 12px; padding: 4px 10px; color: #f87171; border-color: rgba(239,68,68,0.3);" onclick="stripAllTotp()">
+            🧹 扫码完毕后：一键清空密码库中所有 TOTP
+          </button>
+        </div>
+      </div>
+      <div id="totpSectionBody" style="margin-top: 14px;">
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+          拿新手机打开 <strong>Bitwarden Authenticator / Google Authenticator / 微信 / 苹果密码</strong>，直接点击右侧按钮<strong>对准屏幕扫码即可瞬间添加</strong>：
+        </p>
+        <table class="item-table" style="background: rgba(0,0,0,0.2); border-radius: 8px;">
+          <thead>
+            <tr>
+              <th>服务 / 网站</th>
+              <th>账号 (Username)</th>
+              <th>TOTP 状态</th>
+              <th style="width: 220px; text-align: center;">操作</th>
+            </tr>
+          </thead>
+          <tbody id="totpTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-title">当前密码库总数</div>
+        <div class="stat-val" id="statTotal" style="color: #60a5fa;">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">待处理重复账号组</div>
+        <div class="stat-val" id="statGroups" style="color: #fbbf24;">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">已标记删除冗余项</div>
+        <div class="stat-val" id="statDeletedCount" style="color: #f87171;">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">最终导出保留总数</div>
+        <div class="stat-val" id="statKeptCount" style="color: #34d399;">0</div>
+      </div>
+    </div>
+
+    <!-- 顶栏快捷操作 -->
+    <div class="actions-bar">
+      <input type="text" id="searchInput" class="search-input" placeholder="🔍 快速搜索域名 / 用户名 / 标题...">
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <button class="btn btn-outline" onclick="fileInput.click()">🔄 更换文件</button>
+        <button class="btn btn-success" id="btnExportJSON">⬇️ 导出清洗后的 Bitwarden JSON</button>
+      </div>
+    </div>
+
+    <!-- 列表展示区 -->
+    <div id="duplicateGroupsContainer"></div>
+  </div>
+</div>
+
+<!-- 扫码弹窗 -->
+<div class="modal-backdrop" id="qrModal" onclick="closeQrModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <h3 id="modalTitle" style="color: #fff; font-size: 16px; margin-bottom: 4px;">扫码录入动态验证码</h3>
+    <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 12px;">
+      📱 使用谷歌验证码、微软 Authenticator 扫描下方二维码即可录入
+    </p>
+
+    <!-- 可编辑的网站名与账号名（解决谷歌验证码不显示网站名的问题） -->
+    <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; margin-bottom: 12px; text-align: left;">
+      <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+        <div style="flex: 1;">
+          <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">网站 / 服务商名称 (Issuer):</label>
+          <input type="text" id="modalIssuerInput" oninput="onModalInputChanged()" style="width: 100%; box-sizing: border-box; background: var(--bg-card); border: 1px solid var(--card-border); color: #fff; padding: 5px 8px; border-radius: 4px; font-size: 13px;">
+        </div>
+        <div style="flex: 1;">
+          <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">账号标识 (Account):</label>
+          <input type="text" id="modalAccountInput" oninput="onModalInputChanged()" style="width: 100%; box-sizing: border-box; background: var(--bg-card); border: 1px solid var(--card-border); color: #fff; padding: 5px 8px; border-radius: 4px; font-size: 13px;">
+        </div>
+      </div>
+      <div style="font-size: 11px; color: #38bdf8;">
+        💡 提示：修改上方名称，二维码会自动更新。扫描后谷歌验证码会直接将此名称显示为网站大标题！
+      </div>
+    </div>
+    
+    <div class="qr-canvas-wrap">
+      <div id="qrCodeContainer"></div>
+    </div>
+
+    <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; margin-bottom: 16px;">
+      <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 2px;">备用手动密钥 (Secret)：</div>
+      <div id="modalSecret" class="mono" style="font-size: 12px; color: #93c5fd; word-break: break-all; user-select: all;"></div>
+    </div>
+
+    <div style="display: flex; gap: 10px; justify-content: center;">
+      <button class="btn btn-outline" onclick="closeQrModal()">关闭窗口</button>
+      <button class="btn btn-success" id="btnConfirmMigrated" onclick="confirmMigratedAndStrip()">
+        ✅ 手机已扫好，清空此条 TOTP
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 轻量级 100% 离线单文件纯 JS 二维码生成引擎 (qrcode-generator MIT) -->
+<script>
+
+var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this.parsedData=[];for(var b=[],d=0,e=this.data.length;e>d;d++){var f=this.data.charCodeAt(d);f>65536?(b[0]=240|(1835008&f)>>>18,b[1]=128|(258048&f)>>>12,b[2]=128|(4032&f)>>>6,b[3]=128|63&f):f>2048?(b[0]=224|(61440&f)>>>12,b[1]=128|(4032&f)>>>6,b[2]=128|63&f):f>128?(b[0]=192|(1984&f)>>>6,b[1]=128|63&f):b[0]=f,this.parsedData=this.parsedData.concat(b)}this.parsedData.length!=this.data.length&&(this.parsedData.unshift(191),this.parsedData.unshift(187),this.parsedData.unshift(239))}function b(a,b){this.typeNumber=a,this.errorCorrectLevel=b,this.modules=null,this.moduleCount=0,this.dataCache=null,this.dataList=[]}function i(a,b){if(void 0==a.length)throw new Error(a.length+"/"+b);for(var c=0;c<a.length&&0==a[c];)c++;this.num=new Array(a.length-c+b);for(var d=0;d<a.length-c;d++)this.num[d]=a[d+c]}function j(a,b){this.totalCount=a,this.dataCount=b}function k(){this.buffer=[],this.length=0}function m(){return"undefined"!=typeof CanvasRenderingContext2D}function n(){var a=!1,b=navigator.userAgent;return/android/i.test(b)&&(a=!0,aMat=b.toString().match(/android ([0-9]\.[0-9])/i),aMat&&aMat[1]&&(a=parseFloat(aMat[1]))),a}function r(a,b){for(var c=1,e=s(a),f=0,g=l.length;g>=f;f++){var h=0;switch(b){case d.L:h=l[f][0];break;case d.M:h=l[f][1];break;case d.Q:h=l[f][2];break;case d.H:h=l[f][3]}if(h>=e)break;c++}if(c>l.length)throw new Error("Too long data");return c}function s(a){var b=encodeURI(a).toString().replace(/\%[0-9a-fA-F]{2}/g,"a");return b.length+(b.length!=a?3:0)}a.prototype={getLength:function(){return this.parsedData.length},write:function(a){for(var b=0,c=this.parsedData.length;c>b;b++)a.put(this.parsedData[b],8)}},b.prototype={addData:function(b){var c=new a(b);this.dataList.push(c),this.dataCache=null},isDark:function(a,b){if(0>a||this.moduleCount<=a||0>b||this.moduleCount<=b)throw new Error(a+","+b);return this.modules[a][b]},getModuleCount:function(){return this.moduleCount},make:function(){this.makeImpl(!1,this.getBestMaskPattern())},makeImpl:function(a,c){this.moduleCount=4*this.typeNumber+17,this.modules=new Array(this.moduleCount);for(var d=0;d<this.moduleCount;d++){this.modules[d]=new Array(this.moduleCount);for(var e=0;e<this.moduleCount;e++)this.modules[d][e]=null}this.setupPositionProbePattern(0,0),this.setupPositionProbePattern(this.moduleCount-7,0),this.setupPositionProbePattern(0,this.moduleCount-7),this.setupPositionAdjustPattern(),this.setupTimingPattern(),this.setupTypeInfo(a,c),this.typeNumber>=7&&this.setupTypeNumber(a),null==this.dataCache&&(this.dataCache=b.createData(this.typeNumber,this.errorCorrectLevel,this.dataList)),this.mapData(this.dataCache,c)},setupPositionProbePattern:function(a,b){for(var c=-1;7>=c;c++)if(!(-1>=a+c||this.moduleCount<=a+c))for(var d=-1;7>=d;d++)-1>=b+d||this.moduleCount<=b+d||(this.modules[a+c][b+d]=c>=0&&6>=c&&(0==d||6==d)||d>=0&&6>=d&&(0==c||6==c)||c>=2&&4>=c&&d>=2&&4>=d?!0:!1)},getBestMaskPattern:function(){for(var a=0,b=0,c=0;8>c;c++){this.makeImpl(!0,c);var d=f.getLostPoint(this);(0==c||a>d)&&(a=d,b=c)}return b},createMovieClip:function(a,b,c){var d=a.createEmptyMovieClip(b,c),e=1;this.make();for(var f=0;f<this.modules.length;f++)for(var g=f*e,h=0;h<this.modules[f].length;h++){var i=h*e,j=this.modules[f][h];j&&(d.beginFill(0,100),d.moveTo(i,g),d.lineTo(i+e,g),d.lineTo(i+e,g+e),d.lineTo(i,g+e),d.endFill())}return d},setupTimingPattern:function(){for(var a=8;a<this.moduleCount-8;a++)null==this.modules[a][6]&&(this.modules[a][6]=0==a%2);for(var b=8;b<this.moduleCount-8;b++)null==this.modules[6][b]&&(this.modules[6][b]=0==b%2)},setupPositionAdjustPattern:function(){for(var a=f.getPatternPosition(this.typeNumber),b=0;b<a.length;b++)for(var c=0;c<a.length;c++){var d=a[b],e=a[c];if(null==this.modules[d][e])for(var g=-2;2>=g;g++)for(var h=-2;2>=h;h++)this.modules[d+g][e+h]=-2==g||2==g||-2==h||2==h||0==g&&0==h?!0:!1}},setupTypeNumber:function(a){for(var b=f.getBCHTypeNumber(this.typeNumber),c=0;18>c;c++){var d=!a&&1==(1&b>>c);this.modules[Math.floor(c/3)][c%3+this.moduleCount-8-3]=d}for(var c=0;18>c;c++){var d=!a&&1==(1&b>>c);this.modules[c%3+this.moduleCount-8-3][Math.floor(c/3)]=d}},setupTypeInfo:function(a,b){for(var c=this.errorCorrectLevel<<3|b,d=f.getBCHTypeInfo(c),e=0;15>e;e++){var g=!a&&1==(1&d>>e);6>e?this.modules[e][8]=g:8>e?this.modules[e+1][8]=g:this.modules[this.moduleCount-15+e][8]=g}for(var e=0;15>e;e++){var g=!a&&1==(1&d>>e);8>e?this.modules[8][this.moduleCount-e-1]=g:9>e?this.modules[8][15-e-1+1]=g:this.modules[8][15-e-1]=g}this.modules[this.moduleCount-8][8]=!a},mapData:function(a,b){for(var c=-1,d=this.moduleCount-1,e=7,g=0,h=this.moduleCount-1;h>0;h-=2)for(6==h&&h--;;){for(var i=0;2>i;i++)if(null==this.modules[d][h-i]){var j=!1;g<a.length&&(j=1==(1&a[g]>>>e));var k=f.getMask(b,d,h-i);k&&(j=!j),this.modules[d][h-i]=j,e--,-1==e&&(g++,e=7)}if(d+=c,0>d||this.moduleCount<=d){d-=c,c=-c;break}}}},b.PAD0=236,b.PAD1=17,b.createData=function(a,c,d){for(var e=j.getRSBlocks(a,c),g=new k,h=0;h<d.length;h++){var i=d[h];g.put(i.mode,4),g.put(i.getLength(),f.getLengthInBits(i.mode,a)),i.write(g)}for(var l=0,h=0;h<e.length;h++)l+=e[h].dataCount;if(g.getLengthInBits()>8*l)throw new Error("code length overflow. ("+g.getLengthInBits()+">"+8*l+")");for(g.getLengthInBits()+4<=8*l&&g.put(0,4);0!=g.getLengthInBits()%8;)g.putBit(!1);for(;;){if(g.getLengthInBits()>=8*l)break;if(g.put(b.PAD0,8),g.getLengthInBits()>=8*l)break;g.put(b.PAD1,8)}return b.createBytes(g,e)},b.createBytes=function(a,b){for(var c=0,d=0,e=0,g=new Array(b.length),h=new Array(b.length),j=0;j<b.length;j++){var k=b[j].dataCount,l=b[j].totalCount-k;d=Math.max(d,k),e=Math.max(e,l),g[j]=new Array(k);for(var m=0;m<g[j].length;m++)g[j][m]=255&a.buffer[m+c];c+=k;var n=f.getErrorCorrectPolynomial(l),o=new i(g[j],n.getLength()-1),p=o.mod(n);h[j]=new Array(n.getLength()-1);for(var m=0;m<h[j].length;m++){var q=m+p.getLength()-h[j].length;h[j][m]=q>=0?p.get(q):0}}for(var r=0,m=0;m<b.length;m++)r+=b[m].totalCount;for(var s=new Array(r),t=0,m=0;d>m;m++)for(var j=0;j<b.length;j++)m<g[j].length&&(s[t++]=g[j][m]);for(var m=0;e>m;m++)for(var j=0;j<b.length;j++)m<h[j].length&&(s[t++]=h[j][m]);return s};for(var c={MODE_NUMBER:1,MODE_ALPHA_NUM:2,MODE_8BIT_BYTE:4,MODE_KANJI:8},d={L:1,M:0,Q:3,H:2},e={PATTERN000:0,PATTERN001:1,PATTERN010:2,PATTERN011:3,PATTERN100:4,PATTERN101:5,PATTERN110:6,PATTERN111:7},f={PATTERN_POSITION_TABLE:[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],G15:1335,G18:7973,G15_MASK:21522,getBCHTypeInfo:function(a){for(var b=a<<10;f.getBCHDigit(b)-f.getBCHDigit(f.G15)>=0;)b^=f.G15<<f.getBCHDigit(b)-f.getBCHDigit(f.G15);return(a<<10|b)^f.G15_MASK},getBCHTypeNumber:function(a){for(var b=a<<12;f.getBCHDigit(b)-f.getBCHDigit(f.G18)>=0;)b^=f.G18<<f.getBCHDigit(b)-f.getBCHDigit(f.G18);return a<<12|b},getBCHDigit:function(a){for(var b=0;0!=a;)b++,a>>>=1;return b},getPatternPosition:function(a){return f.PATTERN_POSITION_TABLE[a-1]},getMask:function(a,b,c){switch(a){case e.PATTERN000:return 0==(b+c)%2;case e.PATTERN001:return 0==b%2;case e.PATTERN010:return 0==c%3;case e.PATTERN011:return 0==(b+c)%3;case e.PATTERN100:return 0==(Math.floor(b/2)+Math.floor(c/3))%2;case e.PATTERN101:return 0==b*c%2+b*c%3;case e.PATTERN110:return 0==(b*c%2+b*c%3)%2;case e.PATTERN111:return 0==(b*c%3+(b+c)%2)%2;default:throw new Error("bad maskPattern:"+a)}},getErrorCorrectPolynomial:function(a){for(var b=new i([1],0),c=0;a>c;c++)b=b.multiply(new i([1,g.gexp(c)],0));return b},getLengthInBits:function(a,b){if(b>=1&&10>b)switch(a){case c.MODE_NUMBER:return 10;case c.MODE_ALPHA_NUM:return 9;case c.MODE_8BIT_BYTE:return 8;case c.MODE_KANJI:return 8;default:throw new Error("mode:"+a)}else if(27>b)switch(a){case c.MODE_NUMBER:return 12;case c.MODE_ALPHA_NUM:return 11;case c.MODE_8BIT_BYTE:return 16;case c.MODE_KANJI:return 10;default:throw new Error("mode:"+a)}else{if(!(41>b))throw new Error("type:"+b);switch(a){case c.MODE_NUMBER:return 14;case c.MODE_ALPHA_NUM:return 13;case c.MODE_8BIT_BYTE:return 16;case c.MODE_KANJI:return 12;default:throw new Error("mode:"+a)}}},getLostPoint:function(a){for(var b=a.getModuleCount(),c=0,d=0;b>d;d++)for(var e=0;b>e;e++){for(var f=0,g=a.isDark(d,e),h=-1;1>=h;h++)if(!(0>d+h||d+h>=b))for(var i=-1;1>=i;i++)0>e+i||e+i>=b||(0!=h||0!=i)&&g==a.isDark(d+h,e+i)&&f++;f>5&&(c+=3+f-5)}for(var d=0;b-1>d;d++)for(var e=0;b-1>e;e++){var j=0;a.isDark(d,e)&&j++,a.isDark(d+1,e)&&j++,a.isDark(d,e+1)&&j++,a.isDark(d+1,e+1)&&j++,(0==j||4==j)&&(c+=3)}for(var d=0;b>d;d++)for(var e=0;b-6>e;e++)a.isDark(d,e)&&!a.isDark(d,e+1)&&a.isDark(d,e+2)&&a.isDark(d,e+3)&&a.isDark(d,e+4)&&!a.isDark(d,e+5)&&a.isDark(d,e+6)&&(c+=40);for(var e=0;b>e;e++)for(var d=0;b-6>d;d++)a.isDark(d,e)&&!a.isDark(d+1,e)&&a.isDark(d+2,e)&&a.isDark(d+3,e)&&a.isDark(d+4,e)&&!a.isDark(d+5,e)&&a.isDark(d+6,e)&&(c+=40);for(var k=0,e=0;b>e;e++)for(var d=0;b>d;d++)a.isDark(d,e)&&k++;var l=Math.abs(100*k/b/b-50)/5;return c+=10*l}},g={glog:function(a){if(1>a)throw new Error("glog("+a+")");return g.LOG_TABLE[a]},gexp:function(a){for(;0>a;)a+=255;for(;a>=256;)a-=255;return g.EXP_TABLE[a]},EXP_TABLE:new Array(256),LOG_TABLE:new Array(256)},h=0;8>h;h++)g.EXP_TABLE[h]=1<<h;for(var h=8;256>h;h++)g.EXP_TABLE[h]=g.EXP_TABLE[h-4]^g.EXP_TABLE[h-5]^g.EXP_TABLE[h-6]^g.EXP_TABLE[h-8];for(var h=0;255>h;h++)g.LOG_TABLE[g.EXP_TABLE[h]]=h;i.prototype={get:function(a){return this.num[a]},getLength:function(){return this.num.length},multiply:function(a){for(var b=new Array(this.getLength()+a.getLength()-1),c=0;c<this.getLength();c++)for(var d=0;d<a.getLength();d++)b[c+d]^=g.gexp(g.glog(this.get(c))+g.glog(a.get(d)));return new i(b,0)},mod:function(a){if(this.getLength()-a.getLength()<0)return this;for(var b=g.glog(this.get(0))-g.glog(a.get(0)),c=new Array(this.getLength()),d=0;d<this.getLength();d++)c[d]=this.get(d);for(var d=0;d<a.getLength();d++)c[d]^=g.gexp(g.glog(a.get(d))+b);return new i(c,0).mod(a)}},j.RS_BLOCK_TABLE=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],j.getRSBlocks=function(a,b){var c=j.getRsBlockTable(a,b);if(void 0==c)throw new Error("bad rs block @ typeNumber:"+a+"/errorCorrectLevel:"+b);for(var d=c.length/3,e=[],f=0;d>f;f++)for(var g=c[3*f+0],h=c[3*f+1],i=c[3*f+2],k=0;g>k;k++)e.push(new j(h,i));return e},j.getRsBlockTable=function(a,b){switch(b){case d.L:return j.RS_BLOCK_TABLE[4*(a-1)+0];case d.M:return j.RS_BLOCK_TABLE[4*(a-1)+1];case d.Q:return j.RS_BLOCK_TABLE[4*(a-1)+2];case d.H:return j.RS_BLOCK_TABLE[4*(a-1)+3];default:return void 0}},k.prototype={get:function(a){var b=Math.floor(a/8);return 1==(1&this.buffer[b]>>>7-a%8)},put:function(a,b){for(var c=0;b>c;c++)this.putBit(1==(1&a>>>b-c-1))},getLengthInBits:function(){return this.length},putBit:function(a){var b=Math.floor(this.length/8);this.buffer.length<=b&&this.buffer.push(0),a&&(this.buffer[b]|=128>>>this.length%8),this.length++}};var l=[[17,14,11,7],[32,26,20,14],[53,42,32,24],[78,62,46,34],[106,84,60,44],[134,106,74,58],[154,122,86,64],[192,152,108,84],[230,180,130,98],[271,213,151,119],[321,251,177,137],[367,287,203,155],[425,331,241,177],[458,362,258,194],[520,412,292,220],[586,450,322,250],[644,504,364,280],[718,560,394,310],[792,624,442,338],[858,666,482,382],[929,711,509,403],[1003,779,565,439],[1091,857,611,461],[1171,911,661,511],[1273,997,715,535],[1367,1059,751,593],[1465,1125,805,625],[1528,1190,868,658],[1628,1264,908,698],[1732,1370,982,742],[1840,1452,1030,790],[1952,1538,1112,842],[2068,1628,1168,898],[2188,1722,1228,958],[2303,1809,1283,983],[2431,1911,1351,1051],[2563,1989,1423,1093],[2699,2099,1499,1139],[2809,2213,1579,1219],[2953,2331,1663,1273]],o=function(){var a=function(a,b){this._el=a,this._htOption=b};return a.prototype.draw=function(a){function g(a,b){var c=document.createElementNS("http://www.w3.org/2000/svg",a);for(var d in b)b.hasOwnProperty(d)&&c.setAttribute(d,b[d]);return c}var b=this._htOption,c=this._el,d=a.getModuleCount();Math.floor(b.width/d),Math.floor(b.height/d),this.clear();var h=g("svg",{viewBox:"0 0 "+String(d)+" "+String(d),width:"100%",height:"100%",fill:b.colorLight});h.setAttributeNS("http://www.w3.org/2000/xmlns/","xmlns:xlink","http://www.w3.org/1999/xlink"),c.appendChild(h),h.appendChild(g("rect",{fill:b.colorDark,width:"1",height:"1",id:"template"}));for(var i=0;d>i;i++)for(var j=0;d>j;j++)if(a.isDark(i,j)){var k=g("use",{x:String(i),y:String(j)});k.setAttributeNS("http://www.w3.org/1999/xlink","href","#template"),h.appendChild(k)}},a.prototype.clear=function(){for(;this._el.hasChildNodes();)this._el.removeChild(this._el.lastChild)},a}(),p="svg"===document.documentElement.tagName.toLowerCase(),q=p?o:m()?function(){function a(){this._elImage.src=this._elCanvas.toDataURL("image/png"),this._elImage.style.display="block",this._elCanvas.style.display="none"}function d(a,b){var c=this;if(c._fFail=b,c._fSuccess=a,null===c._bSupportDataURI){var d=document.createElement("img"),e=function(){c._bSupportDataURI=!1,c._fFail&&_fFail.call(c)},f=function(){c._bSupportDataURI=!0,c._fSuccess&&c._fSuccess.call(c)};return d.onabort=e,d.onerror=e,d.onload=f,d.src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",void 0}c._bSupportDataURI===!0&&c._fSuccess?c._fSuccess.call(c):c._bSupportDataURI===!1&&c._fFail&&c._fFail.call(c)}if(this._android&&this._android<=2.1){var b=1/window.devicePixelRatio,c=CanvasRenderingContext2D.prototype.drawImage;CanvasRenderingContext2D.prototype.drawImage=function(a,d,e,f,g,h,i,j){if("nodeName"in a&&/img/i.test(a.nodeName))for(var l=arguments.length-1;l>=1;l--)arguments[l]=arguments[l]*b;else"undefined"==typeof j&&(arguments[1]*=b,arguments[2]*=b,arguments[3]*=b,arguments[4]*=b);c.apply(this,arguments)}}var e=function(a,b){this._bIsPainted=!1,this._android=n(),this._htOption=b,this._elCanvas=document.createElement("canvas"),this._elCanvas.width=b.width,this._elCanvas.height=b.height,a.appendChild(this._elCanvas),this._el=a,this._oContext=this._elCanvas.getContext("2d"),this._bIsPainted=!1,this._elImage=document.createElement("img"),this._elImage.style.display="none",this._el.appendChild(this._elImage),this._bSupportDataURI=null};return e.prototype.draw=function(a){var b=this._elImage,c=this._oContext,d=this._htOption,e=a.getModuleCount(),f=d.width/e,g=d.height/e,h=Math.round(f),i=Math.round(g);b.style.display="none",this.clear();for(var j=0;e>j;j++)for(var k=0;e>k;k++){var l=a.isDark(j,k),m=k*f,n=j*g;c.strokeStyle=l?d.colorDark:d.colorLight,c.lineWidth=1,c.fillStyle=l?d.colorDark:d.colorLight,c.fillRect(m,n,f,g),c.strokeRect(Math.floor(m)+.5,Math.floor(n)+.5,h,i),c.strokeRect(Math.ceil(m)-.5,Math.ceil(n)-.5,h,i)}this._bIsPainted=!0},e.prototype.makeImage=function(){this._bIsPainted&&d.call(this,a)},e.prototype.isPainted=function(){return this._bIsPainted},e.prototype.clear=function(){this._oContext.clearRect(0,0,this._elCanvas.width,this._elCanvas.height),this._bIsPainted=!1},e.prototype.round=function(a){return a?Math.floor(1e3*a)/1e3:a},e}():function(){var a=function(a,b){this._el=a,this._htOption=b};return a.prototype.draw=function(a){for(var b=this._htOption,c=this._el,d=a.getModuleCount(),e=Math.floor(b.width/d),f=Math.floor(b.height/d),g=['<table style="border:0;border-collapse:collapse;">'],h=0;d>h;h++){g.push("<tr>");for(var i=0;d>i;i++)g.push('<td style="border:0;border-collapse:collapse;padding:0;margin:0;width:'+e+"px;height:"+f+"px;background-color:"+(a.isDark(h,i)?b.colorDark:b.colorLight)+';"></td>');g.push("</tr>")}g.push("</table>"),c.innerHTML=g.join("");var j=c.childNodes[0],k=(b.width-j.offsetWidth)/2,l=(b.height-j.offsetHeight)/2;k>0&&l>0&&(j.style.margin=l+"px "+k+"px")},a.prototype.clear=function(){this._el.innerHTML=""},a}();QRCode=function(a,b){if(this._htOption={width:256,height:256,typeNumber:4,colorDark:"#000000",colorLight:"#ffffff",correctLevel:d.H},"string"==typeof b&&(b={text:b}),b)for(var c in b)this._htOption[c]=b[c];"string"==typeof a&&(a=document.getElementById(a)),this._android=n(),this._el=a,this._oQRCode=null,this._oDrawing=new q(this._el,this._htOption),this._htOption.text&&this.makeCode(this._htOption.text)},QRCode.prototype.makeCode=function(a){this._oQRCode=new b(r(a,this._htOption.correctLevel),this._htOption.correctLevel),this._oQRCode.addData(a),this._oQRCode.make(),this._el.title=a,this._oDrawing.draw(this._oQRCode),this.makeImage()},QRCode.prototype.makeImage=function(){"function"==typeof this._oDrawing.makeImage&&(!this._android||this._android>=3)&&this._oDrawing.makeImage()},QRCode.prototype.clear=function(){this._oDrawing.clear()},QRCode.CorrectLevel=d}();
+
+
+// ================= 全局数据 =================
+let originalVaultData = null; 
+let allItems = [];             
+let deletedUids = new Set();   
+let currentModalItem = null;
+
+// DOM
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const workspace = document.getElementById('workspace');
+const container = document.getElementById('duplicateGroupsContainer');
+const searchInput = document.getElementById('searchInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) loadJSON(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', (e) => {
+  if (e.target.files.length) loadJSON(e.target.files[0]);
+});
+
+searchInput.addEventListener('input', render);
+
+// ================= 文件读取 =================
+function loadJSON(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.items || !Array.isArray(data.items)) {
+        alert('文件格式不正确：未找到 Bitwarden 的 items 数组！');
+        return;
+      }
+      originalVaultData = data;
+
+      allItems = data.items.map((item, idx) => ({
+        ...item,
+        _uid: 'uid_' + idx + '_' + Math.random().toString(36).substring(2, 9)
+      }));
+
+      deletedUids.clear();
+      workspace.style.display = 'block';
+      dropZone.style.display = 'none';
+      render();
+    } catch (err) {
+      alert('解析 JSON 失败，请确认是否为有效的 Bitwarden 明文 JSON 文件。');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ================= 根域名提取 =================
+function extractDomain(url) {
+  if (!url) return '';
+  try {
+    let clean = url.trim();
+    if (!clean.startsWith('http://') && !clean.startsWith('https://')) clean = 'https://' + clean;
+    const host = new URL(clean).hostname.toLowerCase();
+    const parts = host.split('.');
+    if (parts.length >= 2) {
+      if (parts.length >= 3 && ['com.cn', 'net.cn', 'org.cn', 'gov.cn', 'edu.cn', 'co.uk'].includes(parts.slice(-2).join('.'))) {
+        return parts.slice(-3).join('.');
+      }
+      return parts.slice(-2).join('.');
+    }
+    return host;
+  } catch (err) {
+    return url.split('/')[0] || url;
+  }
+}
+
+// ================= 核心渲染逻辑 =================
+function render() {
+  const filterText = searchInput.value.trim().toLowerCase();
+  const loginItems = allItems.filter(item => item.type === 1 && item.login);
+
+  // 1. 渲染专属的 TOTP 扫码迁移看板
+  renderTotpMigration(loginItems);
+
+  // 2. 智能分组
+  const groupsMap = new Map();
+
+  loginItems.forEach(item => {
+    const rawUri = item.login.uris && item.login.uris[0] ? item.login.uris[0].uri : '';
+    const domain = extractDomain(rawUri);
+    const user = (item.login.username || '').trim().toLowerCase();
+    const cleanTitle = (item.name || '').trim().toLowerCase();
+
+    let groupKey;
+    let displayTitle;
+
+    if (!domain) {
+      if (!user) {
+        groupKey = `single_${item._uid}`;
+      } else {
+        groupKey = `nounurl__||__${cleanTitle}__||__${user}`;
+      }
+      displayTitle = item.name ? `📱 ${item.name} (无独立网址)` : '📱 无网址条目';
+    } else {
+      groupKey = user ? `${domain}__||__${user}` : `single_${item._uid}`;
+      displayTitle = `🌐 ${domain}`;
+    }
+
+    if (!groupsMap.has(groupKey)) {
+      groupsMap.set(groupKey, {
+        groupKey: groupKey,
+        displayTitle: displayTitle,
+        username: item.login.username || '(无用户名)',
+        items: []
+      });
+    }
+    groupsMap.get(groupKey).items.push(item);
+  });
+
+  let duplicateGroups = Array.from(groupsMap.values()).filter(g => g.items.length > 1);
+
+  if (filterText) {
+    duplicateGroups = duplicateGroups.filter(g => {
+      const matchTitle = g.displayTitle.toLowerCase().includes(filterText);
+      const matchUser = g.username.toLowerCase().includes(filterText);
+      const matchName = g.items.some(i => (i.name || '').toLowerCase().includes(filterText));
+      return matchTitle || matchUser || matchName;
+    });
+  }
+
+  let pendingGroupsCount = 0;
+  duplicateGroups.forEach(g => {
+    const activeCount = g.items.filter(i => !deletedUids.has(i._uid)).length;
+    if (activeCount > 1) pendingGroupsCount++;
+  });
+
+  const finalKeptCount = allItems.length - deletedUids.size;
+
+  document.getElementById('statTotal').textContent = allItems.length;
+  document.getElementById('statGroups').textContent = pendingGroupsCount;
+  document.getElementById('statDeletedCount').textContent = deletedUids.size;
+  document.getElementById('statKeptCount').textContent = finalKeptCount;
+
+  if (duplicateGroups.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <h3 style="font-size: 18px; color: #34d399; margin-bottom: 8px;">🎉 恭喜！当前没有检测到任何重复账号条目！</h3>
+        <p style="font-size: 13px;">密码库已规整完毕。你可以先在上方扫码迁移 TOTP，然后点击右上角绿色按钮导出最终的 JSON 文件。</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = duplicateGroups.map(g => {
+    const activeItems = g.items.filter(i => !deletedUids.has(i._uid));
+    const isCompleted = activeItems.length <= 1;
+
+    return `
+      <div class="group-card ${isCompleted ? 'done' : ''}">
+        <div class="group-header">
+          <div>
+            <span class="domain-title">${escapeHtml(g.displayTitle)}</span>
+            <span style="font-size: 13px; color: var(--text-muted); margin-left: 10px;">账号:</span>
+            <span class="user-badge">${escapeHtml(g.username)}</span>
+          </div>
+          <div>
+            ${isCompleted
+              ? `<span style="color: #34d399; font-size: 13px; font-weight: 600;">✅ 已完成去重（最终保留 ${activeItems.length} 条有效记录）</span>`
+              : `<span style="font-size: 13px; color: #f87171;">⚠️ 尚有 <strong>${activeItems.length}</strong> 条未处理</span>`
+            }
+          </div>
+        </div>
+        <table class="item-table">
+          <thead>
+            <tr>
+              <th>条目名称 (Title)</th>
+              <th>网址 (URI)</th>
+              <th>密码 (明文)</th>
+              <th>特殊安全凭据</th>
+              <th style="width: 130px; text-align: center;">保留状态 / 操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${g.items.map(item => {
+              const isDeleted = deletedUids.has(item._uid);
+              const hasPasskey = item.login.fido2Credentials && item.login.fido2Credentials.length > 0;
+              const hasTotp = !!item.login.totp;
+              const uri = item.login.uris && item.login.uris[0] ? item.login.uris[0].uri : '';
+              const pwd = item.login.password || '';
+
+              return `
+                <tr class="${isDeleted ? 'row-deleted' : ''}">
+                  <td>
+                    <strong style="color: #f8fafc;">${escapeHtml(item.name || '未命名')}</strong>
+                    ${(!isDeleted && activeItems.length === 1) ? '<span class="tag-feature tag-kept">✅ 最终保留</span>' : ''}
+                  </td>
+                  <td class="mono" style="color: var(--text-muted);">${escapeHtml(uri || '—')}</td>
+                  <td>
+                    ${pwd ? `<span class="pwd-tag">${escapeHtml(pwd)}</span>` : '<span style="color: var(--text-muted); font-size: 12px;"><em>(无密码)</em></span>'}
+                  </td>
+                  <td>
+                    ${hasPasskey ? '<span class="tag-feature tag-passkey">🔑 Passkey</span>' : ''}
+                    ${hasTotp ? '<span class="tag-feature tag-totp">⏱️ TOTP</span>' : ''}
+                    ${!hasPasskey && !hasTotp ? '<span style="color: var(--text-muted); font-size: 12px;">—</span>' : ''}
+                  </td>
+                  <td style="text-align: center;" class="no-strike">
+                    ${isDeleted
+                      ? `<button class="btn-restore" onclick="restoreItem('${item._uid}')">↩️ 撤销删除</button>`
+                      : `<button class="btn-delete" onclick="markDelete('${item._uid}')">🗑️ 实时删除</button>`
+                    }
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }).join('');
+}
+
+// ================= TOTP 扫码迁移看板渲染 =================
+function renderTotpMigration(loginItems) {
+  // 找出所有未被整条删除且带有 totp 字段的条目
+  const totpItems = loginItems.filter(item => !deletedUids.has(item._uid) && !!item.login.totp);
+
+  document.getElementById('totpCountBadge').textContent = totpItems.length;
+  const tbody = document.getElementById('totpTableBody');
+
+  if (totpItems.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 18px;">✨ 当前密码库中没有待迁移的 TOTP 动态码（已全部清空或未曾开通）</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = totpItems.map(item => `
+    <tr>
+      <td><strong style="color: #f8fafc;">${escapeHtml(item.name || '未命名')}</strong></td>
+      <td class="mono" style="color: #60a5fa;">${escapeHtml(item.login.username || '—')}</td>
+      <td>
+        <span class="tag-feature tag-totp">⏱️ 密钥存在</span>
+      </td>
+      <td style="text-align: center; display: flex; gap: 8px; justify-content: center;">
+        <button class="btn btn-primary" style="font-size: 12px; padding: 4px 10px;" onclick="openQrModal('${item._uid}')">
+          📱 显示扫码二维码
+        </button>
+        <button class="btn btn-outline" style="font-size: 12px; padding: 4px 8px; color: #f87171;" onclick="stripSingleTotp('${item._uid}')" title="只清除该条目的动态码字段，保留账号密码">
+          🧹 移除
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// 打开扫码弹窗
+let currentTotpMeta = null;
+
+window.openQrModal = function(uid) {
+  const item = allItems.find(i => i._uid === uid);
+  if (!item || !item.login.totp) return;
+
+  currentModalItem = item;
+  
+  // 解析原始 totp 数据
+  currentTotpMeta = parseTotpData(item);
+
+  document.getElementById('modalTitle').textContent = `扫码录入: ${item.name || '动态验证码'}`;
+  document.getElementById('modalIssuerInput').value = currentTotpMeta.issuer;
+  document.getElementById('modalAccountInput').value = currentTotpMeta.account;
+  document.getElementById('modalSecret').textContent = currentTotpMeta.secret;
+
+  updateModalQr();
+
+  document.getElementById('qrModal').style.display = 'flex';
+};
+
+window.onModalInputChanged = function() {
+  if (!currentModalItem || !currentTotpMeta) return;
+  currentTotpMeta.issuer = document.getElementById('modalIssuerInput').value.trim();
+  currentTotpMeta.account = document.getElementById('modalAccountInput').value.trim();
+  updateModalQr();
+};
+
+function updateModalQr() {
+  if (!currentTotpMeta) return;
+  const issuer = currentTotpMeta.issuer || currentModalItem.name || '网站';
+  const account = currentTotpMeta.account || (currentModalItem.login && currentModalItem.login.username) || '账号';
+  const secret = currentTotpMeta.secret;
+
+  // 按照 Google Authenticator 官方规范构建 URI：
+  // 必须带有 issuer 参数和 Path 上的 Issuer:Account，谷歌验证码才会显示网站大标题！
+  const fullLabel = encodeURIComponent(issuer) + ':' + encodeURIComponent(account);
+  let otpUri = `otpauth://totp/${fullLabel}?secret=${encodeURIComponent(secret)}&issuer=${encodeURIComponent(issuer)}`;
+  if (currentTotpMeta.digits && currentTotpMeta.digits !== '6') otpUri += `&digits=${currentTotpMeta.digits}`;
+  if (currentTotpMeta.period && currentTotpMeta.period !== '30') otpUri += `&period=${currentTotpMeta.period}`;
+  if (currentTotpMeta.algorithm && currentTotpMeta.algorithm.toUpperCase() !== 'SHA1') otpUri += `&algorithm=${currentTotpMeta.algorithm.toUpperCase()}`;
+
+  renderQrCanvas(otpUri);
+}
+
+function parseTotpData(item) {
+  let rawTotp = (item.login && item.login.totp ? item.login.totp : '').trim();
+  let secret = rawTotp;
+  let issuer = '';
+  let account = '';
+  let period = '30';
+  let digits = '6';
+  let algorithm = 'SHA1';
+
+  if (rawTotp.startsWith('otpauth://')) {
+    try {
+      const url = new URL(rawTotp);
+      secret = url.searchParams.get('secret') || '';
+      issuer = url.searchParams.get('issuer') || '';
+      if (url.searchParams.get('period')) period = url.searchParams.get('period');
+      if (url.searchParams.get('digits')) digits = url.searchParams.get('digits');
+      if (url.searchParams.get('algorithm')) algorithm = url.searchParams.get('algorithm');
+
+      let label = decodeURIComponent(url.pathname.replace(/^\/totp\//i, '').replace(/^\//, ''));
+      if (label.includes(':')) {
+        const parts = label.split(':');
+        if (!issuer && parts[0]) issuer = parts[0];
+        if (parts[1]) account = parts[1];
+      } else if (label) {
+        account = label;
+      }
+    } catch(e) {
+      const mSecret = rawTotp.match(/[?&]secret=([^&]+)/i);
+      if (mSecret) secret = mSecret[1];
+    }
+  }
+
+  // 去除空格和横线
+  secret = secret.replace(/[\s-]/g, '').toUpperCase();
+
+  if (!issuer) {
+    issuer = item.name || '';
+    if (!issuer && item.login.uris && item.login.uris[0] && item.login.uris[0].uri) {
+      try {
+        issuer = new URL(item.login.uris[0].uri).hostname.replace(/^www\./, '');
+      } catch(e) {}
+    }
+    if (!issuer) issuer = '网站';
+  }
+
+  if (!account) {
+    account = (item.login && item.login.username) ? item.login.username : 'User';
+  }
+
+  return { secret, issuer, account, period, digits, algorithm };
+}
+
+function renderQrCanvas(text) {
+  const container = document.getElementById('qrCodeContainer');
+  container.innerHTML = '';
+
+  try {
+    new QRCode(container, {
+      text: text,
+      width: 200,
+      height: 200,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch (err) {
+    console.error('QR code error:', err);
+    container.innerHTML = '<span style="color:red; font-size:12px;">二维码生成失败，请手动复制下方密钥录入</span>';
+  }
+}
+
+window.closeQrModal = function(e) {
+  document.getElementById('qrModal').style.display = 'none';
+  currentModalItem = null;
+  currentTotpMeta = null;
+};
+
+// 弹窗里确认扫好后，只清除这一个条目的 TOTP
+window.confirmMigratedAndStrip = function() {
+  if (!currentModalItem) return;
+  currentModalItem.login.totp = null; // 置空 TOTP
+  closeQrModal();
+  render();
+};
+
+// 单独移除 TOTP
+window.stripSingleTotp = function(uid) {
+  const item = allItems.find(i => i._uid === uid);
+  if (item && item.login) {
+    item.login.totp = null;
+    render();
+  }
+};
+
+// 一键清空所有条目的 TOTP
+window.stripAllTotp = function() {
+  const totpCount = allItems.filter(i => i.login && !!i.login.totp).length;
+  if (totpCount === 0) {
+    alert('当前密码库中已经没有 TOTP 动态码了！');
+    return;
+  }
+
+  if (confirm(`确定要清空密码库中全部 ${totpCount} 个条目的 TOTP 动态验证码吗？\n（请确保你的新手机已经扫码录入完毕！操作后账号和密码依然会完整保留）`)) {
+    allItems.forEach(item => {
+      if (item.login && item.login.totp) {
+        item.login.totp = null;
+      }
+    });
+    render();
+    alert('✅ 全部条目的 TOTP 动态码已成功清空！你可以点击右上角导出全新的 JSON 文件了。');
+  }
+};
+
+// ================= 行级标记删除与撤销 =================
+window.markDelete = function(uid) {
+  deletedUids.add(uid);
+  render();
+};
+
+window.restoreItem = function(uid) {
+  deletedUids.delete(uid);
+  render();
+};
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ================= 导出清洗后的原生 JSON =================
+document.getElementById('btnExportJSON').addEventListener('click', () => {
+  if (!originalVaultData) return;
+
+  const cleanItems = allItems
+    .filter(item => !deletedUids.has(item._uid))
+    .map(item => {
+      const copy = { ...item };
+      delete copy._uid;
+      return copy;
+    });
+
+  const outputData = {
+    ...originalVaultData,
+    items: cleanItems
+  };
+
+  const jsonStr = JSON.stringify(outputData, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'cleaned_bitwarden_vault.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+
+</script>
+</body>
+</html>

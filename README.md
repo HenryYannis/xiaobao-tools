@@ -79,6 +79,7 @@
 | [工具-批量视频截图提取器.py](./productivity/Video-Frame-Extractor/video_frame_extractor.py) | `video_frame_extractor` | 提供视频载入、滑块精准选帧截图，或配置时间步长全自动无损批量截图导出。 |
 | [图片批量压缩工具.py](./productivity/Image-Compressor/image_compressor.py) | `image_compressor` | 批量压缩图片，支持自定义压缩质量、调整尺寸和多种输出格式。 |
 | [屏幕截图工具.py](./productivity/Screen-Capture/screen_capture.py) | `screen_capture` | 支持全屏、区域、窗口、延时截图的屏幕截图工具。 |
+| [Bitwarden密码清洗与TOTP迁移](./productivity/Bitwarden-Vault-Cleaner) | `Bitwarden-Vault-Cleaner` | 100% 离线单文件运行的 Bitwarden 密码库去重清洗、明文核对、TOTP 动态验证码扫码迁移与 Passkey 无损保留工具。 |
 
 ---
 
