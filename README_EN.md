@@ -6,7 +6,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue.svg)](https://www.python.org/)
 [![Codex Enabled](https://img.shields.io/badge/OpenAI%20Codex-Enabled-green.svg)](https://openai.com/form/codex-for-oss/)
-[![Build Status](https://github.com/HenryYannis/xiaobao-tools/actions/workflows/lint.yml/badge.svg)](https://github.com/HenryYannis/xiaobao-tools/actions)
 
 **Xiaobao Tools (xiaobao-tools)** is a highly curated, modular open-source toolkit comprising 20+ Python scripts and Windows configuration tools designed for independent developers, system administrators, and office professionals. The project aims to provide out-of-the-box, lightweight, and highly efficient automation solutions, covering registry optimizations, local network interactive utilities, office productivity tools, and multimedia processing.
 

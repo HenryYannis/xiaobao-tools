@@ -6,7 +6,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue.svg)](https://www.python.org/)
 [![Codex Enabled](https://img.shields.io/badge/OpenAI%20Codex-Enabled-green.svg)](https://openai.com/form/codex-for-oss/)
-[![Build Status](https://github.com/HenryYannis/xiaobao-tools/actions/workflows/lint.yml/badge.svg)](https://github.com/HenryYannis/xiaobao-tools/actions)
 
 **小宝工具箱 (xiaobao-tools)** 是一款面向独立开发者、系统管理员和日常办公人员的开源 Python 脚本与系统配置工具箱。项目旨在提供开箱即用、轻量化且高效率的自动化方案，包含系统环境优化、办公自动化、多媒体处理以及网络管理工具等。
 
