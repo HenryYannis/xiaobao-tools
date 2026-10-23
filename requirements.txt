@@ -4,9 +4,15 @@
 # 多媒体处理 (视频截图、图片压缩)
 opencv-python>=4.8.0
 
+# 音频合并 (productivity/Audio-Merger)，另外还需要 ffmpeg / ffprobe 程序
+pydub>=0.25.1
+
 # 办公自动化与实用工具 (图片转图标、图片压缩、屏幕截图)
 Pillow>=9.5.0
 
 # 办公自动化与实用工具 (Excel批量处理)
 pandas>=2.0.0
 openpyxl>=3.1.0
+
+# Windows 系统工具 (system/Edge-Internet-Control/上网助手.py 用到 win32api / win32event)
+pywin32>=306; sys_platform == "win32"
