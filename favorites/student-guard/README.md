@@ -8,7 +8,7 @@
 - **U 盘插入检测警告**：检测到外部 U 盘插入时，自动弹出全屏置顶警告界面；拔出 U 盘后自动恢复。
 
 ## 自定义修改
-如果需要修改晚间自动关机时间，请直接修改 [上网助手.py](file:///c:/Users/A3/Desktop/xiaobao-tools/favorites/student-guard/%E4%B8%8A%E7%BD%91%E5%8A%A9%E6%89%8B.py) 顶部的常量：
+如果需要修改晚间自动关机时间，请直接修改 [上网助手.py](上网助手.py) 顶部的常量：
 ```python
 SHUTDOWN_HOUR = 20
 SHUTDOWN_MINUTE = 15
