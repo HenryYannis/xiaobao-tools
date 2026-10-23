@@ -21,6 +21,24 @@ from config import (
     SYNC_SCRIPT_CONTENT
 )
 
+# schtasks 等系统命令在中文 Windows 上输出的是 OEM 编码（GBK），按它解码，解不了的字符替换掉，不会抛异常
+_CMD_ENCODING = "oem" if sys.platform == "win32" else None
+
+
+def _lock_down_deploy_dir():
+    """同步脚本以 SYSTEM 身份运行，所在目录只允许管理员和 SYSTEM 修改，普通用户只读。
+    用 SID 指定账户，中英文系统都适用。"""
+    try:
+        subprocess.run(
+            ["icacls", CLOUD_SYNC_DEPLOY_DIR, "/inheritance:r",
+             "/grant:r", "*S-1-5-32-544:(OI)(CI)F", "*S-1-5-18:(OI)(CI)F", "*S-1-5-32-545:(OI)(CI)RX"],
+            capture_output=True, text=True, encoding=_CMD_ENCODING, errors="replace",
+            creationflags=subprocess.CREATE_NO_WINDOW
+        )
+    except Exception:
+        pass
+
+
 def get_cloud_sync_installed():
     if not os.path.exists(CLOUD_SYNC_SCRIPT_PATH):
         return False
@@ -29,6 +47,8 @@ def get_cloud_sync_installed():
             ["schtasks", "/query", "/tn", CLOUD_SYNC_TASK_NAME],
             capture_output=True,
             text=True,
+            encoding=_CMD_ENCODING,
+            errors="replace",
             creationflags=subprocess.CREATE_NO_WINDOW
         )
         return res.returncode == 0
@@ -50,6 +70,7 @@ def deploy_sync_script():
             content = SYNC_SCRIPT_CONTENT
         with open(CLOUD_SYNC_SCRIPT_PATH, "w", encoding="utf-8-sig") as f:
             f.write(content)
+        _lock_down_deploy_dir()
         return True
     except Exception:
         return False
@@ -60,13 +81,14 @@ def install_cloud_sync_task():
     cmd = [
         "schtasks", "/create",
         "/tn", CLOUD_SYNC_TASK_NAME,
-        "/tr", f'powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File "{CLOUD_SYNC_SCRIPT_PATH}"',
+        "/tr", f'powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "{CLOUD_SYNC_SCRIPT_PATH}"',
         "/sc", "onstart",
         "/ru", "SYSTEM",
         "/f"
     ]
     try:
-        res = subprocess.run(cmd, capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        res = subprocess.run(cmd, capture_output=True, text=True, encoding=_CMD_ENCODING, errors="replace",
+                             creationflags=subprocess.CREATE_NO_WINDOW)
         if res.returncode == 0:
             run_cloud_sync_now()
             return True, "开机静默云端同步任务已成功部署！\n\n- 运行机制：开机自动以最高 SYSTEM 权限在后台静默运行\n- 浏览器管控：自动同步最新白名单并加锁 Edge/Chrome\n- 晚间纪律：自动部署每日 20:15 定时关机策略\n- 权限特性：彻底免 UAC 弹窗、无黑框界面、普通学生无权修改\n- 同步源：https://xbkjz.cn/edu/whitelist.txt\n\n学生机每次开机将自动静默同步最新白名单并确保关机任务生效！"
@@ -82,6 +104,8 @@ def uninstall_cloud_sync_task():
             ["schtasks", "/delete", "/tn", CLOUD_SYNC_TASK_NAME, "/f"],
             capture_output=True,
             text=True,
+            encoding=_CMD_ENCODING,
+            errors="replace",
             creationflags=subprocess.CREATE_NO_WINDOW
         )
         # 同步清理关联的晚间定时关机计划任务
@@ -89,6 +113,8 @@ def uninstall_cloud_sync_task():
             ["schtasks", "/delete", "/tn", AUTO_SHUTDOWN_TASK_NAME, "/f"],
             capture_output=True,
             text=True,
+            encoding=_CMD_ENCODING,
+            errors="replace",
             creationflags=subprocess.CREATE_NO_WINDOW
         )
         if res.returncode == 0:
@@ -103,7 +129,7 @@ def run_cloud_sync_now():
         deploy_sync_script()
     try:
         subprocess.run(
-            ["powershell.exe", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", CLOUD_SYNC_SCRIPT_PATH],
+            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", CLOUD_SYNC_SCRIPT_PATH],
             capture_output=True,
             creationflags=subprocess.CREATE_NO_WINDOW
         )
