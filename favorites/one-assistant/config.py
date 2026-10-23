@@ -133,61 +133,75 @@ $LocalFallbackPath = "C:\\Users\\A3\\Desktop\\Website\\xiaobao-tech\\edu\\whitel
 $CacheDir = "C:\\ProgramData\\XiaobaoTools"
 $CachePath = "C:\\ProgramData\\XiaobaoTools\\whitelist_cache.txt"
 
-$rawText = $null
+$SyncLog = "C:\\ProgramData\\XiaobaoTools\\sync.log"
+function Write-SyncLog([string]$msg) {
+    try {
+        if (-not (Test-Path $CacheDir)) { New-Item -ItemType Directory -Path $CacheDir -Force | Out-Null }
+        [System.IO.File]::AppendAllText($SyncLog, "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] $msg`r`n", [System.Text.Encoding]::UTF8)
+    } catch { $null }
+}
 
-# 1. 尝试从云端拉取
+# 校验白名单内容：每行只能是网址规则（字母、数字和 * . - : / _ % ? = & # ~ +），最多 1000 条。
+# 拉到的是网页（比如被劫持、被机房网关重定向到登录页）或格式不对时整份丢弃，不写入浏览器策略。
+function Get-ValidRules([string]$text, [string]$source) {
+    if (-not $text) { return $null }
+    $list = New-Object System.Collections.Generic.List[string]
+    foreach ($line in $text.Split(@("`r`n", "`r", "`n"), [System.StringSplitOptions]::None)) {
+        $t = $line.Trim()
+        if ($t.Length -eq 0 -or $t.StartsWith("#")) { continue }
+        if ($t.Length -gt 256 -or $t -notmatch '^[A-Za-z0-9*.\\-:/_%?=&#~+]+$') {
+            Write-SyncLog "Rejected $source : invalid line '$($t.Substring(0, [Math]::Min(60, $t.Length)))'"
+            return $null
+        }
+        $list.Add($t)
+    }
+    if ($list.Count -eq 0 -or $list.Count -gt 1000) {
+        Write-SyncLog "Rejected $source : $($list.Count) rules"
+        return $null
+    }
+    return ,$list
+}
+
+$rules = $null
+
+# 1. 尝试从云端拉取，校验通过才更新本地缓存
 try {
     $wc = New-Object System.Net.WebClient
     $wc.Encoding = [System.Text.Encoding]::UTF8
-    $rawText = $wc.DownloadString($RemoteUrl)
-    if ($rawText -and $rawText.Trim().Length -gt 0) {
+    $remoteText = $wc.DownloadString($RemoteUrl)
+    $rules = Get-ValidRules $remoteText "remote"
+    if ($rules) {
         if (-not (Test-Path $CacheDir)) {
             New-Item -ItemType Directory -Path $CacheDir -Force | Out-Null
         }
-        [System.IO.File]::WriteAllText($CachePath, $rawText, [System.Text.Encoding]::UTF8)
+        [System.IO.File]::WriteAllText($CachePath, $remoteText, [System.Text.Encoding]::UTF8)
     }
 } catch {
-    $rawText = $null
+    Write-SyncLog "Download failed: $($_.Exception.Message)"
+    $rules = $null
 }
 
-# 2. 若云端不可达，尝试读取本地发布文件
-if (-not $rawText) {
-    if (Test-Path $LocalFallbackPath) {
-        try {
-            $rawText = [System.IO.File]::ReadAllText($LocalFallbackPath, [System.Text.Encoding]::UTF8)
-        } catch {
-            $rawText = $null
-        }
+# 2. 若云端不可用，尝试读取本地发布文件（教师机上的网站目录，学生机上不存在会自动跳过）
+if (-not $rules -and (Test-Path $LocalFallbackPath)) {
+    try {
+        $rules = Get-ValidRules ([System.IO.File]::ReadAllText($LocalFallbackPath, [System.Text.Encoding]::UTF8)) "local"
+    } catch {
+        $rules = $null
     }
 }
 
-# 3. 若依然没有，尝试读取本地缓存文件
-if (-not $rawText) {
-    if (Test-Path $CachePath) {
-        try {
-            $rawText = [System.IO.File]::ReadAllText($CachePath, [System.Text.Encoding]::UTF8)
-        } catch {
-            $rawText = $null
-        }
+# 3. 若依然没有，尝试读取上次校验通过的本地缓存
+if (-not $rules -and (Test-Path $CachePath)) {
+    try {
+        $rules = Get-ValidRules ([System.IO.File]::ReadAllText($CachePath, [System.Text.Encoding]::UTF8)) "cache"
+    } catch {
+        $rules = $null
     }
 }
 
-# 如果没有获得任何有效内容，退出以避免破坏现有配置
-if (-not $rawText) {
-    exit 0
-}
-
-# 4. 解析白名单规则
-$rules = New-Object System.Collections.Generic.List[string]
-$lines = $rawText.Split(@("`r`n", "`r", "`n"), [System.StringSplitOptions]::None)
-foreach ($line in $lines) {
-    $trimmed = $line.Trim()
-    if ($trimmed.Length -gt 0 -and -not $trimmed.StartsWith("#")) {
-        $rules.Add($trimmed)
-    }
-}
-
-if ($rules.Count -eq 0) {
+# 如果没有获得任何有效规则，退出以避免破坏现有配置
+if (-not $rules) {
+    Write-SyncLog "No valid whitelist, keep current browser policy"
     exit 0
 }
 
@@ -230,12 +244,7 @@ foreach ($baseKey in $policyTargets) {
 }
 
 # 写入完成日志标记
-try {
-    $logMsg = "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Synced $($rules.Count) rules successfully. Last: $($rules[$rules.Count - 1])`r`n"
-    [System.IO.File]::AppendAllText("C:\\ProgramData\\XiaobaoTools\\sync.log", $logMsg, [System.Text.Encoding]::UTF8)
-} catch {
-    $null
-}
+Write-SyncLog "Synced $($rules.Count) rules successfully. Last: $($rules[$rules.Count - 1])"
 """
 
 def 设置窗口图标(window):
