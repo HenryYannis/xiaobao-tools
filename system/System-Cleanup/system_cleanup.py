@@ -25,6 +25,47 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
 
+# 需要管理员权限的系统级清理项，默认不勾选
+SYSTEM_LEVEL_OPTIONS = ("system_logs", "update_cache")
+
+
+def _env_dir(name, *parts):
+    """用环境变量拼出目录。变量为空或不是绝对路径时返回 None，
+    避免拼出 'Temp' 这种相对路径，误删当前工作目录下的文件。"""
+    base = os.environ.get(name, "")
+    if not base or not os.path.isabs(base):
+        return None
+    return os.path.join(base, *parts)
+
+
+def _is_admin():
+    try:
+        import ctypes
+        return bool(ctypes.windll.shell32.IsUserAnAdmin())
+    except Exception:
+        return False
+
+
+def _run_quiet(args, timeout=30):
+    """不经过 shell 直接运行命令，不弹黑框；输出按系统编码解码，解不了的字符替换掉"""
+    kwargs = {}
+    if os.name == "nt":
+        kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+    return subprocess.run(args, capture_output=True, text=True, errors="replace", timeout=timeout, **kwargs)
+
+
+def _unique_dirs(dirs):
+    """去掉 None 和重复的目录（TEMP 和 LOCALAPPDATA\\Temp 通常是同一个），避免重复统计"""
+    seen, result = set(), []
+    for d in dirs:
+        if not d:
+            continue
+        key = os.path.normcase(os.path.abspath(d))
+        if key not in seen:
+            seen.add(key)
+            result.append(d)
+    return result
+
 
 class SystemCleanupTool:
     """系统垃圾清理工具"""
@@ -74,7 +115,7 @@ class SystemCleanupTool:
         # 创建复选框
         self.option_vars = {}
         for i, (key, option) in enumerate(self.cleanup_options.items()):
-            var = tk.BooleanVar(value=True)
+            var = tk.BooleanVar(value=key not in SYSTEM_LEVEL_OPTIONS)
             self.option_vars[key] = var
 
             frame = ttk.Frame(options_frame)
@@ -165,14 +206,14 @@ class SystemCleanupTool:
         """扫描临时文件"""
         temp_dirs = [
             tempfile.gettempdir(),
-            os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Temp'),
-            os.path.join(os.environ.get('TEMP', '')),
+            _env_dir('LOCALAPPDATA', 'Temp'),
+            _env_dir('TEMP'),
         ]
 
         total_size = 0
         file_count = 0
 
-        for temp_dir in temp_dirs:
+        for temp_dir in _unique_dirs(temp_dirs):
             size, count = self._scan_directory_size(temp_dir)
             total_size += size
             file_count += count
@@ -182,8 +223,9 @@ class SystemCleanupTool:
     def scan_recycle_bin(self):
         """扫描回收站"""
         try:
-            cmd = 'powershell -Command "(New-Object -ComObject Shell.Application).NameSpace(10).Items() | Measure-Object -Property Size -Sum | Select-Object -ExpandProperty Sum"'
-            result = subprocess.run(cmd, capture_output=True, text=True, shell=True, timeout=30)
+            result = _run_quiet(["powershell", "-NoProfile", "-Command",
+                                 "(New-Object -ComObject Shell.Application).NameSpace(10).Items() | "
+                                 "Measure-Object -Property Size -Sum | Select-Object -ExpandProperty Sum"])
             if result.returncode == 0 and result.stdout.strip():
                 size = int(result.stdout.strip())
                 return size, 1
@@ -195,16 +237,16 @@ class SystemCleanupTool:
     def scan_browser_cache(self):
         """扫描浏览器缓存"""
         cache_dirs = [
-            os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Google', 'Chrome', 'User Data', 'Default', 'Cache'),
-            os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Google', 'Chrome', 'User Data', 'Default', 'Code Cache'),
-            os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Microsoft', 'Edge', 'User Data', 'Default', 'Cache'),
-            os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Microsoft', 'Edge', 'User Data', 'Default', 'Code Cache'),
+            _env_dir('LOCALAPPDATA', 'Google', 'Chrome', 'User Data', 'Default', 'Cache'),
+            _env_dir('LOCALAPPDATA', 'Google', 'Chrome', 'User Data', 'Default', 'Code Cache'),
+            _env_dir('LOCALAPPDATA', 'Microsoft', 'Edge', 'User Data', 'Default', 'Cache'),
+            _env_dir('LOCALAPPDATA', 'Microsoft', 'Edge', 'User Data', 'Default', 'Code Cache'),
         ]
 
         total_size = 0
         file_count = 0
 
-        for cache_dir in cache_dirs:
+        for cache_dir in _unique_dirs(cache_dirs):
             size, count = self._scan_directory_size(cache_dir)
             total_size += size
             file_count += count
@@ -215,7 +257,6 @@ class SystemCleanupTool:
         """扫描系统日志"""
         log_dirs = [
             os.path.join(os.environ.get('SystemRoot', 'C:\\Windows'), 'Logs'),
-            os.path.join(os.environ.get('SystemRoot', 'C:\\Windows'), 'Temp'),
         ]
 
         total_size = 0
@@ -235,12 +276,12 @@ class SystemCleanupTool:
 
     def scan_thumbnails(self):
         """扫描缩略图缓存"""
-        thumb_dir = os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Microsoft', 'Windows', 'Explorer')
+        thumb_dir = _env_dir('LOCALAPPDATA', 'Microsoft', 'Windows', 'Explorer')
 
         total_size = 0
         file_count = 0
 
-        if os.path.exists(thumb_dir):
+        if thumb_dir and os.path.exists(thumb_dir):
             for file in os.listdir(thumb_dir):
                 if file.startswith('thumbcache'):
                     try:
@@ -311,6 +352,7 @@ class SystemCleanupTool:
         if not messagebox.askyesno("确认", "确定要清理选中的项目吗？此操作不可撤销。"):
             return
 
+        self._skipped_need_admin = []
         for item in selected:
             values = self.result_tree.item(item, "values")
             type_name = values[0]
@@ -321,22 +363,35 @@ class SystemCleanupTool:
                     break
 
         self.start_scan()
-        messagebox.showinfo("完成", "清理完成！")
+        self._show_done()
 
     def cleanup_all(self):
         """清理所有项目"""
         if not messagebox.askyesno("确认", "确定要清理所有垃圾文件吗？此操作不可撤销。"):
             return
 
+        self._skipped_need_admin = []
         for key in self.cleanup_options:
             if self.option_vars[key].get():
                 self.cleanup_by_type(key)
 
         self.start_scan()
-        messagebox.showinfo("完成", "清理完成！")
+        self._show_done()
+
+    def _show_done(self):
+        if self._skipped_need_admin:
+            messagebox.showwarning(
+                "部分项目未清理",
+                "清理完成。以下项目需要管理员权限，已跳过：\n" + "、".join(self._skipped_need_admin)
+                + "\n\n请右键程序选择“以管理员身份运行”后再清理。")
+        else:
+            messagebox.showinfo("完成", "清理完成！")
 
     def cleanup_by_type(self, type_key):
         """根据类型清理"""
+        if type_key in SYSTEM_LEVEL_OPTIONS and not _is_admin():
+            self._skipped_need_admin.append(self.cleanup_options[type_key]["name"])
+            return
         if type_key == "temp_files":
             self.cleanup_temp_files()
         elif type_key == "recycle_bin":
@@ -354,10 +409,10 @@ class SystemCleanupTool:
         """清理临时文件"""
         temp_dirs = [
             tempfile.gettempdir(),
-            os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Temp'),
+            _env_dir('LOCALAPPDATA', 'Temp'),
         ]
 
-        for temp_dir in temp_dirs:
+        for temp_dir in _unique_dirs(temp_dirs):
             if os.path.exists(temp_dir):
                 for root, dirs, files in os.walk(temp_dir, topdown=False):
                     for file in files:
@@ -376,20 +431,20 @@ class SystemCleanupTool:
     def cleanup_recycle_bin(self):
         """清空回收站"""
         try:
-            subprocess.run("powershell -Command \"Clear-RecycleBin -Force\"", shell=True, timeout=30)
+            _run_quiet(["powershell", "-NoProfile", "-Command", "Clear-RecycleBin -Force"])
         except (subprocess.SubprocessError, OSError) as e:
             logging.warning(f"清空回收站失败: {e}")
 
     def cleanup_browser_cache(self):
         """清理浏览器缓存"""
         cache_dirs = [
-            os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Google', 'Chrome', 'User Data', 'Default', 'Cache'),
-            os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Google', 'Chrome', 'User Data', 'Default', 'Code Cache'),
-            os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Microsoft', 'Edge', 'User Data', 'Default', 'Cache'),
-            os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Microsoft', 'Edge', 'User Data', 'Default', 'Code Cache'),
+            _env_dir('LOCALAPPDATA', 'Google', 'Chrome', 'User Data', 'Default', 'Cache'),
+            _env_dir('LOCALAPPDATA', 'Google', 'Chrome', 'User Data', 'Default', 'Code Cache'),
+            _env_dir('LOCALAPPDATA', 'Microsoft', 'Edge', 'User Data', 'Default', 'Cache'),
+            _env_dir('LOCALAPPDATA', 'Microsoft', 'Edge', 'User Data', 'Default', 'Code Cache'),
         ]
 
-        for cache_dir in cache_dirs:
+        for cache_dir in _unique_dirs(cache_dirs):
             if os.path.exists(cache_dir):
                 try:
                     shutil.rmtree(cache_dir)
@@ -418,18 +473,23 @@ class SystemCleanupTool:
 
         if os.path.exists(update_dir):
             try:
-                subprocess.run("net stop wuauserv", shell=True, timeout=30)
-                shutil.rmtree(update_dir)
-                os.makedirs(update_dir)
-                subprocess.run("net start wuauserv", shell=True, timeout=30)
-            except (subprocess.SubprocessError, OSError, PermissionError) as e:
+                _run_quiet(["net", "stop", "wuauserv"])
+                shutil.rmtree(update_dir, ignore_errors=True)
+                os.makedirs(update_dir, exist_ok=True)
+            except (subprocess.SubprocessError, OSError) as e:
                 logging.warning(f"清理更新缓存失败: {e}")
+            finally:
+                # 无论清理是否出错，都要把 Windows 更新服务重新启动
+                try:
+                    _run_quiet(["net", "start", "wuauserv"])
+                except (subprocess.SubprocessError, OSError) as e:
+                    logging.warning(f"重新启动 Windows 更新服务失败: {e}")
 
     def cleanup_thumbnails(self):
         """清理缩略图缓存"""
-        thumb_dir = os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Microsoft', 'Windows', 'Explorer')
+        thumb_dir = _env_dir('LOCALAPPDATA', 'Microsoft', 'Windows', 'Explorer')
 
-        if os.path.exists(thumb_dir):
+        if thumb_dir and os.path.exists(thumb_dir):
             for file in os.listdir(thumb_dir):
                 if file.startswith('thumbcache'):
                     try:
