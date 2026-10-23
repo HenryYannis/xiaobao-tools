@@ -44,12 +44,16 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/A3studio/xiaobao-toos"
-Repository = "https://github.com/A3studio/xiaobao-toos"
+Homepage = "https://github.com/HenryYannis/xiaobao-tools"
+Repository = "https://github.com/HenryYannis/xiaobao-tools"
 
 [build-system]
 requires = ["setuptools>=65.0"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
+
+# 各个工具是独立运行的脚本，不打包成 Python 包；这个文件只用来声明依赖和工具配置
+[tool.setuptools]
+packages = []
 
 [tool.flake8]
 max-line-length = 120
