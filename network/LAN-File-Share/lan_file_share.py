@@ -407,7 +407,8 @@ class LANShareApp:
             self.server.serve_forever()
         except (OSError, socket.error) as e:
             self.is_running = False
-            self.root.after(0, lambda: messagebox.showerror("启动失败", f"无法启动服务端口被占用，错误: {e}"))
+            msg = f"无法启动服务，端口可能被占用。错误: {e}"
+            self.root.after(0, lambda m=msg: messagebox.showerror("启动失败", m))
             self.root.after(0, self.reset_ui_to_stopped)
 
     def toggle_server(self):

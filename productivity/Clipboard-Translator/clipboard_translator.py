@@ -15,7 +15,7 @@ import json
 import threading
 import webbrowser
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 import unicodedata
 import logging
 
@@ -250,7 +250,8 @@ class ClipboardTranslatorApp:
                 self.root.after(0, lambda: self.show_translation_result(translated_text))
         except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError, OSError) as e:
             logging.warning(f"翻译请求失败: {e}")
-            self.root.after(0, lambda: self.show_translation_result(f"翻译服务请求失败，请检查网络。错误: {e}"))
+            msg = f"翻译服务请求失败，请检查网络。错误: {e}"
+            self.root.after(0, lambda m=msg: self.show_translation_result(m))
 
     def show_translation_result(self, result):
         self.trans_text.delete(1.0, tk.END)
