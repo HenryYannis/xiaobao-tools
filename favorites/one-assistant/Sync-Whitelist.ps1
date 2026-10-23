@@ -52,7 +52,8 @@ function Write-SyncLog([string]$msg) {
 function Get-ValidRules([string]$text, [string]$source) {
     if (-not $text) { return $null }
     $list = New-Object System.Collections.Generic.List[string]
-    foreach ($line in $text.Split(@("`r`n", "`r", "`n"), [System.StringSplitOptions]::None)) {
+    # 用 -split 按行切分：PowerShell 7 下 .Split(@(...)) 可能被当成一个分隔符字符串，整份内容不被切开
+    foreach ($line in ($text -split "\r\n|\r|\n")) {
         $t = $line.Trim()
         if ($t.Length -eq 0 -or $t.StartsWith("#")) { continue }
         if ($t.Length -gt 256 -or $t -notmatch '^[A-Za-z0-9*.\-:/_%?=&#~+]+$') {
