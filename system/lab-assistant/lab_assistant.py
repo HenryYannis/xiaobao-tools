@@ -38,7 +38,11 @@ from winreg import (
 
 # --- Paths ---
 # 系统 Hosts 文件路径
-SYSTEM_HOSTS_PATH = r"C:\Windows\System32\drivers\etc\hosts"
+SYSTEM_HOSTS_PATH = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32", "drivers", "etc", "hosts")
+# 第一次修改前备份一份原始 hosts，之后不再覆盖这份备份
+SYSTEM_HOSTS_BACKUP = SYSTEM_HOSTS_PATH + ".xiaobao.bak"
+# 读取时识别出的编码，写回时保持一致，避免把原有的非 UTF-8 内容写坏
+_hosts_encoding = "utf-8"
 
 # 获取运行目录与资源目录（开发模式取脚本目录，PyInstaller 打包模式下资源从 _MEIPASS 提取）
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__))
@@ -358,19 +362,39 @@ def kill_edge_process():
 # --- Hosts Injection Functions ---
 def _read_system_hosts():
     """读取系统 hosts 文件内容，出错返回 None"""
+    global _hosts_encoding
     try:
-        with open(SYSTEM_HOSTS_PATH, "r", encoding="utf-8", errors="replace") as f:
-            return f.read()
+        with open(SYSTEM_HOSTS_PATH, "rb") as f:
+            data = f.read()
+        for enc in ("utf-8-sig", "mbcs", "gbk"):
+            try:
+                text = data.decode(enc)
+                _hosts_encoding = "utf-8" if enc == "utf-8-sig" else enc
+                return text
+            except (UnicodeDecodeError, LookupError):
+                continue
+        _hosts_encoding = "utf-8"
+        return data.decode("utf-8", errors="replace")
     except Exception as e:
         print(f"[HostsReadError] {e}")
         return None
 
 
 def _write_system_hosts(content):
-    """写入系统 hosts 文件，返回是否成功"""
+    """写入系统 hosts 文件，返回是否成功。
+
+    先备份原文件，再写到同目录的临时文件，最后整体替换：
+    写到一半出错时原来的 hosts 保持不变，不会被清空或截断。
+    """
+    tmp_path = SYSTEM_HOSTS_PATH + ".xiaobao.tmp"
     try:
-        with open(SYSTEM_HOSTS_PATH, "w", encoding="utf-8") as f:
+        if os.path.exists(SYSTEM_HOSTS_PATH) and not os.path.exists(SYSTEM_HOSTS_BACKUP):
+            shutil.copy2(SYSTEM_HOSTS_PATH, SYSTEM_HOSTS_BACKUP)
+        with open(tmp_path, "w", encoding=_hosts_encoding, newline="") as f:
             f.write(content)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, SYSTEM_HOSTS_PATH)
         return True
     except PermissionError:
         print("[HostsWritePermissionError] 需要管理员权限")
@@ -378,6 +402,12 @@ def _write_system_hosts(content):
     except Exception as e:
         print(f"[HostsWriteError] {e}")
         return False
+    finally:
+        if os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
 
 
 def get_hosts_injected():
