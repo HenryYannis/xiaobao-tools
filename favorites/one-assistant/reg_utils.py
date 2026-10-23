@@ -78,14 +78,20 @@ def is_admin():
         return False
 
 def run_as_admin():
+    # 重新启动的必须是入口程序（sys.argv[0]，即 one_assistant.py），
+    # 不能用 __file__：那是 reg_utils.py 本身，提权后什么都不会运行
+    executable = sys.executable
+    extra = [a for a in sys.argv[1:] if a != "--elevated"] + ["--elevated"]
     if getattr(sys, 'frozen', False):
-        executable = sys.executable
-        params = "--elevated"
+        args = extra
+        workdir = os.path.dirname(sys.executable)
     else:
-        executable = sys.executable
-        params = f'"{__file__}" --elevated'
+        script = os.path.abspath(sys.argv[0])
+        args = [script] + extra
+        workdir = os.path.dirname(script)
+    params = subprocess.list2cmdline(args)
     try:
-        ret = ctypes.windll.shell32.ShellExecuteW(None, "runas", executable, params, None, 1)
+        ret = ctypes.windll.shell32.ShellExecuteW(None, "runas", executable, params, workdir, 1)
         if int(ret) <= 32:
             sys.exit(1)
         sys.exit(0)
