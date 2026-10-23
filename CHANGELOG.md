@@ -4,6 +4,17 @@
 
 ---
 
+## [未发布]
+
+### ⚙️ 持续集成
+- **CI 工作流**：`.github/workflows/ci.yml` 在 push 到 main 和每个 PR 时运行：用 `ruff check --select E9,F821,F823` 检查语法错误和未定义名称（跳过 `scratch-assets/`），并用 `python -m unittest discover -s tests` 运行单元测试。它取代了 v1.1.0 里提到的 `lint.yml`（该工作流已删除）。
+
+### 📝 文档
+- 修正中英文 README：去掉不存在的 `system/System-Restrictions-Tool` 链接（改指向 `system/lab-assistant`），补上 `system/Delete-Files-Tool`，把 `LAN-AI-Chat` 标为“源码未公开 / 计划中”，学生机守护助手和临时密码工具的说明改成与代码一致，Python 徽章改为 3.8–3.12，并加上 CI 状态徽章。
+- 下方 v1.1.0 记录中的文件路径已更新为目录重构后的当前路径。
+
+---
+
 ## [v1.1.0] - 2026-06-02 (重磅结构重构与国际化版本)
 
 ### 📁 仓库结构重构与优化
@@ -17,14 +28,14 @@
 - **AI 辅助维护计划**：详细规划了四大 OpenAI Codex 日常集成场景（自动 Review 重构、单元测试一键生成、智能 Issue 报错分类、双语 Docstring 自动翻译），使项目成为极佳的 AI-driven 实验田。
 
 ### 🛠️ 重磅新增小工具
-- **局域网极速文件共享器** (`network/工具-局域网极速文件共享器.py`)：GUI 可视化文件分发与跨端极速免流量上传服务器，完美解决公共机房、课堂分发与跨系统临时传输痛点。
-- **简易剪贴板历史翻译器** (`productivity/工具-简易剪贴板历史翻译器.py`)：后台监听剪贴板复制历史，支持免 Key 中英互译结果一键写回剪贴板，极大便利学术文献阅读。
-- **批量视频截图提取器** (`vision/工具-批量视频截图提取器.py`)：GUI 视频载入，支持按秒步长批量无损截图导出及滑块单帧精准画面提取，专为自媒体及剪辑师设计。
-- **代码结构大纲生成器** (`productivity/工具-代码结构大纲生成器.py`)：基于 AST 提取模块、类及函数的 Docstring 说明，一键自动梳理代码大纲看板。
+- **局域网极速文件共享器** (`network/LAN-File-Share/lan_file_share.py`)：GUI 可视化文件分发与跨端极速免流量上传服务器，完美解决公共机房、课堂分发与跨系统临时传输痛点。
+- **简易剪贴板历史翻译器** (`productivity/Clipboard-Translator/clipboard_translator.py`)：后台监听剪贴板复制历史，支持免 Key 中英互译结果一键写回剪贴板，极大便利学术文献阅读。
+- **批量视频截图提取器** (`productivity/Video-Frame-Extractor/video_frame_extractor.py`)：GUI 视频载入，支持按秒步长批量无损截图导出及滑块单帧精准画面提取，专为自媒体及剪辑师设计。
+- **代码结构大纲生成器** (`productivity/Code-Outline-Generator/code_outline_generator.py`)：基于 AST 提取模块、类及函数的 Docstring 说明，一键自动梳理代码大纲看板。
 
 ### ⚙️ 开源基础设施与自动化 CI
 - **规范模版**：新增 Bug 反馈 Issue 模版、新功能提议 Issue 模版，以及 Pull Request 规范化提交流程（包含 AI/Codex 辅助声明）。
-- **自动化工作流**：在 `.github/workflows/lint.yml` 中配置了 GitHub Actions 静态代码语法及格式自动检查（Flake8 + Black），在 push/PR 时触发。
+- **自动化工作流**：当时在 `.github/workflows/lint.yml` 中配置了 GitHub Actions 静态代码语法及格式自动检查（Flake8 + Black）。*（该工作流后来已删除，现在的检查见上方“未发布”中的 `ci.yml`。）*
 - **守门员配置**：新增 Python 专属 `.gitignore` 文件保护仓库整洁；新增根目录一键依赖声明文件 `requirements.txt`。
 - **规范文档**：新增详细的贡献指南 `CONTRIBUTING.md` 与开源社区行为准则 `CODE_OF_CONDUCT.md`。
 
