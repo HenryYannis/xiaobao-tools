@@ -4,7 +4,8 @@
 
 [![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/HenryYannis/xiaobao-tools)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python Version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue.svg)](https://www.python.org/)
+[![CI](https://github.com/HenryYannis/xiaobao-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/HenryYannis/xiaobao-tools/actions/workflows/ci.yml)
+[![Python Version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/)
 [![Codex Enabled](https://img.shields.io/badge/OpenAI%20Codex-Enabled-green.svg)](https://openai.com/form/codex-for-oss/)
 
 **小宝工具箱 (xiaobao-tools)** 是一款面向独立开发者、系统管理员和日常办公人员的开源 Python 脚本与系统配置工具箱。项目旨在提供开箱即用、轻量化且高效率的自动化方案，包含系统环境优化、办公自动化、多媒体处理以及网络管理工具等。
@@ -15,7 +16,7 @@
 
 1. **零门槛，开箱即用**：绝大多数工具为单一子文件夹收纳，无复杂配置，极速双击或命令行启动。
 2. **场景丰富，解决刚需**：涵盖日常办公、网络管理、多媒体处理、系统底层优化等多维应用场景。
-3. **高规范与自动化**：集成了 GitHub Actions 自动化检查流，遵循 PEP 8 代码规范，并规划了完善的 **OpenAI Codex AI 辅助工作流**。
+3. **持续集成检查**：通过 GitHub Actions（[`.github/workflows/ci.yml`](./.github/workflows/ci.yml)）在每次 push / PR 时用 `ruff` 检查语法错误和未定义名称，并运行 `tests/` 下的单元测试（`python -m unittest`）；同时规划了 **OpenAI Codex AI 辅助工作流**。
 
 ---
 
@@ -25,22 +26,22 @@
 
 | 🎯 目标用户群体 | 💡 核心解决需求 (痛点) | 🛠️ 推荐小工具 |
 | :--- | :--- | :--- |
-| 🧑‍🏫 **教育工作者与机房管理员** | 想要在公共机房中限制用户随意下载、乱改壁纸，或移除 Windows 锁屏悬浮小广告；禁用浏览器离线游戏；跨端极速分发课件。 | [系统限制控制中心](./system/System-Restrictions-Tool), [Edge-禁止下载](./system/Edge-Disable-Downloads), [禁止-修改壁纸](./system/Disable-Wallpaper-Change), [移除-了解此图片](./system/Remove-Spotlight-Info), [工具-局域网极速文件共享器](./network/LAN-File-Share/lan_file_share.py) |
+| 🧑‍🏫 **教育工作者与机房管理员** | 想要在公共机房中限制用户随意下载、乱改壁纸，或移除 Windows 锁屏悬浮小广告；禁用浏览器离线游戏；跨端极速分发课件。 | [系统限制控制中心](./system/lab-assistant), [Edge-禁止下载](./system/Edge-Disable-Downloads), [禁止-修改壁纸](./system/Disable-Wallpaper-Change), [移除-了解此图片](./system/Remove-Spotlight-Info), [工具-局域网极速文件共享器](./network/LAN-File-Share/lan_file_share.py) |
 | 🎬 **新媒体创作者与设计师** | 在本地快速进行多段语音拼接录音，或将图片转为高保真 ICO 图标；等时间步长批量无损截取视频画面帧、屏幕截图与图片压缩。 | [工具-图片转图标](./productivity/Image-to-ICO), [工具-音频合并](./productivity/Audio-Merger), [工具-批量视频截图提取器](./productivity/Video-Frame-Extractor/video_frame_extractor.py), [图片批量压缩](./productivity/Image-Compressor/image_compressor.py), [屏幕截图](./productivity/Screen-Capture/screen_capture.py) |
 | 🧑‍🎓 **外语学习者与青少年** | 希望在局域网内与同学联机记忆英语单词并进行自我检测，同步提高词汇量。 | [工具-局域网单词联机学习器](./productivity/LAN-Word-Learner) |
-| 🧑‍💻 **独立开发者与 AI 狂热者** | 想要在本地免代理搭建局域网 AI 共享网关；或者一键提取项目所有脚本大纲，供大模型精准进行 Code Review。 | [局域网-Ai对话](./network/LAN-AI-Chat), [工具-代码结构大纲生成器.py](./productivity/Code-Outline-Generator/code_outline_generator.py) |
-| 💼 **普通办公族与效率达人** | 频繁需要随机生成高强度账户临时密码，或者是精确倒计时；自动记录并一键极速翻译剪贴板文本。 | [临时密码.py](./productivity/Temp-Password/temp_password.py), [数字倒计时.py](./productivity/Countdown/countdown.py), [工具-简易剪贴板历史翻译器](./productivity/Clipboard-Translator/clipboard_translator.py) |
+| 🧑‍💻 **独立开发者与 AI 狂热者** | 想要在本地免代理搭建局域网 AI 共享网关；或者一键提取项目所有脚本大纲，供大模型精准进行 Code Review。 | [局域网-Ai对话](./network/LAN-AI-Chat)（源码未公开 / 计划中）, [工具-代码结构大纲生成器.py](./productivity/Code-Outline-Generator/code_outline_generator.py) |
+| 💼 **普通办公族与效率达人** | 想体验“密保问题找回密码”的流程并生成随机临时密码，或者是精确倒计时；自动记录并一键极速翻译剪贴板文本。 | [临时密码.py](./productivity/Temp-Password/temp_password.py), [数字倒计时.py](./productivity/Countdown/countdown.py), [工具-简易剪贴板历史翻译器](./productivity/Clipboard-Translator/clipboard_translator.py) |
 
 ---
 
 ## 📂 工具矩阵目录
 
-为了让你方便地检索，我们将所有工具划分为三大核心方向：
+为了让你方便地检索，我们将所有工具划分为四大核心方向：
 
 ### 1. 🛜 局域网与网络联机 (Network & LAN Utilities)
 | 工具名称/文件夹 | 英文标识 | 核心功能简介 |
 | :--- | :--- | :--- |
-| [局域网-Ai对话](./network/LAN-AI-Chat) | `LAN-AI-Chat` | 本地局域网内提供多端 AI 对话的前后端交互工具，实现局域网设备免梯免配置共享 AI 能力。 |
+| [局域网-Ai对话](./network/LAN-AI-Chat) | `LAN-AI-Chat` | ⚠️ **源码未公开 / 计划中**：目录里目前只有说明、图标和版本信息，还没有可运行的代码。规划为局域网内多端共享 AI 对话的前后端交互工具。 |
 | [工具-局域网极速文件共享器](./network/LAN-File-Share/lan_file_share.py) | `lan_file_share` | 本地目录一键变身局域网文件共享中心与免流量极速跨端上传分发服务。 |
 | [端口扫描工具.py](./network/Port-Scanner/port_scanner.py) | `port_scanner` | 扫描指定IP地址的开放端口，支持多线程扫描和常见服务识别。 |
 | [网速测试工具.py](./network/Speed-Test/speed_test.py) | `speed_test` | 测试网络下载/上传速度、延迟和丢包率的网速测试工具。 |
@@ -49,7 +50,7 @@
 | 工具名称/文件夹 | 英文标识 | 核心功能简介 |
 | :--- | :--- | :--- |
 | [机房教学策略配置工具](./favorites/one-assistant) | `one-assistant` | 教学机房一体化管控核心：Edge/Chrome 白名单与桌面直达、离线游戏与下载限制、统一锁屏壁纸、编程环境优化。 |
-| [学生机纪律守护助手](./favorites/student-guard) | `student-guard` | 学生机运行守护：断网全屏报警、外插 U 盘拦截、定时断网查杀、密码临时解锁、晚间自动关机。 |
+| [学生机纪律守护助手](./favorites/student-guard) | `student-guard` | 学生机运行守护：断网全屏报警、插入 U 盘全屏警告、晚间定时自动关机。 |
 
 ### 3. 💻 系统管理与浏览器控制 (System & Browser Optimization)
 | 工具名称/文件夹 | 英文标识 | 核心功能简介 |
@@ -61,6 +62,7 @@
 | [移除-了解此图片](./system/Remove-Spotlight-Info) | `Remove-Spotlight-Info` | 一键移除 Windows 聚焦锁屏界面右上方繁琐的”了解此图片”浮窗，让锁屏界面重回极简干净。 |
 | [系统垃圾清理工具.py](./system/System-Cleanup/system_cleanup.py) | `system_cleanup` | 清理临时文件、回收站、浏览器缓存、系统日志等系统垃圾的一键清理工具。 |
 | [开机启动项管理工具.py](./system/Startup-Manager/startup_manager.py) | `startup_manager` | 查看、添加、删除Windows开机启动项的系统管理工具。 |
+| [文件清理工具](./system/Delete-Files-Tool/Delete_Files_Tool.py) | `Delete-Files-Tool` | 扫描文件夹，按类型统计文件、找出大文件（默认大于 2MB 的 `.sb3`）和空文件夹，勾选后批量删除。删除前请仔细确认勾选内容。 |
 
 ### 4. 🛠 办公自动化与实用程序 (Office Automation & Productivity)
 | 工具名称/脚本 | 英文标识 | 核心功能简介 |
@@ -69,7 +71,7 @@
 | [工具-音频合并](./productivity/Audio-Merger) | `Audio-Merger` | 快速扫描目录并拼接合并多段音频（如 MP3 拼接）的实用多媒体处理脚本。 |
 | [工具-代码结构大纲生成器.py](./productivity/Code-Outline-Generator/code_outline_generator.py) | `code_outline_generator` | 一键扫描项目，提取其中所有的类、函数定义及文档注释(Docstring)，自动生成精美的项目大纲文档，方便开发者或 AI (Codex) 快速阅读代码架构。 |
 | [工具-简易剪贴板历史翻译器.py](./productivity/Clipboard-Translator/clipboard_translator.py) | `clipboard_translator` | 自动捕获系统剪贴板历史，提供无缝的免 Key 极速中英互译并支持一键重新复制。 |
-| [临时密码.py](./productivity/Temp-Password/temp_password.py) | `temp_password.py` | 快速生成包含大小写字母、数字和符号的高强度随机临时密码，保障日常账户安全。 |
+| [临时密码.py](./productivity/Temp-Password/temp_password.py) | `temp_password.py` | “密保问题找回密码”流程演示：先设置一个密保答案（只保存在内存里，关闭即失效），答对后用 `secrets` 生成 8–64 位随机临时密码，可选大写字母、数字和符号。 |
 | [数字倒计时.py](./productivity/Countdown/countdown.py) | `countdown.py` | 精确到秒的轻量级数字倒计时及声音提醒程序。 |
 | [进度条.py](./productivity/Progress-Bar/progress_bar.py) | `progress_bar.py` | 提供给终端和命令行开发者使用的优雅、动感命令行进度条输出模块。 |
 | [批量文件重命名工具.py](./productivity/Batch-File-Renamer/batch_file_renamer.py) | `batch_file_renamer` | 支持多种重命名模式（前缀/后缀、替换、序号、日期、正则）的批量文件重命名工具。 |
