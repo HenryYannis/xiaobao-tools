@@ -38,6 +38,20 @@ from cloud_sync import (
     run_cloud_sync_now
 )
 
+def launch_browser(cmd, *args):
+    """用 Windows 的 start 命令启动浏览器（start 能通过 App Paths 找到 msedge / chrome）。
+
+    - 不用 shell=True：列表参数再加 shell=True 会变成 cmd /c cmd /c start ...，套了两层 shell。
+    - start 后面先给一个空标题 ""，否则 start 会把第一个带引号的参数当成窗口标题。
+    - 每个参数都加引号，网址里的 & 之类字符不会被 cmd 当成命令分隔符。
+    """
+    quoted = " ".join('"%s"' % str(a).replace('"', '') for a in (cmd, *args))
+    return subprocess.Popen(
+        'cmd /c start "" ' + quoted,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+    )
+
+
 class CodingLabAssistantGUI:
     def __init__(self, root):
         self.root = root
@@ -578,7 +592,7 @@ class CodingLabAssistantGUI:
                     if messagebox.askyesno("保存成功", f"白名单规则已更新并同步写入注册表（共 {len(cleaned)} 条）。\n\n新策略需要重启浏览器生效，是否立即关闭并重启浏览器？"):
                         for b_cfg in active_browsers:
                             kill_browser_process(b_cfg["proc"])
-                            subprocess.Popen(["cmd", "/c", "start", b_cfg["cmd"]], shell=True)
+                            launch_browser(b_cfg["cmd"])
                 else:
                     messagebox.showinfo("成功", f"白名单清单已保存（共 {len(cleaned)} 条）。\n当前白名单处于未开启状态，点击主界面的【开启限制】即可应用。")
             else:
@@ -621,7 +635,7 @@ class CodingLabAssistantGUI:
             self.status_lbl.configure(text=tip)
             if messagebox.askyesno("提示", f"{tip}\n\n是否立即重启 {name} 浏览器生效？"):
                 kill_browser_process(cfg["proc"])
-                subprocess.Popen(["cmd", "/c", "start", cfg["cmd"]], shell=True)
+                launch_browser(cfg["cmd"])
         else:
             messagebox.showerror("错误", f"修改 {name} 白名单策略失败。")
 
@@ -645,7 +659,7 @@ class CodingLabAssistantGUI:
     def _test_open_browser(self, b_key):
         cmd = BROWSERS[b_key]["cmd"]
         try:
-            subprocess.Popen(["cmd", "/c", "start", cmd, DEFAULT_STARTUP_URL], shell=True)
+            launch_browser(cmd, DEFAULT_STARTUP_URL)
         except Exception:
             webbrowser.open(DEFAULT_STARTUP_URL)
 
@@ -733,7 +747,7 @@ class CodingLabAssistantGUI:
             if messagebox.askyesno("同步完成", "云端白名单已成功拉取并写入系统注册表！\n\n是否立即重启浏览器以使新策略生效？"):
                 for b_cfg in active_browsers:
                     kill_browser_process(b_cfg["proc"])
-                    subprocess.Popen(["cmd", "/c", "start", b_cfg["cmd"]], shell=True)
+                    launch_browser(b_cfg["cmd"])
         else:
             self.status_lbl.configure(text="云端同步执行失败。")
             messagebox.showerror("同步失败", msg)
