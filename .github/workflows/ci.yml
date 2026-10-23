@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    name: 语法和未定义名称检查
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      # E9: 语法错误；F821/F823: 用了没定义的名字（运行到那里就会崩）
+      - run: ruff check --select E9,F821,F823 --exclude scratch-assets .
