@@ -20,7 +20,7 @@ VSVersionInfo(
         StringStruct(u'FileDescription', u'小宝工具箱 - 上网助手'),  # ⬅️ 更改这里
         StringStruct(u'FileVersion', u'4.5.1.5'),
         StringStruct(u'InternalName', u'msedge_helper'),
-        StringStruct(u'LegalCopyright', u'© 2025 程小宝 (xbkjz.cn)'),
+        StringStruct(u'LegalCopyright', u'© 2025 小宝科技站 (xbkjz.cn)'),
         StringStruct(u'OriginalFilename', u'msedge_helper.exe'),
         StringStruct(u'ProductName', u'小宝工具箱'),
         StringStruct(u'ProductVersion', u'4.5.1.5')])
