@@ -14,52 +14,119 @@
 
 注意事项：
 - 需要安装 pydub：pip install pydub
-- 需要 ffmpeg 支持（可将 ffmpeg.exe 放在脚本同目录）
-- Windows 系统下会自动隐藏 subprocess 窗口
+- 需要 ffmpeg 支持：优先使用系统 PATH 里的 ffmpeg，
+  找不到时再找脚本同目录下的 ffmpeg.exe / ffprobe.exe
+- Windows 系统下调用 ffmpeg 时会隐藏控制台窗口（只影响 pydub，不改全局 subprocess）
 
 作者：小宝科技站 (xbkjz.cn)
 日期：2024
 """
 
 import os
+import shutil
 import warnings
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
-from pydub import AudioSegment
 import threading
 import subprocess
 import sys
 
-# Windows 下隐藏 subprocess 窗口
-if sys.platform.startswith("win"):
-    _original_popen = subprocess.Popen
+# 抑制 pydub 启动警告（找不到 ffmpeg 时 pydub 一导入就会警告，我们自己会给出提示）
+warnings.filterwarnings("ignore", category=RuntimeWarning, module="pydub.utils")
 
-    def _hidden_popen(*args, **kwargs):
+try:
+    from pydub import AudioSegment
+except ImportError:  # 没装 pydub 时不要直接崩，启动后给出安装提示
+    AudioSegment = None
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+FFMPEG_DOWNLOAD_URL = "https://ffmpeg.org/download.html"
+FFMPEG_MISSING_MSG = (
+    "没有找到 ffmpeg / ffprobe，无法读取和导出 MP3。\n\n"
+    "请任选一种方式：\n"
+    "1. 安装 ffmpeg 并加入系统 PATH；\n"
+    "2. 把 ffmpeg.exe 和 ffprobe.exe 放到本工具所在的文件夹：\n"
+    f"   {script_dir}\n\n"
+    f"下载地址：{FFMPEG_DOWNLOAD_URL}"
+)
+PYDUB_MISSING_MSG = "没有安装 pydub，请先执行：pip install pydub"
+
+
+def find_tool(name, search_dir=None):
+    """先在系统 PATH 里找，再找脚本同目录；都找不到返回 None"""
+    found = shutil.which(name)
+    if found:
+        return found
+    search_dir = search_dir or script_dir
+    for candidate in (name + ".exe", name):
+        path = os.path.join(search_dir, candidate)
+        if os.path.isfile(path):
+            return path
+    return None
+
+
+ffmpeg_exe = find_tool("ffmpeg")
+ffprobe_exe = find_tool("ffprobe")
+
+
+def _hidden_popen(*args, **kwargs):
+    """Windows 下启动 ffmpeg 时不弹黑色控制台窗口"""
+    if sys.platform.startswith("win") and "startupinfo" not in kwargs:
         si = subprocess.STARTUPINFO()
         si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         si.wShowWindow = subprocess.SW_HIDE
-        kwargs['startupinfo'] = si
-        return _original_popen(*args, **kwargs)
+        kwargs["startupinfo"] = si
+    return subprocess.Popen(*args, **kwargs)
 
-    subprocess.Popen = _hidden_popen
 
-# 抑制 pydub 启动警告
-warnings.filterwarnings("ignore", category=RuntimeWarning, module="pydub.utils")
+class _PydubSubprocess:
+    """只给 pydub 用的 subprocess 代理：Popen 换成隐藏窗口版，其余原样转发"""
+    Popen = staticmethod(_hidden_popen)
 
-# 强制 ffmpeg/ffprobe 路径（脚本同目录）
-script_dir = os.path.dirname(os.path.abspath(__file__))
-ffmpeg_exe = os.path.join(script_dir, "ffmpeg.exe")
-ffprobe_exe = os.path.join(script_dir, "ffprobe.exe")
+    def __getattr__(self, name):
+        return getattr(subprocess, name)
 
-os.environ["PATH"] += os.pathsep + script_dir
-AudioSegment.converter = ffmpeg_exe
-AudioSegment.ffprobe = ffprobe_exe
+
+def _setup_pydub():
+    if AudioSegment is None:
+        return
+    if ffmpeg_exe:
+        AudioSegment.converter = ffmpeg_exe
+    if ffprobe_exe:
+        AudioSegment.ffprobe = ffprobe_exe
+        # pydub 读取音频信息时只按 PATH 找 ffprobe，所以把它所在目录补进 PATH
+        probe_dir = os.path.dirname(ffprobe_exe)
+        if probe_dir not in os.environ.get("PATH", "").split(os.pathsep):
+            os.environ["PATH"] = os.environ.get("PATH", "") + os.pathsep + probe_dir
+    if sys.platform.startswith("win"):
+        # 只替换 pydub 模块里引用的 Popen，不再改全局的 subprocess.Popen
+        import pydub.audio_segment as _seg
+        import pydub.utils as _utils
+        _seg.subprocess = _PydubSubprocess()
+        _utils.Popen = _hidden_popen
+
+
+def check_environment():
+    """返回 None 表示可以开始合并，否则返回给用户看的提示"""
+    if AudioSegment is None:
+        return PYDUB_MISSING_MSG
+    if not ffmpeg_exe or not ffprobe_exe:
+        return FFMPEG_MISSING_MSG
+    return None
+
+
+_setup_pydub()
 
 def validate_path(p):
     p = (p or "").strip()
     return os.path.normpath(p) if p and os.path.isdir(p) else None
 
 def merge_mp3_files(input_dir, output_file, progress_callback=None):
+    problem = check_environment()
+    if problem:
+        return False, problem
+
     input_dir = validate_path(input_dir)
     if not input_dir:
         return False, "无效输入目录"
@@ -149,6 +216,11 @@ def gui():
         if not outfile.lower().endswith(".mp3"):
             outfile += ".mp3"
             output_var.set(outfile)
+        problem = check_environment()
+        if problem:
+            status_var.set("缺少 ffmpeg 或 pydub"); status_label.config(foreground="red")
+            messagebox.showerror("缺少运行环境", problem)
+            return
 
         status_var.set("正在合并..."); status_label.config(foreground="blue")
         progress['value'] = 0
@@ -166,6 +238,7 @@ def gui():
             root.after(0, lambda: progress.config(value=100 if ok else 0))
             if ok:
                 root.after(0, lambda: messagebox.showinfo("完成", msg))
+
 
         threading.Thread(target=work, daemon=True).start()
 
