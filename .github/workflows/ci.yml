@@ -17,3 +17,5 @@ jobs:
       - run: pip install ruff
       # E9: 语法错误；F821/F823: 用了没定义的名字（运行到那里就会崩）
       - run: ruff check --select E9,F821,F823 --exclude scratch-assets .
+      # 不需要图形界面的单元测试
+      - run: python -m unittest discover -s tests -v

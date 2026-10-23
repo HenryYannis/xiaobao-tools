@@ -18,8 +18,11 @@ import threading
 import webbrowser
 import tkinter as tk
 from tkinter import filedialog, messagebox
+import hmac
+from http.cookies import SimpleCookie
 from http.server import SimpleHTTPRequestHandler
-from socketserver import TCPServer
+from socketserver import ThreadingTCPServer
+from urllib.parse import urlsplit, parse_qs
 import logging
 
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
@@ -37,6 +40,23 @@ class CustomHTTPRequestHandler(SimpleHTTPRequestHandler):
 
     # 类级别共享的访问令牌，由 LANShareApp 设置
     access_token = ""
+
+    def send_head(self):
+        """GET/HEAD 都会走这里：下载文件和浏览目录前都要校验令牌"""
+        self._grant_cookie = False
+        if self.access_token:
+            if not self._verify_token():
+                self.send_error(403, "Access Denied: Invalid or missing token")
+                return None
+            # 用网址里的令牌进来后发一个 cookie，点进子目录、下载文件时就不用再带令牌
+            self._grant_cookie = self._query_token() is not None
+        return super().send_head()
+
+    def end_headers(self):
+        if getattr(self, "_grant_cookie", False):
+            self.send_header("Set-Cookie", f"access_token={self.access_token}; Path=/; HttpOnly; SameSite=Strict")
+            self._grant_cookie = False
+        super().end_headers()
 
     def do_POST(self):
         """处理局域网内其他设备上传文件的 POST 请求"""
@@ -91,8 +111,14 @@ class CustomHTTPRequestHandler(SimpleHTTPRequestHandler):
                 self.send_error(413, "File too large. Maximum upload size is 500MB.")
                 return
 
-            # 写入本地文件
+            # 写入本地文件（重名时自动改名，不覆盖已有文件）
             out_filepath = os.path.join(self.directory, filename)
+            stem, ext = os.path.splitext(filename)
+            n = 1
+            while os.path.exists(out_filepath):
+                filename = f"{stem} ({n}){ext}"
+                out_filepath = os.path.join(self.directory, filename)
+                n += 1
             try:
                 out = open(out_filepath, 'wb')
             except (IOError, PermissionError) as e:
@@ -248,21 +274,30 @@ class CustomHTTPRequestHandler(SimpleHTTPRequestHandler):
         self.wfile.write(encoded)
         return None
 
+    def _query_token(self):
+        """网址参数里的 token，没有则返回 None"""
+        values = parse_qs(urlsplit(self.path).query).get("token")
+        return values[0] if values else None
+
     def _verify_token(self):
-        """验证请求中的访问令牌"""
-        # 从 cookie 或查询参数中获取令牌
-        # 首先检查查询参数
-        if '?' in self.path:
-            query = self.path.split('?', 1)[1]
-            if f"token={self.access_token}" in query:
-                return True
+        """验证请求中的访问令牌（网址参数 token= 或 cookie access_token=，必须完全一致）"""
+        candidates = []
+        q = self._query_token()
+        if q is not None:
+            candidates.append(q)
+        try:
+            morsel = SimpleCookie(self.headers.get("Cookie", "")).get("access_token")
+        except Exception:
+            morsel = None
+        if morsel is not None:
+            candidates.append(morsel.value)
+        expected = self.access_token.encode("utf-8")
+        return any(hmac.compare_digest(c.encode("utf-8"), expected) for c in candidates)
 
-        # 检查 cookie
-        cookie_header = self.headers.get('Cookie', '')
-        if f"access_token={self.access_token}" in cookie_header:
-            return True
 
-        return False
+class SharingServer(ThreadingTCPServer):
+    """多线程服务器：一个人下载大文件时，其他人也能正常访问"""
+    daemon_threads = True
 
 
 class LANShareApp:
@@ -401,7 +436,8 @@ class LANShareApp:
         CustomHTTPHandler.access_token = access_token
 
         try:
-            self.server = TCPServer(("", self.port), CustomHTTPHandler)
+            # 多线程：一个人下载大文件时其他人也能正常访问
+            self.server = SharingServer(("", self.port), CustomHTTPHandler)
             auth_info = " (需令牌认证)" if access_token else ""
             print(f"{COLOR_GREEN}[SUCCESS]{COLOR_RESET} 局域网服务在端口 {self.port} 启动{auth_info}")
             self.server.serve_forever()
