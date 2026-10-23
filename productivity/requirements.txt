@@ -1,4 +1,14 @@
 # 小宝工具箱 - 办公模块依赖
+
+# 视频截图 (Video-Frame-Extractor)
+opencv-python>=4.8.0
+
+# 音频合并 (Audio-Merger)，另外还需要 ffmpeg / ffprobe 程序
+pydub>=0.25.1
+
+# 图片转图标、图片压缩、屏幕截图
 Pillow>=9.5.0
+
+# Excel 批量处理
 pandas>=2.0.0
 openpyxl>=3.1.0

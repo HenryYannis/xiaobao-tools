@@ -1,2 +1,4 @@
 # 小宝工具箱 - 系统模块依赖
-# 无额外依赖，全部使用 Python 标准库 (winreg, subprocess, os)
+# 大部分系统工具只用 Python 标准库 (winreg, subprocess, os, ctypes)。
+# 例外：Edge-Internet-Control/上网助手.py 用到 win32api / win32event / winerror，需要 pywin32。
+pywin32>=306; sys_platform == "win32"
