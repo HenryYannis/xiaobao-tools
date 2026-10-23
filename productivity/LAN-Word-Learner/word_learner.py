@@ -33,21 +33,36 @@ from tkinter import messagebox
 
 # --- Configuration ---
 PORT = 12888
-HOST_IP = socket.gethostbyname(socket.gethostname())  # 自动获取本机IP
+def get_local_ip():
+    """获取本机局域网 IP：借一个 UDP 连接看系统选哪块网卡（不会真的发数据）"""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("8.8.8.8", 80))
+            return s.getsockname()[0]
+    except OSError:
+        try:
+            return socket.gethostbyname(socket.gethostname())
+        except OSError:
+            return "127.0.0.1"
+
+
+HOST_IP = get_local_ip()  # 自动获取本机IP
 GAME_DURATION_SECONDS = 180
 
 def resource_path(relative_path):
-    try:
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
+    # 打包后从临时解压目录找；源码运行时从脚本所在目录找（不是当前工作目录）
+    base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
 
 WORDS_FILE = pathlib.Path(resource_path('words.txt'))
 
+DEFAULT_WORDS = [('苹果', 'apple'), ('香蕉', 'banana'), ('猫', 'cat')]
+
+
 def load_words():
     if not WORDS_FILE.exists():
-        return [('苹果', 'apple'), ('香蕉', 'banana'), ('猫', 'cat')]
+        print(f"[警告] 没找到词库 {WORDS_FILE}，只能使用 3 个内置单词")
+        return list(DEFAULT_WORDS)
     try:
         loaded_words = []
         with WORDS_FILE.open(encoding='utf8') as f:
@@ -59,9 +74,13 @@ def load_words():
                     english_word = parts[1].strip()
                     chinese_translation = parts[3].strip()
                     loaded_words.append((chinese_translation, english_word))
-        return loaded_words if loaded_words else [('苹果', 'apple'), ('香蕉', 'banana'), ('猫', 'cat')]
-    except Exception:
-        return [('苹果', 'apple'), ('香蕉', 'banana'), ('猫', 'cat')]
+        if not loaded_words:
+            print(f"[警告] 词库 {WORDS_FILE} 里没有读到单词，只能使用 3 个内置单词")
+            return list(DEFAULT_WORDS)
+        return loaded_words
+    except Exception as e:
+        print(f"[警告] 读取词库 {WORDS_FILE} 失败（{e}），只能使用 3 个内置单词")
+        return list(DEFAULT_WORDS)
 
 WORDS = load_words()
 
