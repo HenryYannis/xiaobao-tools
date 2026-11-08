@@ -6,6 +6,10 @@
 
 ## [未发布]
 
+### 🛠 新增工具
+- **Hosts 一键初始化** (`system/Hosts-Reset/hosts_reset.py`)：机房 hosts 被改坏时，一键恢复为 Windows 默认内容并刷新 DNS 缓存。
+- **Hosts 域名屏蔽工具** (`system/Hosts-Block/hosts_block.py`)：一键向 hosts 写入 `xbyxz.cn` 屏蔽规则并刷新 DNS，与初始化工具配套使用。
+
 ### ⚙️ 持续集成
 - **CI 工作流**：`.github/workflows/ci.yml` 在 push 到 main 和每个 PR 时运行：用 `ruff check --select E9,F821,F823` 检查语法错误和未定义名称（跳过 `scratch-assets/`），并用 `python -m unittest discover -s tests` 运行单元测试。它取代了 v1.1.0 里提到的 `lint.yml`（该工作流已删除）。
 

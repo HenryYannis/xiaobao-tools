@@ -57,6 +57,8 @@
 | :--- | :--- | :--- |
 | [Edge-联网控制](./system/Edge-Internet-Control) | `Edge-Internet-Control` | 后台强制关闭 Edge 浏览器，密码解锁临时上网时间，适合家长控制或自律管理。 |
 | [系统限制控制中心](./system/lab-assistant) | `lab-assistant` | 一体化系统策略控制：禁止修改壁纸、移除"了解此图片"、禁用浏览器离线游戏、Hosts 屏蔽、pip 镜像配置。 |
+| [Hosts 一键初始化](./system/Hosts-Reset) | `Hosts-Reset` | 机房 hosts 被改坏时，一键恢复为 Windows 默认内容并刷新 DNS 缓存。 |
+| [Hosts 域名屏蔽工具](./system/Hosts-Block) | `Hosts-Block` | 一键向 hosts 写入 `xbyxz.cn` 屏蔽规则并刷新 DNS，与初始化工具配套使用。 |
 | [Edge-禁止下载](./system/Edge-Disable-Downloads) | `Edge-Disable-Downloads` | 通过注册表与组策略，安全快捷地禁用 Edge 浏览器下载功能，适合公共机器、机房或少儿教学环境。 |
 | [禁止-修改壁纸](./system/Disable-Wallpaper-Change) | `Disable-Wallpaper-Change` | 限制用户修改 Windows 桌面壁纸，防误触/统一企业展示或展台的桌面配置工具。 |
 | [移除-了解此图片](./system/Remove-Spotlight-Info) | `Remove-Spotlight-Info` | 一键移除 Windows 聚焦锁屏界面右上方繁琐的”了解此图片”浮窗，让锁屏界面重回极简干净。 |

@@ -56,6 +56,8 @@ To help you quickly locate what you need, our tools are grouped into the followi
 | Tool Name / Folder | English Tag | Description |
 | :--- | :--- | :--- |
 | [System Restrictions Center](./system/lab-assistant) | `lab-assistant` | Unified system policy restrictions manager: wallpaper lock, Spotlight "Learn about this picture" removal, browser offline game blocking, hosts blocking, and pip mirror configuration. |
+| [Hosts One-Click Reset](./system/Hosts-Reset) | `Hosts-Reset` | Restores the system hosts file to the Windows default and flushes the DNS cache when a lab machine's hosts file has been corrupted. |
+| [Hosts Domain Blocker](./system/Hosts-Block) | `Hosts-Block` | Adds `xbyxz.cn` blocking rules to the hosts file and flushes DNS; works together with the reset tool. |
 | [Edge-禁止下载](./system/Edge-Disable-Downloads) | `Edge-Disable-Downloads` | Securely disables the download capability of Microsoft Edge via Registry and Group Policy edits. |
 | [Edge-联网控制](./system/Edge-Internet-Control) | `Edge-Internet-Control` | A powerful lower-level script to block or permit MS Edge internet permissions dynamically. |
 | [禁止-修改壁纸](./system/Disable-Wallpaper-Change) | `Disable-Wallpaper-Change` | Restricts wallpaper modifications to lock desktop wallpaper, ideal for kiosks or public displays. |
