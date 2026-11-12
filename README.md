@@ -65,6 +65,7 @@
 | [系统垃圾清理工具.py](./system/System-Cleanup/system_cleanup.py) | `system_cleanup` | 清理临时文件、回收站、浏览器缓存、系统日志等系统垃圾的一键清理工具。 |
 | [开机启动项管理工具.py](./system/Startup-Manager/startup_manager.py) | `startup_manager` | 查看、添加、删除Windows开机启动项的系统管理工具。 |
 | [文件清理工具](./system/Delete-Files-Tool/Delete_Files_Tool.py) | `Delete-Files-Tool` | 扫描文件夹，按类型统计文件、找出大文件（默认大于 2MB 的 `.sb3`）和空文件夹，勾选后批量删除。删除前请仔细确认勾选内容。 |
+| [Win 服务优化工具](./system/Win-Service-Optimizer) | `Win-Service-Optimizer` | 图形化管理 7 个常见占内存 Windows 服务（支持禁用、设为手动、恢复自动，以及对受保护服务的注册表回退）。 |
 
 ### 4. 🛠 办公自动化与实用程序 (Office Automation & Productivity)
 | 工具名称/脚本 | 英文标识 | 核心功能简介 |

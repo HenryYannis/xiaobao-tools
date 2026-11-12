@@ -65,6 +65,7 @@ To help you quickly locate what you need, our tools are grouped into the followi
 | [系统垃圾清理工具.py](./system/System-Cleanup/system_cleanup.py) | `system_cleanup` | One-click cleanup tool for temporary files, recycle bin, browser cache, system logs, and more. |
 | [开机启动项管理工具.py](./system/Startup-Manager/startup_manager.py) | `startup_manager` | View, add, and remove Windows startup programs for system management. |
 | [文件清理工具](./system/Delete-Files-Tool/Delete_Files_Tool.py) | `Delete-Files-Tool` | Scans a folder to group files by type and find large files (by default `.sb3` files over 2 MB) and empty folders, then batch-deletes the selected items. Double-check your selection before deleting. |
+| [Win Service Optimizer](./system/Win-Service-Optimizer) | `Win-Service-Optimizer` | GUI tool to disable, set to manual, or restore 7 memory-heavy Windows services (with registry fallback for protected services like `DoSvc`). |
 
 ### 4. 🛠 Office Automation & Productivity
 | Tool Name / Script | English Tag | Description |

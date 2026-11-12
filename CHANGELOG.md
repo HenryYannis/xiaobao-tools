@@ -7,6 +7,7 @@
 ## [未发布]
 
 ### 🛠 新增工具
+- **Win 服务优化工具** (`system/Win-Service-Optimizer/win_service_optimizer.py`)：图形化管理 7 个占内存的 Windows 服务，支持一键禁用推荐项与受保护服务注册表回退。
 - **Hosts 一键初始化** (`system/Hosts-Reset/hosts_reset.py`)：机房 hosts 被改坏时，一键恢复为 Windows 默认内容并刷新 DNS 缓存。
 - **Hosts 域名屏蔽工具** (`system/Hosts-Block/hosts_block.py`)：一键向 hosts 写入 `xbyxz.cn` 屏蔽规则并刷新 DNS，与初始化工具配套使用。
 
