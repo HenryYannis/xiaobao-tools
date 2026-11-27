@@ -80,7 +80,7 @@ def is_admin() -> bool:
 def _decode_output(data: bytes) -> str:
     if not data:
         return ""
-    encodings = ("utf-8", "oem", "mbcs") if os.name == "nt" else ("utf-8",)
+    encodings = ("utf-8", "oem", "mbcs", "gbk") if os.name == "nt" else ("utf-8",)
     for enc in encodings:
         try:
             return data.decode(enc)
