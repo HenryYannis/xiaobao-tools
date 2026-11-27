@@ -90,7 +90,7 @@ def install_cloud_sync_task():
         res = subprocess.run(cmd, capture_output=True, text=True, encoding=_CMD_ENCODING, errors="replace",
                              creationflags=subprocess.CREATE_NO_WINDOW)
         if res.returncode == 0:
-            run_cloud_sync_now()
+            _run_cloud_sync_once()
             return True, "开机静默云端同步任务已成功部署！\n\n- 运行机制：开机自动以最高 SYSTEM 权限在后台静默运行\n- 浏览器管控：自动同步最新白名单并加锁 Edge/Chrome\n- 晚间纪律：自动部署每日 20:15 定时关机策略\n- 权限特性：彻底免 UAC 弹窗、无黑框界面、普通学生无权修改\n- 同步源：https://xbkjz.cn/edu/whitelist.txt\n\n学生机每次开机将自动静默同步最新白名单并确保关机任务生效！"
         else:
             err = res.stderr.strip() or res.stdout.strip()
@@ -124,15 +124,12 @@ def uninstall_cloud_sync_task():
     except Exception as e:
         return False, f"执行异常：{e}"
 
-def run_cloud_sync_now():
-    # 确保已部署过的机器在手动同步时也能更新到最新版同步脚本
-    deploy_sync_script()
+def _run_cloud_sync_once():
     try:
         subprocess.run(
             ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", CLOUD_SYNC_SCRIPT_PATH, "-MaxRetries", "1"],
             capture_output=True,
             creationflags=subprocess.CREATE_NO_WINDOW
         )
-        return True, "云端同步执行完成，白名单已刷新。"
-    except Exception as e:
-        return False, f"同步执行失败：{e}"
+    except Exception:
+        pass

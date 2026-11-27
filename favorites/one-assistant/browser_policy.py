@@ -12,10 +12,7 @@ _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 if _CURRENT_DIR not in sys.path:
     sys.path.insert(0, _CURRENT_DIR)
 
-from winreg import (
-    HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE,
-    CreateKey, SetValueEx, REG_SZ
-)
+from winreg import HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE
 from config import (
     DEFAULT_STARTUP_URL,
     REG_EDGE_PATH, REG_CHROME_PATH,
@@ -28,7 +25,6 @@ from reg_utils import (
     reg_write_dword, reg_write_string,
     reg_delete_value, reg_delete_key_tree
 )
-from whitelist_manager import load_whitelist
 
 # --- 通用浏览器策略辅助函数 ---
 def _get_browser_whitelist_status(base_reg_path):
@@ -38,10 +34,7 @@ def _get_browser_whitelist_status(base_reg_path):
             return True
     return False
 
-def _set_browser_whitelist(base_reg_path, enabled, custom_rules=None):
-    if custom_rules is None:
-        custom_rules = load_whitelist()
-
+def _set_browser_whitelist(base_reg_path, enabled):
     block_path = fr"{base_reg_path}\{REG_BROWSER_BLOCKLIST_SUBKEY}"
     allow_path = fr"{base_reg_path}\{REG_BROWSER_ALLOWLIST_SUBKEY}"
     success = True
@@ -49,18 +42,10 @@ def _set_browser_whitelist(base_reg_path, enabled, custom_rules=None):
     for hkey in (HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER):
         if enabled:
             b_ok = reg_write_string(hkey, block_path, "1", "*")
-            reg_delete_key_tree(hkey, allow_path)
-            try:
-                with CreateKey(hkey, allow_path) as key:
-                    for idx, rule in enumerate(custom_rules, 1):
-                        SetValueEx(key, str(idx), 0, REG_SZ, rule.strip())
-                a_ok = True
-            except Exception:
-                a_ok = False
             # 禁用浏览器后台常驻与启动增强，防止进程无法退出导致策略未重新加载
             reg_write_dword(hkey, base_reg_path, "StartupBoostEnabled", 0)
             reg_write_dword(hkey, base_reg_path, "BackgroundModeEnabled", 0)
-            success = success and (b_ok and a_ok)
+            success = success and b_ok
         else:
             b_ok = reg_delete_key_tree(hkey, block_path)
             a_ok = reg_delete_key_tree(hkey, allow_path)
@@ -227,8 +212,8 @@ def _set_browser_game_disabled(base_reg_path, game_value_name, disabled):
 def get_edge_whitelist_locked():
     return _get_browser_whitelist_status(REG_EDGE_PATH)
 
-def set_edge_whitelist_locked(enabled, custom_rules=None):
-    return _set_browser_whitelist(REG_EDGE_PATH, enabled, custom_rules)
+def set_edge_whitelist_locked(enabled):
+    return _set_browser_whitelist(REG_EDGE_PATH, enabled)
 
 def get_edge_startup_status():
     return get_browser_shortcut_status("Edge")
@@ -252,8 +237,8 @@ def set_edge_downloads_disabled(disabled):
 def get_chrome_whitelist_locked():
     return _get_browser_whitelist_status(REG_CHROME_PATH)
 
-def set_chrome_whitelist_locked(enabled, custom_rules=None):
-    return _set_browser_whitelist(REG_CHROME_PATH, enabled, custom_rules)
+def set_chrome_whitelist_locked(enabled):
+    return _set_browser_whitelist(REG_CHROME_PATH, enabled)
 
 def get_chrome_startup_status():
     return get_browser_shortcut_status("Chrome")

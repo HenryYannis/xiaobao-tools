@@ -9,9 +9,8 @@ import time
 import ctypes
 import subprocess
 from winreg import (
-    HKEY_CLASSES_ROOT, HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE,
     OpenKey, CreateKey, SetValueEx, DeleteValue, DeleteKey,
-    EnumKey, QueryValueEx, QueryInfoKey, REG_DWORD, REG_SZ, KEY_READ, KEY_ALL_ACCESS
+    EnumKey, QueryValueEx, REG_DWORD, REG_SZ, KEY_READ, KEY_ALL_ACCESS
 )
 
 # --- 辅助函数：注册表底层读写 ---
@@ -126,9 +125,3 @@ def kill_browser_process(process_image):
         return True
     except Exception:
         return False
-
-def kill_edge_process():
-    return kill_browser_process("msedge.exe")
-
-def kill_chrome_process():
-    return kill_browser_process("chrome.exe")

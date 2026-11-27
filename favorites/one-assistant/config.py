@@ -27,36 +27,6 @@ _LOCKSCREEN_REG_VALUE = "LockScreenImage"
 _WALLPAPER_DEPLOY_DIR = r"C:\ProgramData\XiaobaoTools"
 _WALLPAPER_DEPLOY_PATH = os.path.join(_WALLPAPER_DEPLOY_DIR, WALLPAPER_FILENAME)
 
-# 白名单配置文件与默认规则
-WHITELIST_FILENAME = "whitelist.txt"
-DEFAULT_ALLOWLIST = [
-    # 本地与浏览器内部协议
-    "localhost",
-    "127.0.0.1",
-    "file://*",
-    "edge://*",
-    "chrome://*",
-    # 必应、MSN 与微软底层服务 (保障新标签页与系统弹窗畅通)
-    "bing.com",
-    "bing.net",
-    "bingapis.com",
-    "msn.cn",
-    "msn.com",
-    "microsoft.com",
-    "live.com",
-    "azureedge.net",
-    "aka.ms",
-    # 小宝科技站 & xbyxz.cn
-    "xbkjz.cn",
-    "xbyxz.cn",
-    # 中国电子学会
-    "qceit.org.cn",
-    # Tinkercad 建模与电路
-    "tinkercad.com",
-    # 信息学奥赛一本通
-    "ybt.ssoier.cn",
-]
-
 # --- 注册表路径常量 ---
 # 桌面个性化
 REG_WALLPAPER_PATH = r"Software\Microsoft\Windows\CurrentVersion\Policies\ActiveDesktop"
@@ -84,13 +54,11 @@ REG_EXPLORER_ADVANCED_PATH = r"Software\Microsoft\Windows\CurrentVersion\Explore
 REG_HIDE_FILE_EXT_VALUE = "HideFileExt"
 
 # --- 云端白名单静默同步配置 ---
-CLOUD_WHITELIST_URL = "https://xbkjz.cn/edu/whitelist.txt"
 CLOUD_SYNC_TASK_NAME = "XiaobaoPolicySync"
 AUTO_SHUTDOWN_TASK_NAME = "XiaobaoAutoShutdown"
 CLOUD_SYNC_SCRIPT_FILENAME = "Sync-Whitelist.ps1"
 CLOUD_SYNC_DEPLOY_DIR = r"C:\ProgramData\XiaobaoTools"
 CLOUD_SYNC_SCRIPT_PATH = os.path.join(CLOUD_SYNC_DEPLOY_DIR, CLOUD_SYNC_SCRIPT_FILENAME)
-CLOUD_SYNC_LOG_PATH = os.path.join(CLOUD_SYNC_DEPLOY_DIR, "sync.log")
 
 SYNC_SCRIPT_CONTENT = """# ==============================================================================
 # 机房教学策略 - 浏览器白名单静默同步与晚间关机管理 (PowerShell 原生版)
@@ -134,7 +102,6 @@ try {
 # ==============================================================================
 
 $RemoteUrl = "https://xbkjz.cn/edu/whitelist.txt"
-$LocalFallbackPath = "C:\\Users\\A3\\Desktop\\Website\\xiaobao-tech\\edu\\whitelist.txt"
 $CacheDir = "C:\\ProgramData\\XiaobaoTools"
 $CachePath = "C:\\ProgramData\\XiaobaoTools\\whitelist_cache.txt"
 
@@ -229,17 +196,7 @@ for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
     }
 }
 
-# 2. 若云端不可用，尝试读取本地发布文件（教师机上的网站目录，学生机上不存在会自动跳过）
-if (-not $rules -and (Test-Path $LocalFallbackPath)) {
-    try {
-        $rules = Get-ValidRules ([System.IO.File]::ReadAllText($LocalFallbackPath, [System.Text.Encoding]::UTF8)) "local"
-        if ($rules) { $ruleSource = "local" }
-    } catch {
-        $rules = $null
-    }
-}
-
-# 3. 若依然没有，尝试读取上次校验通过的本地缓存
+# 2. 若云端不可用，尝试读取上次校验通过的本地缓存
 if (-not $rules -and (Test-Path $CachePath)) {
     try {
         $rules = Get-ValidRules ([System.IO.File]::ReadAllText($CachePath, [System.Text.Encoding]::UTF8)) "cache"

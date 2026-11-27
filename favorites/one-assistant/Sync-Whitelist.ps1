@@ -40,7 +40,6 @@ try {
 # ==============================================================================
 
 $RemoteUrl = "https://xbkjz.cn/edu/whitelist.txt"
-$LocalFallbackPath = "C:\Users\A3\Desktop\Website\xiaobao-tech\edu\whitelist.txt"
 $CacheDir = "C:\ProgramData\XiaobaoTools"
 $CachePath = "C:\ProgramData\XiaobaoTools\whitelist_cache.txt"
 
@@ -135,17 +134,7 @@ for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
     }
 }
 
-# 2. 若云端不可用，尝试读取本地发布文件（教师机上的网站目录，学生机上不存在会自动跳过）
-if (-not $rules -and (Test-Path $LocalFallbackPath)) {
-    try {
-        $rules = Get-ValidRules ([System.IO.File]::ReadAllText($LocalFallbackPath, [System.Text.Encoding]::UTF8)) "local"
-        if ($rules) { $ruleSource = "local" }
-    } catch {
-        $rules = $null
-    }
-}
-
-# 3. 若依然没有，尝试读取上次校验通过的本地缓存
+# 2. 若云端不可用，尝试读取上次校验通过的本地缓存
 if (-not $rules -and (Test-Path $CachePath)) {
     try {
         $rules = Get-ValidRules ([System.IO.File]::ReadAllText($CachePath, [System.Text.Encoding]::UTF8)) "cache"

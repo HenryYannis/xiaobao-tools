@@ -9,18 +9,17 @@ import sys
 import subprocess
 import webbrowser
 import tkinter as tk
-from tkinter import messagebox, scrolledtext
+from tkinter import messagebox
 
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 if _CURRENT_DIR not in sys.path:
     sys.path.insert(0, _CURRENT_DIR)
 
-from config import DEFAULT_STARTUP_URL, DEFAULT_ALLOWLIST, 设置窗口图标
+from config import DEFAULT_STARTUP_URL, 设置窗口图标
 from reg_utils import (
     restart_explorer,
     kill_browser_process
 )
-from whitelist_manager import load_whitelist, save_whitelist
 from browser_policy import BROWSERS
 from system_policy import (
     apply_wallpaper_and_lockscreen,
@@ -34,8 +33,7 @@ from system_policy import (
 from cloud_sync import (
     get_cloud_sync_installed,
     install_cloud_sync_task,
-    uninstall_cloud_sync_task,
-    run_cloud_sync_now
+    uninstall_cloud_sync_task
 )
 
 def launch_browser(cmd, *args):
@@ -57,7 +55,8 @@ class CodingLabAssistantGUI:
         self.root = root
         设置窗口图标(self.root)
         self.root.title("机房教学策略配置工具")
-        self.root.resizable(False, False)
+        self.root.resizable(True, True)
+        self.root.minsize(680, 380)
 
         self.root.configure(bg="#F8FAFC")
         self.auto_restart_var = tk.BooleanVar(value=True)
@@ -65,17 +64,78 @@ class CodingLabAssistantGUI:
         self._build_ui()
         self.refresh_status()
 
-        # 根据内容真实高度精确自适应收紧，消除多余空白并居中
+        # 宽屏双栏自适应：优先一屏完整展示，小屏幕/高缩放下自动限制高度并启用滚动
         self.root.update_idletasks()
-        w = 530
-        h = self.root.winfo_reqheight()
-        x = (self.root.winfo_screenwidth() - w) // 2
-        y = (self.root.winfo_screenheight() - h) // 2
+        screen_w = self.root.winfo_screenwidth()
+        screen_h = self.root.winfo_screenheight()
+        w = min(940, max(680, screen_w - 40))
+        req_h = (
+            self._header.winfo_reqheight()
+            + self._main_content.winfo_reqheight()
+            + self._footer_panel.winfo_reqheight()
+            + self._status_bar.winfo_reqheight()
+            + 4
+        )
+        h = min(req_h, max(380, screen_h - 80))
+        x = max(0, (screen_w - w) // 2)
+        y = max(0, (screen_h - h) // 2)
         self.root.geometry(f"{w}x{h}+{x}+{y}")
+
+    def _create_card(self, parent, title, pady_bottom=6, expand=False):
+        card = tk.LabelFrame(
+            parent,
+            text=f" {title} ",
+            font=("Microsoft YaHei UI", 9, "bold"),
+            bg="#FFFFFF",
+            fg="#0F172A",
+            padx=12,
+            pady=6,
+            relief=tk.SOLID,
+            bd=1
+        )
+        card.pack(fill=tk.BOTH if expand else tk.X, expand=expand, pady=(0, pady_bottom))
+        return card
+
+    def _create_status_row(self, parent, title_text):
+        """创建统一格式的状态行：左侧 [状态徽章 + 项目名称]，右侧放置操作按钮"""
+        row = tk.Frame(parent, bg="#FFFFFF")
+        row.pack(fill=tk.X, pady=3)
+
+        badge = tk.Label(
+            row,
+            text="读取中",
+            font=("Microsoft YaHei UI", 8, "bold"),
+            bg="#F1F5F9",
+            fg="#64748B",
+            padx=6,
+            pady=1,
+            width=7
+        )
+        badge.pack(side=tk.LEFT, padx=(0, 6))
+
+        lbl = tk.Label(
+            row,
+            text=title_text,
+            font=("Microsoft YaHei UI", 9),
+            bg="#FFFFFF",
+            fg="#1E293B",
+            anchor="w"
+        )
+        lbl.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        return row, badge, lbl
+
+    def _set_toggle_row(self, badge, btn, active, on_badge, off_badge, on_btn, off_btn):
+        """统一直观状态：已开启=绿色徽章+浅色关闭按钮；未开启=浅灰徽章+深色开启按钮"""
+        if active:
+            badge.configure(text=on_badge, bg="#DCFCE7", fg="#15803D")
+            btn.configure(text=on_btn, bg="#F8FAFC", fg="#334155")
+        else:
+            badge.configure(text=off_badge, bg="#F1F5F9", fg="#64748B")
+            btn.configure(text=off_btn, bg="#0F172A", fg="#FFFFFF")
 
     def _build_ui(self):
         # ── 底部操作栏与状态条 ──────────────────────────────────────────
-        status_bar = tk.Frame(self.root, bg="#F1F5F9", height=24)
+        self._status_bar = status_bar = tk.Frame(self.root, bg="#F1F5F9", height=24)
         status_bar.pack(fill=tk.X, side=tk.BOTTOM)
         
         self.status_lbl = tk.Label(
@@ -102,12 +162,12 @@ class CodingLabAssistantGUI:
         author_lbl.pack(side=tk.RIGHT)
         author_lbl.bind("<Button-1>", lambda e: webbrowser.open("https://xbkjz.cn"))
 
-        footer_panel = tk.Frame(self.root, bg="#F8FAFC", padx=16, pady=4)
+        self._footer_panel = footer_panel = tk.Frame(self.root, bg="#F8FAFC", padx=16, pady=6)
         footer_panel.pack(fill=tk.X, side=tk.BOTTOM)
 
         self.chk = tk.Checkbutton(
             footer_panel,
-            text="修改策略后自动重启资源管理器",
+            text="修改桌面/系统策略后自动重启资源管理器",
             variable=self.auto_restart_var,
             font=("Microsoft YaHei UI", 9),
             bg="#F8FAFC",
@@ -116,54 +176,9 @@ class CodingLabAssistantGUI:
         )
         self.chk.pack(side=tk.LEFT)
 
-        btn_kill_chrome = tk.Button(
-            footer_panel,
-            text="重启 Chrome",
-            font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF",
-            fg="#0F172A",
-            relief=tk.SOLID,
-            bd=1,
-            padx=8,
-            pady=2,
-            cursor="hand2",
-            command=self.manual_restart_chrome
-        )
-        btn_kill_chrome.pack(side=tk.RIGHT, padx=(4, 0))
-
-        btn_kill_edge = tk.Button(
-            footer_panel,
-            text="重启 Edge",
-            font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF",
-            fg="#0F172A",
-            relief=tk.SOLID,
-            bd=1,
-            padx=8,
-            pady=2,
-            cursor="hand2",
-            command=self.manual_restart_edge
-        )
-        btn_kill_edge.pack(side=tk.RIGHT, padx=(4, 0))
-
-        btn_restart_exp = tk.Button(
-            footer_panel,
-            text="重启资源管理器",
-            font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF",
-            fg="#0F172A",
-            relief=tk.SOLID,
-            bd=1,
-            padx=8,
-            pady=2,
-            cursor="hand2",
-            command=self.manual_restart_explorer
-        )
-        btn_restart_exp.pack(side=tk.RIGHT)
-
         # ── 顶部标题区域 ──────────────────────────────────────────────
-        header = tk.Frame(self.root, bg="#F8FAFC", padx=16, pady=8)
-        header.pack(fill=tk.X)
+        self._header = header = tk.Frame(self.root, bg="#F8FAFC", padx=16, pady=8)
+        header.pack(fill=tk.X, side=tk.TOP)
 
         tk.Label(
             header,
@@ -171,46 +186,65 @@ class CodingLabAssistantGUI:
             font=("Microsoft YaHei UI", 12, "bold"),
             bg="#F8FAFC",
             fg="#0F172A"
-        ).pack(anchor="w")
+        ).pack(side=tk.LEFT)
 
-        # ── 功能卡片容器 ──────────────────────────────────────────────
-        main_content = tk.Frame(self.root, bg="#F8FAFC", padx=16)
-        main_content.pack(fill=tk.X, pady=(0, 4))
+        tk.Label(
+            header,
+            text="核心：白名单开机静默同步 + 浏览器管控",
+            font=("Microsoft YaHei UI", 8),
+            bg="#F8FAFC",
+            fg="#64748B"
+        ).pack(side=tk.RIGHT, pady=(4, 0))
 
-        # 1 & 2. 浏览器访问管控 (Edge 与 Chrome 统一结构)
+        # ── 中间可滚动双栏容器 ────────────────────────────────────────
+        scroll_wrap = tk.Frame(self.root, bg="#F8FAFC")
+        scroll_wrap.pack(fill=tk.BOTH, expand=True)
+
+        canvas = tk.Canvas(scroll_wrap, bg="#F8FAFC", highlightthickness=0, bd=0)
+        scrollbar = tk.Scrollbar(scroll_wrap, orient=tk.VERTICAL, command=canvas.yview)
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self._main_content = main_content = tk.Frame(canvas, bg="#F8FAFC", padx=16, pady=2)
+        win_id = canvas.create_window((0, 0), window=main_content, anchor="nw")
+
+        def _sync_scroll(_event=None):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            need_scroll = main_content.winfo_reqheight() > canvas.winfo_height()
+            if need_scroll and not scrollbar.winfo_ismapped():
+                scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            elif not need_scroll and scrollbar.winfo_ismapped():
+                scrollbar.pack_forget()
+
+        main_content.bind("<Configure>", _sync_scroll)
+        canvas.bind("<Configure>", lambda e: (canvas.itemconfigure(win_id, width=e.width), _sync_scroll()))
+        self.root.bind_all(
+            "<MouseWheel>",
+            lambda e: canvas.yview_scroll(int(-1 * (e.delta / 120)), "units")
+            if main_content.winfo_reqheight() > canvas.winfo_height() else None
+        )
+
+        main_content.columnconfigure(0, weight=1, uniform="col")
+        main_content.columnconfigure(1, weight=1, uniform="col")
+
+        left_col = tk.Frame(main_content, bg="#F8FAFC")
+        left_col.grid(row=0, column=0, sticky="nsew", padx=(0, 6))
+
+        right_col = tk.Frame(main_content, bg="#F8FAFC")
+        right_col.grid(row=0, column=1, sticky="nsew", padx=(6, 0))
+
+        # 左栏：Edge 与 Chrome 浏览器访问管控（均分高度，与右栏底部对齐）
         self.browser_widgets = {}
-        for b_key in ("Edge", "Chrome"):
-            self._build_browser_card(main_content, b_key)
+        self._build_browser_card(left_col, "Edge", pady_bottom=8, expand=True)
+        self._build_browser_card(left_col, "Chrome", pady_bottom=0, expand=True)
 
-        # 3. 开机教学策略与晚间纪律
-        card_sync = tk.LabelFrame(
-            main_content,
-            text=" 开机教学策略与晚间纪律 (推荐) ",
-            font=("Microsoft YaHei UI", 9, "bold"),
-            bg="#FFFFFF",
-            fg="#0F172A",
-            padx=12,
-            pady=5,
-            relief=tk.SOLID,
-            bd=1
-        )
-        card_sync.pack(fill=tk.X, pady=(0, 5))
+        # 右栏 1：开机教学策略与晚间纪律（核心功能置顶）
+        card_sync = self._create_card(right_col, "开机教学策略与晚间纪律 (核心)", pady_bottom=8)
 
-        row_sync1 = tk.Frame(card_sync, bg="#FFFFFF")
-        row_sync1.pack(fill=tk.X, pady=2)
-        self.sync_lbl = tk.Label(row_sync1, text="开机教学策略：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        self.sync_lbl.pack(side=tk.LEFT)
-
-        self.sync_now_btn = tk.Button(
-            row_sync1, text="立即从云端拉取", font=("Microsoft YaHei UI", 8),
-            bg="#F8FAFC", fg="#0F172A", relief=tk.SOLID, bd=1, width=12, cursor="hand2",
-            command=self.manual_sync_now
-        )
-        self.sync_now_btn.pack(side=tk.RIGHT, padx=(4, 0))
-
+        row_sync1, self.sync_badge, _ = self._create_status_row(card_sync, "开机静默同步")
         self.sync_btn = tk.Button(
             row_sync1, text="...", font=("Microsoft YaHei UI", 8),
-            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=12, cursor="hand2",
+            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
             command=self.toggle_cloud_sync
         )
         self.sync_btn.pack(side=tk.RIGHT)
@@ -219,67 +253,40 @@ class CodingLabAssistantGUI:
         row_sync2.pack(fill=tk.X, pady=(2, 1))
         tk.Label(
             row_sync2,
-            text="包含特性：开机免 UAC 静默更新白名单 | 每日 20:15 定时自动关机",
+            text="开机免 UAC 自动拉取云端 whitelist.txt | 每日 20:15 自动关机",
             font=("Microsoft YaHei UI", 8),
             bg="#FFFFFF",
             fg="#64748B"
         ).pack(side=tk.LEFT)
 
-        # 3. 桌面与系统规范
-        card_desk = tk.LabelFrame(
-            main_content,
-            text=" 桌面与系统规范 ",
-            font=("Microsoft YaHei UI", 9, "bold"),
-            bg="#FFFFFF",
-            fg="#0F172A",
-            padx=12,
-            pady=5,
-            relief=tk.SOLID,
-            bd=1
-        )
-        card_desk.pack(fill=tk.X, pady=(0, 5))
+        # 右栏 2：桌面与系统规范
+        card_desk = self._create_card(right_col, "桌面与系统规范", pady_bottom=8, expand=True)
 
-        # 3.1 壁纸与锁屏
-        row_wp = tk.Frame(card_desk, bg="#FFFFFF")
-        row_wp.pack(fill=tk.X, pady=2)
-        self.wp_lbl = tk.Label(row_wp, text="机构壁纸与锁屏：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        self.wp_lbl.pack(side=tk.LEFT)
+        row_wp, self.wp_badge, _ = self._create_status_row(card_desk, "机构壁纸与锁屏")
         self.wp_btn = tk.Button(
             row_wp, text="...", font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
+            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
             command=self.toggle_wallpaper
         )
         self.wp_btn.pack(side=tk.RIGHT)
 
-        # 3.2 文件扩展名
-        row_ext = tk.Frame(card_desk, bg="#FFFFFF")
-        row_ext.pack(fill=tk.X, pady=2)
-        self.ext_lbl = tk.Label(row_ext, text="文件扩展名 (后缀名)：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        self.ext_lbl.pack(side=tk.LEFT)
+        row_ext, self.ext_badge, _ = self._create_status_row(card_desk, "显示文件扩展名")
         self.ext_btn = tk.Button(
             row_ext, text="...", font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
+            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
             command=self.toggle_file_ext
         )
         self.ext_btn.pack(side=tk.RIGHT)
 
-        # 3.3 聚焦图标
-        row_sp = tk.Frame(card_desk, bg="#FFFFFF")
-        row_sp.pack(fill=tk.X, pady=2)
-        self.sp_lbl = tk.Label(row_sp, text='桌面"了解此图片"图标：读取中', font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        self.sp_lbl.pack(side=tk.LEFT)
+        row_sp, self.sp_badge, _ = self._create_status_row(card_desk, '隐藏"了解此图片"')
         self.sp_btn = tk.Button(
             row_sp, text="...", font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
+            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
             command=self.toggle_spotlight
         )
         self.sp_btn.pack(side=tk.RIGHT)
 
-        # 3.4 Microsoft Store (应用商店)
-        row_store = tk.Frame(card_desk, bg="#FFFFFF")
-        row_store.pack(fill=tk.X, pady=2)
-        self.store_lbl = tk.Label(row_store, text="Microsoft Store (应用商店)：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        self.store_lbl.pack(side=tk.LEFT)
+        row_store, self.store_badge, _ = self._create_status_row(card_desk, "Microsoft Store")
         self.store_btn = tk.Button(
             row_store, text="一键卸载", font=("Microsoft YaHei UI", 8),
             bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
@@ -287,90 +294,37 @@ class CodingLabAssistantGUI:
         )
         self.store_btn.pack(side=tk.RIGHT)
 
-        # 4. 编程环境优化
-        card_dev = tk.LabelFrame(
-            main_content,
-            text=" 编程环境优化 ",
-            font=("Microsoft YaHei UI", 9, "bold"),
-            bg="#FFFFFF",
-            fg="#0F172A",
-            padx=12,
-            pady=5,
-            relief=tk.SOLID,
-            bd=1
-        )
-        card_dev.pack(fill=tk.X, pady=(0, 4))
+        # 右栏 3：编程环境优化
+        card_dev = self._create_card(right_col, "编程环境优化", pady_bottom=0, expand=True)
 
-        # 4.1 pip 镜像多源配置
-        row_pip = tk.Frame(card_dev, bg="#FFFFFF")
-        row_pip.pack(fill=tk.X, pady=2)
-        self.pip_lbl = tk.Label(row_pip, text="Python pip 镜像源：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        self.pip_lbl.pack(side=tk.LEFT)
+        row_pip, self.pip_badge, _ = self._create_status_row(card_dev, "pip 镜像源")
+        self.pip_btns = {}
+        for label, src_type in (("默认", "default"), ("阿里", "aliyun"), ("清华", "tuna")):
+            btn = tk.Button(
+                row_pip, text=label, font=("Microsoft YaHei UI", 8),
+                bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=5, cursor="hand2",
+                command=lambda s=src_type: self.apply_pip_source(s)
+            )
+            btn.pack(side=tk.RIGHT, padx=(3, 0))
+            self.pip_btns[src_type] = btn
 
-        btn_pip_default = tk.Button(
-            row_pip, text="恢复默认", font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=8, cursor="hand2",
-            command=lambda: self.apply_pip_source("default")
-        )
-        btn_pip_default.pack(side=tk.RIGHT, padx=(4, 0))
-
-        btn_pip_ali = tk.Button(
-            row_pip, text="阿里源", font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=8, cursor="hand2",
-            command=lambda: self.apply_pip_source("aliyun")
-        )
-        btn_pip_ali.pack(side=tk.RIGHT, padx=(4, 0))
-
-        btn_pip_tuna = tk.Button(
-            row_pip, text="清华源", font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=8, cursor="hand2",
-            command=lambda: self.apply_pip_source("tuna")
-        )
-        btn_pip_tuna.pack(side=tk.RIGHT)
-
-        # 4.2 Windows 长路径
-        row_lp = tk.Frame(card_dev, bg="#FFFFFF")
-        row_lp.pack(fill=tk.X, pady=2)
-        self.lp_lbl = tk.Label(row_lp, text="Windows 长路径支持 (LongPaths)：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        self.lp_lbl.pack(side=tk.LEFT)
+        row_lp, self.lp_badge, _ = self._create_status_row(card_dev, "Windows 长路径")
         self.lp_btn = tk.Button(
             row_lp, text="...", font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
+            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
             command=self.toggle_longpaths
         )
         self.lp_btn.pack(side=tk.RIGHT)
 
-    def _build_browser_card(self, parent, b_key):
+    def _build_browser_card(self, parent, b_key, pady_bottom=6, expand=False):
         cfg = BROWSERS[b_key]
         name = cfg["name"]
-        card = tk.LabelFrame(
-            parent,
-            text=f" {name} 浏览器访问策略 ",
-            font=("Microsoft YaHei UI", 9, "bold"),
-            bg="#FFFFFF",
-            fg="#0F172A",
-            padx=12,
-            pady=5,
-            relief=tk.SOLID,
-            bd=1
-        )
-        card.pack(fill=tk.X, pady=(0, 5))
+        card = self._create_card(parent, f"{name} 浏览器访问策略", pady_bottom=pady_bottom, expand=expand)
 
         widgets = {}
 
-        # 1. 白名单
-        row_wl = tk.Frame(card, bg="#FFFFFF")
-        row_wl.pack(fill=tk.X, pady=2)
-        widgets["wl_lbl"] = tk.Label(row_wl, text="网址白名单锁定：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        widgets["wl_lbl"].pack(side=tk.LEFT)
-
-        widgets["wl_cfg_btn"] = tk.Button(
-            row_wl, text="管理白名单", font=("Microsoft YaHei UI", 8),
-            bg="#F8FAFC", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
-            command=self.open_whitelist_manager
-        )
-        widgets["wl_cfg_btn"].pack(side=tk.RIGHT, padx=(4, 0))
-
+        # 1. 白名单（直接由 whitelist.txt / 云端同步控制，不再提供弹窗管理）
+        row_wl, widgets["wl_badge"], _ = self._create_status_row(card, "网址白名单锁定")
         widgets["wl_btn"] = tk.Button(
             row_wl, text="...", font=("Microsoft YaHei UI", 8),
             bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
@@ -379,18 +333,7 @@ class CodingLabAssistantGUI:
         widgets["wl_btn"].pack(side=tk.RIGHT)
 
         # 2. 桌面直达启动图标
-        row_pt = tk.Frame(card, bg="#FFFFFF")
-        row_pt.pack(fill=tk.X, pady=2)
-        widgets["portal_lbl"] = tk.Label(row_pt, text="桌面直达启动图标：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        widgets["portal_lbl"].pack(side=tk.LEFT)
-
-        widgets["test_btn"] = tk.Button(
-            row_pt, text="测试打开", font=("Microsoft YaHei UI", 8),
-            bg="#F8FAFC", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
-            command=lambda: self._test_open_browser(b_key)
-        )
-        widgets["test_btn"].pack(side=tk.RIGHT, padx=(4, 0))
-
+        row_pt, widgets["portal_badge"], _ = self._create_status_row(card, "桌面直达主页")
         widgets["portal_btn"] = tk.Button(
             row_pt, text="...", font=("Microsoft YaHei UI", 8),
             bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
@@ -399,25 +342,19 @@ class CodingLabAssistantGUI:
         widgets["portal_btn"].pack(side=tk.RIGHT)
 
         # 3. 离线游戏
-        row_gm = tk.Frame(card, bg="#FFFFFF")
-        row_gm.pack(fill=tk.X, pady=2)
-        widgets["game_lbl"] = tk.Label(row_gm, text=f"{cfg['game_label']}：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        widgets["game_lbl"].pack(side=tk.LEFT)
+        row_gm, widgets["game_badge"], _ = self._create_status_row(card, cfg["game_label"])
         widgets["game_btn"] = tk.Button(
             row_gm, text="...", font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
+            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
             command=lambda: self._toggle_browser_game(b_key)
         )
         widgets["game_btn"].pack(side=tk.RIGHT)
 
         # 4. 下载限制
-        row_dl = tk.Frame(card, bg="#FFFFFF")
-        row_dl.pack(fill=tk.X, pady=2)
-        widgets["dl_lbl"] = tk.Label(row_dl, text="文件下载限制：读取中", font=("Microsoft YaHei UI", 9), bg="#FFFFFF", fg="#334155")
-        widgets["dl_lbl"].pack(side=tk.LEFT)
+        row_dl, widgets["dl_badge"], _ = self._create_status_row(card, "禁止文件下载")
         widgets["dl_btn"] = tk.Button(
             row_dl, text="...", font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
+            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, width=10, cursor="hand2",
             command=lambda: self._toggle_browser_downloads(b_key)
         )
         widgets["dl_btn"].pack(side=tk.RIGHT)
@@ -428,104 +365,71 @@ class CodingLabAssistantGUI:
         cfg = BROWSERS[b_key]
         w = self.browser_widgets[b_key]
 
-        wl_locked = cfg["get_wl"]()
-        if wl_locked:
-            w["wl_lbl"].configure(text="网址白名单锁定：已开启限制 (仅允许白名单网站)")
-            w["wl_btn"].configure(text="解除限制", bg="#FFFFFF", fg="#0F172A")
-        else:
-            w["wl_lbl"].configure(text="网址白名单锁定：未锁定 (允许自由访问全网)")
-            w["wl_btn"].configure(text="开启限制", bg="#0F172A", fg="#FFFFFF")
-
-        pt_on = cfg["get_startup"]()
-        if pt_on:
-            w["portal_lbl"].configure(text="桌面直达启动图标：已配置直达 (双击直达目标主页)")
-            w["portal_btn"].configure(text="恢复默认", bg="#FFFFFF", fg="#0F172A")
-        else:
-            w["portal_lbl"].configure(text="桌面直达启动图标：默认启动图标 (未绑定直达参数)")
-            w["portal_btn"].configure(text="配置直达", bg="#0F172A", fg="#FFFFFF")
-
-        gm_off = cfg["get_game"]()
-        if gm_off:
-            w["game_lbl"].configure(text=f"{cfg['game_label']}：已禁用")
-            w["game_btn"].configure(text="允许游戏")
-        else:
-            w["game_lbl"].configure(text=f"{cfg['game_label']}：未禁用")
-            w["game_btn"].configure(text="禁用游戏")
-
-        dl_off = cfg["get_dl"]()
-        if dl_off:
-            w["dl_lbl"].configure(text="文件下载限制：已禁止所有文件下载")
-            w["dl_btn"].configure(text="允许下载")
-        else:
-            w["dl_lbl"].configure(text="文件下载限制：允许下载")
-            w["dl_btn"].configure(text="禁止下载")
+        self._set_toggle_row(
+            w["wl_badge"], w["wl_btn"], cfg["get_wl"](),
+            "已锁定", "未锁定", "解除限制", "开启限制"
+        )
+        self._set_toggle_row(
+            w["portal_badge"], w["portal_btn"], cfg["get_startup"](),
+            "已开启", "未开启", "恢复默认", "开启直达"
+        )
+        self._set_toggle_row(
+            w["game_badge"], w["game_btn"], cfg["get_game"](),
+            "已禁用", "未禁用", "允许游戏", "禁用游戏"
+        )
+        self._set_toggle_row(
+            w["dl_badge"], w["dl_btn"], cfg["get_dl"](),
+            "已禁止", "未禁止", "允许下载", "禁止下载"
+        )
 
     # ── 状态读取与刷新 ────────────────────────────────────────────────
     def refresh_status(self):
-        # 1 & 2. 浏览器策略刷新 (Edge 与 Chrome 统一处理)
         for b_key in ("Edge", "Chrome"):
             self._refresh_browser_status(b_key)
 
-        # 3. 开机教学策略与晚间纪律
-        sync_installed = get_cloud_sync_installed()
-        if sync_installed:
-            self.sync_lbl.configure(text="开机教学策略：已就绪 (白名单更新 + 晚间 20:15 关机)")
-            self.sync_btn.configure(text="移除开机任务", bg="#FFFFFF", fg="#0F172A")
-        else:
-            self.sync_lbl.configure(text="开机教学策略：未部署 (未启用自动同步与关机)")
-            self.sync_btn.configure(text="部署开机任务", bg="#0F172A", fg="#FFFFFF")
-
-        # 3. 桌面与系统规范
-        wp_locked = get_wallpaper_locked()
-        if wp_locked:
-            self.wp_lbl.configure(text="机构壁纸与锁屏：已统一并锁定修改")
-            self.wp_btn.configure(text="允许修改")
-        else:
-            self.wp_lbl.configure(text="机构壁纸与锁屏：未锁定 (允许自由修改)")
-            self.wp_btn.configure(text="部署并锁定")
-
-        ext_visible = get_file_ext_visible()
-        if ext_visible:
-            self.ext_lbl.configure(text="文件扩展名 (后缀名)：始终显示 (格式清晰可见)")
-            self.ext_btn.configure(text="隐藏后缀")
-        else:
-            self.ext_lbl.configure(text="文件扩展名 (后缀名)：系统默认隐藏 (易引起混淆)")
-            self.ext_btn.configure(text="显示后缀")
-
-        sp_hidden = get_spotlight_hidden()
-        if sp_hidden:
-            self.sp_lbl.configure(text='桌面"了解此图片"图标：已隐藏')
-            self.sp_btn.configure(text="恢复显示")
-        else:
-            self.sp_lbl.configure(text='桌面"了解此图片"图标：正常显示')
-            self.sp_btn.configure(text="隐藏图标")
+        self._set_toggle_row(
+            self.sync_badge, self.sync_btn, get_cloud_sync_installed(),
+            "已部署", "未部署", "移除任务", "部署任务"
+        )
+        self._set_toggle_row(
+            self.wp_badge, self.wp_btn, get_wallpaper_locked(),
+            "已锁定", "未锁定", "允许修改", "部署锁定"
+        )
+        self._set_toggle_row(
+            self.ext_badge, self.ext_btn, get_file_ext_visible(),
+            "已显示", "未显示", "隐藏后缀", "显示后缀"
+        )
+        self._set_toggle_row(
+            self.sp_badge, self.sp_btn, get_spotlight_hidden(),
+            "已隐藏", "未隐藏", "恢复显示", "隐藏图标"
+        )
 
         store_installed = get_ms_store_status()
-        if store_installed:
-            self.store_lbl.configure(text="Microsoft Store (应用商店)：已安装 (允许下载软件)")
-            self.store_btn.configure(text="一键卸载", bg="#0F172A", fg="#FFFFFF")
-        else:
-            self.store_lbl.configure(text="Microsoft Store (应用商店)：已卸载 (禁止学生下载软件)")
-            self.store_btn.configure(text="重新卸载", bg="#FFFFFF", fg="#64748B")
+        self._set_toggle_row(
+            self.store_badge, self.store_btn, not store_installed,
+            "已卸载", "未卸载", "重新清理", "一键卸载"
+        )
 
-        # 4. 编程环境优化
         m_type, _ = get_pip_mirror_type()
-        if m_type == "tuna":
-            self.pip_lbl.configure(text="Python pip 镜像源：当前使用 清华源")
-        elif m_type == "aliyun":
-            self.pip_lbl.configure(text="Python pip 镜像源：当前使用 阿里源")
-        elif m_type == "other":
-            self.pip_lbl.configure(text="Python pip 镜像源：当前使用 自定义源")
-        else:
-            self.pip_lbl.configure(text="Python pip 镜像源：官方默认源")
+        pip_badges = {
+            "tuna": ("清华源", "#DCFCE7", "#15803D"),
+            "aliyun": ("阿里源", "#DCFCE7", "#15803D"),
+            "other": ("自定义", "#FEF3C7", "#B45309"),
+            "default": ("官方源", "#F1F5F9", "#64748B"),
+        }
+        b_text, b_bg, b_fg = pip_badges.get(m_type, pip_badges["default"])
+        self.pip_badge.configure(text=b_text, bg=b_bg, fg=b_fg)
+        for src_type, btn in self.pip_btns.items():
+            is_cur = (src_type == m_type)
+            btn.configure(
+                bg="#15803D" if is_cur and src_type != "default" else ("#0F172A" if is_cur else "#FFFFFF"),
+                fg="#FFFFFF" if is_cur else "#0F172A"
+            )
 
-        lp_on = get_longpaths_status()
-        if lp_on:
-            self.lp_lbl.configure(text="Windows 长路径支持：已启用 (解除 260 字符限制)")
-            self.lp_btn.configure(text="恢复默认")
-        else:
-            self.lp_lbl.configure(text="Windows 长路径支持：未启用 (限制 260 字符)")
-            self.lp_btn.configure(text="启用长路径")
+        self._set_toggle_row(
+            self.lp_badge, self.lp_btn, get_longpaths_status(),
+            "已启用", "未启用", "恢复默认", "启用长路径"
+        )
 
     # ── 交互事件处理 ──────────────────────────────────────────────────
     def trigger_explorer_update(self, action_name):
@@ -537,89 +441,8 @@ class CodingLabAssistantGUI:
             else:
                 self.status_lbl.configure(text="设置已保存，资源管理器重启失败。")
         else:
-            messagebox.showinfo("操作成功", "设置已保存。\n\n请点击右下角“重启资源管理器”使更改生效。")
-            self.status_lbl.configure(text="设置已保存，等待重启资源管理器...")
-
-    def open_whitelist_manager(self):
-        """打开通用白名单管理窗口"""
-        win = tk.Toplevel(self.root)
-        设置窗口图标(win)
-        win.title("管理浏览器允许访问的网址白名单")
-        win.geometry("480x420")
-        win.resizable(False, False)
-        win.configure(bg="#F8FAFC")
-        win.transient(self.root)
-        win.grab_set()
-
-        tk.Label(
-            win,
-            text="浏览器允许访问的网址白名单清单",
-            font=("Microsoft YaHei UI", 10, "bold"),
-            bg="#F8FAFC",
-            fg="#0F172A"
-        ).pack(pady=(12, 2))
-
-        tk.Label(
-            win,
-            text="每行一条规则，支持通配符（Edge 与 Chrome 同步生效）\n保存后若白名单处于开启状态将立即同步到系统注册表。",
-            font=("Microsoft YaHei UI", 8),
-            bg="#F8FAFC",
-            fg="#64748B"
-        ).pack(pady=(0, 8))
-
-        text_area = scrolledtext.ScrolledText(
-            win, wrap=tk.WORD, font=("Consolas", 9), height=14,
-            relief=tk.SOLID, bd=1
-        )
-        text_area.pack(fill=tk.BOTH, expand=True, padx=16, pady=4)
-
-        current_rules = load_whitelist()
-        text_area.insert(tk.END, "\n".join(current_rules))
-
-        btn_box = tk.Frame(win, bg="#F8FAFC")
-        btn_box.pack(fill=tk.X, padx=16, pady=10)
-
-        def save_and_close():
-            raw = text_area.get("1.0", tk.END).strip().splitlines()
-            cleaned = [line.strip() for line in raw if line.strip() and not line.strip().startswith("#")]
-            if save_whitelist(cleaned):
-                active_browsers = [cfg for cfg in BROWSERS.values() if cfg["get_wl"]()]
-                for b_cfg in active_browsers:
-                    b_cfg["set_wl"](True, cleaned)
-                win.destroy()
-                self.refresh_status()
-                if active_browsers:
-                    if messagebox.askyesno("保存成功", f"白名单规则已更新并同步写入注册表（共 {len(cleaned)} 条）。\n\n新策略需要重启浏览器生效，是否立即关闭并重启浏览器？"):
-                        for b_cfg in active_browsers:
-                            kill_browser_process(b_cfg["proc"])
-                            launch_browser(b_cfg["cmd"])
-                else:
-                    messagebox.showinfo("成功", f"白名单清单已保存（共 {len(cleaned)} 条）。\n当前白名单处于未开启状态，点击主界面的【开启限制】即可应用。")
-            else:
-                messagebox.showerror("错误", "保存白名单文件失败。")
-
-        def reset_defaults():
-            if messagebox.askyesno("恢复默认", "是否清空当前内容并恢复推荐的默认白名单？"):
-                text_area.delete("1.0", tk.END)
-                text_area.insert(tk.END, "\n".join(DEFAULT_ALLOWLIST))
-
-        tk.Button(
-            btn_box, text="保存并生效", font=("Microsoft YaHei UI", 8, "bold"),
-            bg="#0F172A", fg="#FFFFFF", relief=tk.SOLID, bd=1, padx=10, pady=2,
-            command=save_and_close
-        ).pack(side=tk.RIGHT, padx=(6, 0))
-
-        tk.Button(
-            btn_box, text="恢复默认清单", font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF", fg="#0F172A", relief=tk.SOLID, bd=1, padx=8, pady=2,
-            command=reset_defaults
-        ).pack(side=tk.RIGHT)
-
-        tk.Button(
-            btn_box, text="取消", font=("Microsoft YaHei UI", 8),
-            bg="#FFFFFF", fg="#64748B", relief=tk.SOLID, bd=1, padx=8, pady=2,
-            command=win.destroy
-        ).pack(side=tk.LEFT)
+            messagebox.showinfo("操作成功", "设置已保存，重启资源管理器或注销后生效。")
+            self.status_lbl.configure(text="设置已保存，等待资源管理器刷新...")
 
     # ── 浏览器通用动作 ──
     def _toggle_browser_whitelist(self, b_key):
@@ -687,28 +510,6 @@ class CodingLabAssistantGUI:
         else:
             messagebox.showerror("错误", f"修改 {name} 下载策略失败。")
 
-    def _manual_restart_browser(self, b_key):
-        cfg = BROWSERS[b_key]
-        name = cfg["name"]
-        kill_browser_process(cfg["proc"])
-        self.status_lbl.configure(text=f"{name} 浏览器已关闭。")
-        messagebox.showinfo("提示", f"{name} 浏览器已关闭，请重新启动以应用新策略。")
-
-    # 快捷委托方法
-    def toggle_edge_whitelist(self): self._toggle_browser_whitelist("Edge")
-    def toggle_edge_startup(self): self._toggle_browser_startup("Edge")
-    def test_open_edge(self): self._test_open_browser("Edge")
-    def toggle_edge_game(self): self._toggle_browser_game("Edge")
-    def toggle_edge_downloads(self): self._toggle_browser_downloads("Edge")
-    def manual_restart_edge(self): self._manual_restart_browser("Edge")
-
-    def toggle_chrome_whitelist(self): self._toggle_browser_whitelist("Chrome")
-    def toggle_chrome_startup(self): self._toggle_browser_startup("Chrome")
-    def test_open_chrome(self): self._test_open_browser("Chrome")
-    def toggle_chrome_game(self): self._toggle_browser_game("Chrome")
-    def toggle_chrome_downloads(self): self._toggle_browser_downloads("Chrome")
-    def manual_restart_chrome(self): self._manual_restart_browser("Chrome")
-
     # ── 云端同步动作 ──
     def toggle_cloud_sync(self):
         curr = get_cloud_sync_installed()
@@ -735,22 +536,6 @@ class CodingLabAssistantGUI:
                 else:
                     self.status_lbl.configure(text="移除开机同步任务失败。")
                     messagebox.showerror("错误", msg)
-
-    def manual_sync_now(self):
-        self.status_lbl.configure(text="正在从云端拉取白名单并注入系统注册表...")
-        self.root.update()
-        ok, msg = run_cloud_sync_now()
-        self.refresh_status()
-        if ok:
-            active_browsers = [cfg for cfg in BROWSERS.values() if cfg["get_wl"]()]
-            self.status_lbl.configure(text="云端白名单同步已完成。")
-            if messagebox.askyesno("同步完成", "云端白名单已成功拉取并写入系统注册表！\n\n是否立即重启浏览器以使新策略生效？"):
-                for b_cfg in active_browsers:
-                    kill_browser_process(b_cfg["proc"])
-                    launch_browser(b_cfg["cmd"])
-        else:
-            self.status_lbl.configure(text="云端同步执行失败。")
-            messagebox.showerror("同步失败", msg)
 
     # ── 桌面与系统动作 ──
     def toggle_wallpaper(self):
@@ -832,14 +617,5 @@ class CodingLabAssistantGUI:
             self.status_lbl.configure(text=msg)
             messagebox.showinfo("提示", msg)
         else:
+            self.status_lbl.configure(text="Windows 长路径恢复失败。")
             messagebox.showerror("错误", "修改长路径限制失败。")
-
-    def manual_restart_explorer(self):
-        self.status_lbl.configure(text="正在重启资源管理器...")
-        self.root.update()
-        if restart_explorer():
-            self.status_lbl.configure(text="资源管理器重启成功。")
-            messagebox.showinfo("提示", "资源管理器已成功重启，更改已生效。")
-        else:
-            self.status_lbl.configure(text="资源管理器重启失败。")
-            messagebox.showerror("错误", "无法重启资源管理器。")
