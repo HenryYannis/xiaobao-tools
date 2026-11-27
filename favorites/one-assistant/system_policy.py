@@ -15,9 +15,8 @@ if _CURRENT_DIR not in sys.path:
     sys.path.insert(0, _CURRENT_DIR)
 
 from winreg import (
-    HKEY_CLASSES_ROOT, HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE,
-    CreateKey, OpenKey, SetValueEx, QueryInfoKey, EnumKey,
-    REG_SZ, KEY_READ
+    HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE,
+    CreateKey, SetValueEx, REG_SZ
 )
 from config import (
     RESOURCE_DIR, WALLPAPER_FILENAME,
@@ -120,53 +119,64 @@ def set_longpaths_enabled(enabled):
     return reg_write_dword(HKEY_LOCAL_MACHINE, REG_LONGPATHS_PATH, REG_LONGPATHS_VALUE, val)
 
 # --- Microsoft Store 应用商店管理 ---
+_CMD_ENCODING = "oem" if sys.platform == "win32" else "utf-8"
+_STORE_POLICY_PATH = r"SOFTWARE\Policies\Microsoft\WindowsStore"
+_STORE_POLICY_VALUE = "RemoveWindowsStore"
+
+
+def _run_ps(ps_cmd, timeout=30):
+    return subprocess.run(
+        ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
+        capture_output=True,
+        text=True,
+        encoding=_CMD_ENCODING,
+        errors="replace",
+        timeout=timeout,
+        creationflags=subprocess.CREATE_NO_WINDOW
+    )
+
+
 def get_ms_store_status():
-    """检查系统是否安装了 Microsoft Store (返回 True 表示已安装，False 表示未安装/已卸载)"""
-    # 1. 快速检查协议关联 (HKEY_CLASSES_ROOT\ms-windows-store)
-    for root in (HKEY_CLASSES_ROOT, HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER):
-        try:
-            path = r"ms-windows-store" if root == HKEY_CLASSES_ROOT else r"Software\Classes\ms-windows-store"
-            with OpenKey(root, path, 0, KEY_READ):
-                return True
-        except Exception:
-            pass
-    # 2. 检查注册表 AppModel Packages
+    """检查系统是否安装了 Microsoft Store (返回 True 表示已安装，False 表示已卸载)"""
     try:
-        with OpenKey(HKEY_CURRENT_USER, r"Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages", 0, KEY_READ) as k:
-            count = QueryInfoKey(k)[0]
-            for i in range(count):
-                if "Microsoft.WindowsStore" in EnumKey(k, i):
-                    return True
+        res = _run_ps("if (Get-AppxPackage -AllUsers -Name 'Microsoft.WindowsStore') { 'INSTALLED' }", timeout=15)
+        return "INSTALLED" in res.stdout
     except Exception:
-        pass
-    # 3. 检查系统目录 WindowsApps 中是否存在商店激活包
-    try:
-        winapps = os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"), "WindowsApps")
-        if os.path.exists(winapps):
-            for entry in os.listdir(winapps):
-                if "Microsoft.WindowsStore" in entry:
-                    return True
-    except Exception:
-        pass
-    return False
+        return False
+
 
 def uninstall_ms_store():
-    """彻底卸载 Microsoft Store (当前用户、所有用户及预装包)"""
-    ps_cmd = (
-        "Get-AppxPackage -AllUsers *WindowsStore* | Remove-AppxPackage -ErrorAction SilentlyContinue; "
-        "Get-AppxPackage *WindowsStore* | Remove-AppxPackage -ErrorAction SilentlyContinue; "
-        "Get-AppxProvisionedPackage -Online | Where-Object { $_.PackageName -like '*WindowsStore*' } | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue"
-    )
+    """彻底卸载 Microsoft Store (当前用户、所有用户及预装包)，并校验卸载结果"""
     try:
-        res = subprocess.run(
-            ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
+        subprocess.run(
+            ["taskkill", "/f", "/im", "WinStore.App.exe"],
             capture_output=True,
-            text=True,
             creationflags=subprocess.CREATE_NO_WINDOW
         )
-        return True, "Microsoft Store (应用商店) 已执行卸载清理。"
+    except Exception:
+        pass
+
+    ps_cmd = (
+        "$errs = @(); "
+        "try { Get-AppxProvisionedPackage -Online | Where-Object { $_.PackageName -like '*Microsoft.WindowsStore*' } | Remove-AppxProvisionedPackage -Online -ErrorAction Stop | Out-Null } catch { $errs += $_.Exception.Message }; "
+        "try { Get-AppxPackage -AllUsers -Name 'Microsoft.WindowsStore' | Remove-AppxPackage -AllUsers -ErrorAction Stop } catch { $errs += $_.Exception.Message }; "
+        "try { Get-AppxPackage -Name 'Microsoft.WindowsStore' | Remove-AppxPackage -ErrorAction Stop } catch { $errs += $_.Exception.Message }; "
+        "if (Get-AppxPackage -AllUsers -Name 'Microsoft.WindowsStore') { "
+        "  Write-Output 'STILL_INSTALLED'; "
+        "  if ($errs.Count -gt 0) { Write-Error ($errs -join ' | ') }; "
+        "  exit 1 "
+        "}"
+    )
+    try:
+        res = _run_ps(ps_cmd, timeout=60)
+        # 同步写入组策略禁用商店，防止系统更新或后台恢复
+        reg_write_dword(HKEY_LOCAL_MACHINE, _STORE_POLICY_PATH, _STORE_POLICY_VALUE, 1)
+        if res.returncode == 0 and "STILL_INSTALLED" not in res.stdout:
+            return True, "Microsoft Store (应用商店) 已彻底卸载，并已禁用商店入口。"
+        err = res.stderr.strip() or res.stdout.strip() or "系统受保护，未能移除应用包"
+        return False, f"Microsoft Store 未能彻底卸载：{err}\n\n（已同时写入组策略禁用商店入口）"
     except Exception as e:
-        return False, f"卸载执行失败: {e}"
+        return False, f"卸载执行失败：{e}"
 
 # --- pip 镜像源管理 (支持官方、清华、阿里) ---
 def get_pip_config_file_path():
