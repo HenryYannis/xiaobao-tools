@@ -24,6 +24,14 @@ class CloudSyncScriptTest(unittest.TestCase):
         self.assertEqual(embedded_script(), PS1.read_text(encoding="utf-8-sig"),
                          "改了 Sync-Whitelist.ps1 后要同步更新 config.py 里的 SYNC_SCRIPT_CONTENT")
 
+    def test_ps1_enables_tls12_bom_and_retry(self):
+        text = PS1.read_text(encoding="utf-8-sig")
+        self.assertIn("3072", text)
+        self.assertIn("SecurityProtocol", text)
+        self.assertIn("0xFEFF", text)
+        self.assertIn("MaxRetries", text)
+        self.assertIn("from $ruleSource", text)
+
     @unittest.skipUnless(shutil.which("pwsh"), "需要 PowerShell 7 (pwsh)")
     def test_validation_rejects_html_and_garbage(self):
         text = PS1.read_text(encoding="utf-8")
@@ -37,6 +45,7 @@ class CloudSyncScriptTest(unittest.TestCase):
 $CacheDir = '{tmp}'
 {funcs}
 $r = Get-ValidRules '{good}' 'good';  if ($r) {{ "good=$($r.Count)" }} else {{ 'good=null' }}
+$r = Get-ValidRules ([char]0xFEFF + "# bom`nxbkjz.cn") 'bom'; if ($r) {{ "bom=$($r.Count)" }} else {{ 'bom=null' }}
 $r = Get-ValidRules '<html><body>login</body></html>' 'html'; if ($r) {{ 'html=ok' }} else {{ 'html=null' }}
 $r = Get-ValidRules "a.com`nevil site.com" 'space'; if ($r) {{ 'space=ok' }} else {{ 'space=null' }}
 $r = Get-ValidRules "# only comments" 'empty'; if ($r) {{ 'empty=ok' }} else {{ 'empty=null' }}
@@ -47,6 +56,7 @@ $r = Get-ValidRules "# only comments" 'empty'; if ($r) {{ 'empty=ok' }} else {{ 
         good_count = sum(1 for line in (APP / "whitelist.txt").read_text(encoding="utf-8").splitlines()
                          if line.strip() and not line.strip().startswith("#"))
         self.assertIn(f"good={good_count}", lines)
+        self.assertIn("bom=1", lines)
         self.assertIn("html=null", lines)
         self.assertIn("space=null", lines)
         self.assertIn("empty=null", lines)

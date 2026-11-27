@@ -8,6 +8,11 @@
 # 5. 晚间纪律管控：自动部署每日 20:15 定时关机策略，并在开机超时时立即执行关机
 # ==============================================================================
 
+param(
+    [int]$MaxRetries = 4,
+    [int]$RetryDelaySeconds = 5
+)
+
 $ErrorActionPreference = 'SilentlyContinue'
 
 # ==============================================================================
@@ -51,6 +56,8 @@ function Write-SyncLog([string]$msg) {
 # 拉到的是网页（比如被劫持、被机房网关重定向到登录页）或格式不对时整份丢弃，不写入浏览器策略。
 function Get-ValidRules([string]$text, [string]$source) {
     if (-not $text) { return $null }
+    # 兼容带 UTF-8 BOM 的白名单文件，避免首行被误判为非法字符
+    $text = $text.TrimStart([char]0xFEFF)
     $list = New-Object System.Collections.Generic.List[string]
     # 用 -split 按行切分：PowerShell 7 下 .Split(@(...)) 可能被当成一个分隔符字符串，整份内容不被切开
     foreach ($line in ($text -split "\r\n|\r|\n")) {
@@ -69,29 +76,70 @@ function Get-ValidRules([string]$text, [string]$source) {
     return ,$list
 }
 
-$rules = $null
-
-# 1. 尝试从云端拉取，校验通过才更新本地缓存
-try {
-    $wc = New-Object System.Net.WebClient
-    $wc.Encoding = [System.Text.Encoding]::UTF8
-    $remoteText = $wc.DownloadString($RemoteUrl)
-    $rules = Get-ValidRules $remoteText "remote"
-    if ($rules) {
-        if (-not (Test-Path $CacheDir)) {
-            New-Item -ItemType Directory -Path $CacheDir -Force | Out-Null
-        }
-        [System.IO.File]::WriteAllText($CachePath, $remoteText, [System.Text.Encoding]::UTF8)
+function Get-RemoteWhitelistText([string]$url) {
+    $ErrorActionPreference = 'Stop'
+    # Windows PowerShell 5.1 默认可能只启用 TLS 1.0，必须显式开启 TLS 1.2 (3072) 及 TLS 1.3 (12288)
+    try {
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072 -bor 12288
+    } catch {
+        try {
+            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        } catch { $null }
     }
-} catch {
-    Write-SyncLog "Download failed: $($_.Exception.Message)"
-    $rules = $null
+
+    $req = [System.Net.HttpWebRequest]::Create($url)
+    $req.Method = "GET"
+    $req.Timeout = 8000
+    $req.ReadWriteTimeout = 8000
+    $req.CachePolicy = New-Object System.Net.Cache.RequestCachePolicy([System.Net.Cache.RequestCacheLevel]::BypassCache)
+    $req.Headers.Add("Cache-Control", "no-cache")
+
+    $resp = $null
+    $reader = $null
+    try {
+        $resp = $req.GetResponse()
+        $stream = $resp.GetResponseStream()
+        $reader = New-Object System.IO.StreamReader($stream, [System.Text.Encoding]::UTF8, $true)
+        return $reader.ReadToEnd()
+    } finally {
+        if ($reader) { $reader.Close() }
+        if ($resp) { $resp.Close() }
+    }
+}
+
+$rules = $null
+$ruleSource = $null
+if ($MaxRetries -lt 1) { $MaxRetries = 1 }
+
+# 1. 尝试从云端拉取（含开机网络未就绪重试），校验通过才更新本地缓存
+for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
+    try {
+        $remoteText = Get-RemoteWhitelistText $RemoteUrl
+        $rules = Get-ValidRules $remoteText "remote"
+        if ($rules) {
+            $ruleSource = "remote"
+            if (-not (Test-Path $CacheDir)) {
+                New-Item -ItemType Directory -Path $CacheDir -Force | Out-Null
+            }
+            [System.IO.File]::WriteAllText($CachePath, $remoteText, [System.Text.Encoding]::UTF8)
+            break
+        }
+        # 内容校验未通过（如被网关劫持返回登录页），无需重试
+        break
+    } catch {
+        Write-SyncLog "Download failed (attempt $attempt/$MaxRetries): $($_.Exception.Message)"
+        $rules = $null
+        if ($attempt -lt $MaxRetries) {
+            Start-Sleep -Seconds $RetryDelaySeconds
+        }
+    }
 }
 
 # 2. 若云端不可用，尝试读取本地发布文件（教师机上的网站目录，学生机上不存在会自动跳过）
 if (-not $rules -and (Test-Path $LocalFallbackPath)) {
     try {
         $rules = Get-ValidRules ([System.IO.File]::ReadAllText($LocalFallbackPath, [System.Text.Encoding]::UTF8)) "local"
+        if ($rules) { $ruleSource = "local" }
     } catch {
         $rules = $null
     }
@@ -101,6 +149,7 @@ if (-not $rules -and (Test-Path $LocalFallbackPath)) {
 if (-not $rules -and (Test-Path $CachePath)) {
     try {
         $rules = Get-ValidRules ([System.IO.File]::ReadAllText($CachePath, [System.Text.Encoding]::UTF8)) "cache"
+        if ($rules) { $ruleSource = "cache" }
     } catch {
         $rules = $null
     }
@@ -151,4 +200,4 @@ foreach ($baseKey in $policyTargets) {
 }
 
 # 写入完成日志标记
-Write-SyncLog "Synced $($rules.Count) rules successfully. Last: $($rules[$rules.Count - 1])"
+Write-SyncLog "Synced $($rules.Count) rules from $ruleSource successfully. Last: $($rules[$rules.Count - 1])"

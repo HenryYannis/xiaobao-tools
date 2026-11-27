@@ -125,11 +125,11 @@ def uninstall_cloud_sync_task():
         return False, f"执行异常：{e}"
 
 def run_cloud_sync_now():
-    if not os.path.exists(CLOUD_SYNC_SCRIPT_PATH):
-        deploy_sync_script()
+    # 确保已部署过的机器在手动同步时也能更新到最新版同步脚本
+    deploy_sync_script()
     try:
         subprocess.run(
-            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", CLOUD_SYNC_SCRIPT_PATH],
+            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", CLOUD_SYNC_SCRIPT_PATH, "-MaxRetries", "1"],
             capture_output=True,
             creationflags=subprocess.CREATE_NO_WINDOW
         )
